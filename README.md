@@ -212,6 +212,7 @@ Conecta el repositorio a Render y crea el servicio desde [`render.yaml`](render.
 los documentos Word. Render solicita las variables marcadas como secretas; configura:
 
 - `DATABASE_URL`: conexión TLS a PostgreSQL.
+- `DATABASE_SSL_CA`: certificado raíz PEM descargado desde Database Settings → SSL Configuration en Supabase. Es necesario si el runtime no confía en la cadena del servidor; el backend conserva la verificación TLS.
 - `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`: credenciales privadas del proyecto.
 - `CORS_ORIGINS`: origen exacto del sitio Vercel, sin rutas ni barra final.
 - `JWT_SECRET`: Render genera uno automáticamente desde el blueprint.

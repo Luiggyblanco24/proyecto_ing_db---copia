@@ -3,13 +3,17 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+const certificadoSsl = process.env.DATABASE_SSL_CA?.replace(/\\n/g, '\n');
+
 // Pool de conexiones a PostgreSQL
 export const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
   max: 5,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,
-  ...(process.env.NODE_ENV === 'production' ? { ssl: { rejectUnauthorized: true } } : {}),
+  ...(process.env.NODE_ENV === 'production'
+    ? { ssl: { rejectUnauthorized: true, ...(certificadoSsl ? { ca: certificadoSsl } : {}) } }
+    : {}),
 });
 
 pool.on('error', (error) => {
