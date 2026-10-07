@@ -114,3 +114,11 @@ VALUES (2, 3, '10');
 INSERT INTO evento (titulo, descripcion, fecha_inicio, fecha_fin, lugar, id_subdirectiva, id_usuario)
 VALUES ('Asamblea de docentes', 'Asamblea ordinaria del sindicato.',
         '2026-10-15 09:00:00-05', '2026-10-15 12:00:00-05', 'Auditorio Central', 1, 1);
+
+INSERT INTO galeria_sutens (descripcion, imagen_url, orden) VALUES
+    ('Actividad sindical SUTENS 1', '/Actividades/1.jpg', 1),
+    ('Actividad sindical SUTENS 2', '/Actividades/2.jpg', 2),
+    ('Actividad sindical SUTENS 3', '/Actividades/3.jpg', 3),
+    ('Actividad sindical SUTENS 4', '/Actividades/4.jpg', 4),
+    ('Actividad sindical SUTENS 5', '/Actividades/5.jpg', 5),
+    ('Actividad sindical SUTENS 6', '/Actividades/6.jpg', 6);

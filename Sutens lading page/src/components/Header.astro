@@ -14,9 +14,14 @@
       <a href="/Comunicaciones/" class="font-semibold text-[#1e293b] hover:text-[#1b7a38]">Comunicaciones</a>
     </nav>
 
-    <div class="hidden items-center gap-3 lg:flex">
+    <div id="acciones-publicas" class="hidden items-center gap-3 lg:flex">
       <a href="/login.html" class="rounded-lg border border-[#1b7a38] px-4 py-2 font-semibold text-[#1b7a38] hover:bg-[#eaf5ec]">Iniciar sesión</a>
       <a href="/Afiliate/" class="rounded-lg bg-[#f59e0b] px-4 py-2 font-semibold text-[#1e293b] hover:bg-[#d97706]">Afíliate</a>
+    </div>
+    <div id="acciones-sesion" class="hidden items-center gap-3 lg:flex" hidden>
+      <span id="nombre-sesion" class="font-semibold text-[#1e293b]" aria-live="polite"></span>
+      <a href="/dashboard.html" class="rounded-lg border border-[#1b7a38] px-4 py-2 font-semibold text-[#1b7a38] hover:bg-[#eaf5ec]">Ir al panel</a>
+      <button id="cerrar-sesion" class="rounded-lg bg-[#1b7a38] px-4 py-2 font-semibold text-white hover:bg-[#14602b]" type="button">Cerrar sesión</button>
     </div>
 
     <button id="menu-btn" class="grid h-11 w-11 place-items-center rounded-lg border border-[#e5e1d6] text-[#1b7a38] lg:hidden" type="button" aria-expanded="false" aria-controls="menu" aria-label="Abrir menú">
@@ -32,8 +37,15 @@
       <a class="rounded-lg px-3 py-3 font-semibold text-[#1e293b] hover:bg-[#eaf5ec]" href="/Secretarias/">Subdirectivas</a>
       <a class="rounded-lg px-3 py-3 font-semibold text-[#1e293b] hover:bg-[#eaf5ec]" href="/Nosotros/">Nosotros</a>
       <a class="rounded-lg px-3 py-3 font-semibold text-[#1e293b] hover:bg-[#eaf5ec]" href="/Comunicaciones/">Comunicaciones</a>
-      <a class="rounded-lg px-3 py-3 font-semibold text-[#1b7a38] hover:bg-[#eaf5ec]" href="/login.html">Iniciar sesión</a>
-      <a class="rounded-lg bg-[#f59e0b] px-3 py-3 text-center font-semibold text-[#1e293b]" href="/Afiliate/">Afíliate</a>
+      <div id="acciones-publicas-movil" class="flex flex-col gap-1">
+        <a class="rounded-lg px-3 py-3 font-semibold text-[#1b7a38] hover:bg-[#eaf5ec]" href="/login.html">Iniciar sesión</a>
+        <a class="rounded-lg bg-[#f59e0b] px-3 py-3 text-center font-semibold text-[#1e293b]" href="/Afiliate/">Afíliate</a>
+      </div>
+      <div id="acciones-sesion-movil" class="hidden flex-col gap-1" hidden>
+        <span id="nombre-sesion-movil" class="px-3 py-3 font-semibold text-[#1e293b]" aria-live="polite"></span>
+        <a class="rounded-lg border border-[#1b7a38] px-3 py-3 text-center font-semibold text-[#1b7a38] hover:bg-[#eaf5ec]" href="/dashboard.html">Ir al panel</a>
+        <button id="cerrar-sesion-movil" class="rounded-lg bg-[#1b7a38] px-3 py-3 font-semibold text-white hover:bg-[#14602b]" type="button">Cerrar sesión</button>
+      </div>
     </div>
   </nav>
 </header>
@@ -47,4 +59,55 @@
     button.setAttribute('aria-expanded', String(willOpen));
     button.setAttribute('aria-label', willOpen ? 'Cerrar menú' : 'Abrir menú');
   });
+
+  const token = localStorage.getItem('token');
+  const accionesPublicas = document.getElementById('acciones-publicas');
+  const accionesSesion = document.getElementById('acciones-sesion');
+  const accionesPublicasMovil = document.getElementById('acciones-publicas-movil');
+  const accionesSesionMovil = document.getElementById('acciones-sesion-movil');
+
+  function mostrarSesion(nombre) {
+    document.getElementById('nombre-sesion').textContent = `Hola, ${nombre}`;
+    document.getElementById('nombre-sesion-movil').textContent = `Hola, ${nombre}`;
+    accionesPublicas.hidden = true;
+    accionesSesion.hidden = false;
+    accionesPublicasMovil.hidden = true;
+    accionesSesionMovil.hidden = false;
+    accionesPublicas.classList.add('hidden');
+    accionesSesion.classList.remove('hidden');
+    accionesPublicasMovil.classList.add('hidden');
+    accionesSesionMovil.classList.remove('hidden');
+    accionesSesionMovil.classList.add('flex');
+  }
+
+  async function cargarSesion() {
+    if (!token) return;
+
+    try {
+      const response = await fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.status === 401 || response.status === 403) {
+        localStorage.removeItem('token');
+        return;
+      }
+      if (!response.ok) throw new Error('No se pudo verificar la sesión');
+
+      const perfil = await response.json();
+      const nombre = [perfil.nombre1, perfil.apellido1].filter(Boolean).join(' ')
+        || perfil.usuario;
+      if (nombre) mostrarSesion(nombre);
+    } catch (error) {
+      console.error('No se pudo cargar la sesión en la página pública:', error);
+    }
+  }
+
+  function cerrarSesionPublica() {
+    localStorage.removeItem('token');
+    window.location.reload();
+  }
+
+  document.getElementById('cerrar-sesion').addEventListener('click', cerrarSesionPublica);
+  document.getElementById('cerrar-sesion-movil').addEventListener('click', cerrarSesionPublica);
+  cargarSesion();
 </script>
