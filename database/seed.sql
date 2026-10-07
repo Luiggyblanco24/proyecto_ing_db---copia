@@ -41,8 +41,8 @@ INSERT INTO materia (nombre) VALUES
 -- Subdirectivas, instituciones y sedes de ejemplo
 INSERT INTO subdirectiva (nombre, es_principal) VALUES
     ('Directiva Departamental', TRUE),
-    ('Subdirectiva Ocaña'),
-    ('Subdirectiva Ábrego');
+    ('Subdirectiva Ocaña', FALSE),
+    ('Subdirectiva Ábrego', FALSE);
 
 INSERT INTO institucion (id_subdirectiva, nombre)
 SELECT sd.id_subdirectiva, instituciones.nombre
