@@ -83,14 +83,6 @@ VALUES (1, 'admin', '$2a$10$mj.5ACt7xJMOMXma4Nc3F.W6fUL6eU9B3TviE4sajCahkUCRAhRd
 INSERT INTO usuario_rol (id_usuario, id_rol_sistema)
 VALUES (1, 1);  -- Administrador SUTENS
 
--- Asignar cargo sindical y rol laboral de ejemplo
-INSERT INTO subdirectiva_afiliado
-    (id_afiliado, id_subdirectiva, id_cargo_sindical, id_sede, es_repetible)
-VALUES (1, 1, 1, 1, FALSE);  -- Presidente de la Directiva General
-
-INSERT INTO afiliado_sede (id_afiliado, id_sede, id_rol_laboral)
-VALUES (1, 1, 1);  -- Rector en Sede Central
-
 -- ----------------------------------------------------------------------------
 -- Ejemplo: un documento sindical y uno educativo
 -- ----------------------------------------------------------------------------
