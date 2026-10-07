@@ -1,0 +1,11 @@
+.git
+.vercel
+**/node_modules
+**/dist
+**/.astro
+.env
+.env.*
+!.env.example
+env.txt
+public/uploads
+storage/biblioteca

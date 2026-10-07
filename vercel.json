@@ -1,0 +1,11 @@
+{
+  "installCommand": "npm --prefix \"Sutens lading page\" ci",
+  "buildCommand": "npm --prefix \"Sutens lading page\" run build",
+  "outputDirectory": "Sutens lading page/dist",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://sutens-api.onrender.com/api/$1"
+    }
+  ]
+}

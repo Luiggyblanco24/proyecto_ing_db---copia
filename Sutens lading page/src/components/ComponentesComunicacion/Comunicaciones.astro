@@ -1,0 +1,324 @@
+---
+import Galeria from "../ComponentesNosotros/Galeria.astro";
+---
+<section class="px-4 pb-10 pt-32 text-center">
+    <div class="mx-auto max-w-3xl">
+        <p class="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-[#1b7a38]">Información institucional</p>
+        <h1 class="text-4xl font-bold text-[#1e293b] md:text-5xl">
+            Mantente informado de las
+            <span class="text-[#1b7a38]">comunicaciones</span>
+        </h1>
+        <p class="mx-auto mt-4 max-w-2xl text-lg text-[#475569]">Aquí aparecen los documentos de la biblioteca sindical que Administración o la Directiva Departamental hayan elegido publicar.</p>
+    </div>
+</section>
+
+<section class="bg-white px-4 py-12 sm:py-16" aria-labelledby="documentos-publicos-titulo">
+    <div class="mx-auto max-w-6xl">
+        <header class="mb-8">
+            <p class="text-sm font-bold uppercase tracking-[0.16em] text-[#1b7a38]">Biblioteca sindical</p>
+            <h2 id="documentos-publicos-titulo" class="mt-2 text-3xl font-bold text-[#1e293b]">Documentos destacados</h2>
+            <p class="mt-2 text-[#475569]">Resoluciones, circulares, actas y otros documentos que puedes consultar y descargar.</p>
+        </header>
+
+        <div class="relative px-1 sm:px-3">
+            <button id="documentos-anterior" class="documentos-flecha left-0" type="button" aria-label="Mostrar documentos anteriores" hidden>
+                <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+            </button>
+            <div id="documentos-slider" class="documentos-slider" aria-live="polite">
+                <p class="documentos-estado">Cargando documentos…</p>
+            </div>
+            <button id="documentos-siguiente" class="documentos-flecha right-0" type="button" aria-label="Mostrar más documentos" hidden>
+                <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+            </button>
+        </div>
+        <div id="documentos-puntos" class="mt-7 flex justify-center gap-2" aria-label="Páginas del carrusel"></div>
+    </div>
+</section>
+
+<section class="bg-white px-4 py-14 sm:py-16" aria-labelledby="galeria-comunicaciones-titulo">
+    <div class="mx-auto max-w-6xl">
+        <header class="mb-8 text-center">
+            <p class="text-sm font-bold uppercase tracking-[0.16em] text-[#1b7a38]">Registro de actividades</p>
+            <h2 id="galeria-comunicaciones-titulo" class="mt-2 text-3xl font-bold text-[#1e293b]">Galería SUTENS</h2>
+            <p class="mx-auto mt-2 max-w-2xl text-[#475569]">Momentos de encuentro, organización y trabajo colectivo de nuestras directivas y afiliados.</p>
+        </header>
+        <Galeria />
+    </div>
+</section>
+
+<script>
+    const documentosSlider = document.getElementById('documentos-slider');
+    const documentosPuntos = document.getElementById('documentos-puntos');
+    const botonAnterior = document.getElementById('documentos-anterior');
+    const botonSiguiente = document.getElementById('documentos-siguiente');
+
+    function crearTarjetaDocumento(documento) {
+        const tarjeta = document.createElement('article');
+        tarjeta.className = 'documento-publico-card';
+
+        const cubierta = document.createElement('div');
+        cubierta.className = 'documento-publico-cubierta';
+        const icono = document.createElement('span');
+        icono.className = 'documento-publico-icono';
+        icono.setAttribute('aria-hidden', 'true');
+        icono.textContent = documento.extension?.toUpperCase() || 'DOC';
+        const nombreOrganizacion = document.createElement('span');
+        nombreOrganizacion.className = 'documento-publico-marca';
+        nombreOrganizacion.textContent = 'SUTENS · DOCUMENTO OFICIAL';
+        cubierta.append(icono, nombreOrganizacion);
+
+        const contenido = document.createElement('div');
+        contenido.className = 'documento-publico-contenido';
+        const fecha = document.createElement('time');
+        fecha.className = 'documento-publico-fecha';
+        fecha.dateTime = documento.fecha_publicacion;
+        fecha.textContent = new Date(documento.fecha_publicacion).toLocaleDateString('es-CO', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+        });
+        const tipo = document.createElement('span');
+        tipo.className = 'documento-publico-tipo';
+        tipo.textContent = documento.tipo_documento;
+        const titulo = document.createElement('h3');
+        titulo.className = 'documento-publico-titulo';
+        titulo.textContent = documento.titulo;
+        const descripcion = document.createElement('p');
+        descripcion.className = 'documento-publico-descripcion';
+        descripcion.textContent = documento.descripcion || 'Sin descripción adicional.';
+        const descarga = document.createElement('a');
+        descarga.className = 'documento-publico-descarga';
+        descarga.href = `/api/public/documentos/${encodeURIComponent(documento.id_documento)}/descargar`;
+        descarga.setAttribute('aria-label', `Descargar ${documento.titulo}`);
+        descarga.textContent = 'Descargar documento';
+        contenido.append(fecha, tipo, titulo, descripcion, descarga);
+        tarjeta.append(cubierta, contenido);
+        return tarjeta;
+    }
+
+    function cantidadDocumentosPorPagina() {
+        if (window.matchMedia('(min-width: 1024px)').matches) return 3;
+        if (window.matchMedia('(min-width: 640px)').matches) return 2;
+        return 1;
+    }
+
+    function actualizarPuntos() {
+        const tarjetas = [...documentosSlider.querySelectorAll('.documento-publico-card')];
+        const porPagina = cantidadDocumentosPorPagina();
+        const totalPaginas = Math.ceil(tarjetas.length / porPagina);
+        const paginaActual = Math.min(totalPaginas - 1, Math.round(documentosSlider.scrollLeft / documentosSlider.clientWidth));
+        documentosPuntos.replaceChildren();
+        for (let pagina = 0; pagina < totalPaginas; pagina += 1) {
+            const punto = document.createElement('button');
+            punto.type = 'button';
+            punto.className = `documentos-punto${pagina === paginaActual ? ' activo' : ''}`;
+            punto.setAttribute('aria-label', `Ir a la página ${pagina + 1}`);
+            punto.setAttribute('aria-current', pagina === paginaActual ? 'true' : 'false');
+            punto.addEventListener('click', () => {
+                documentosSlider.scrollTo({ left: pagina * documentosSlider.clientWidth, behavior: 'smooth' });
+            });
+            documentosPuntos.append(punto);
+        }
+        const requiereNavegacion = totalPaginas > 1;
+        botonAnterior.hidden = !requiereNavegacion;
+        botonSiguiente.hidden = !requiereNavegacion;
+    }
+
+    botonAnterior.addEventListener('click', () => {
+        documentosSlider.scrollBy({ left: -documentosSlider.clientWidth, behavior: 'smooth' });
+    });
+    botonSiguiente.addEventListener('click', () => {
+        documentosSlider.scrollBy({ left: documentosSlider.clientWidth, behavior: 'smooth' });
+    });
+    documentosSlider.addEventListener('scroll', actualizarPuntos, { passive: true });
+    window.addEventListener('resize', actualizarPuntos);
+
+    async function cargarDocumentosPublicos() {
+        try {
+            const respuesta = await fetch('/api/public/documentos');
+            if (!respuesta.ok) throw new Error('No se pudieron cargar los documentos públicos.');
+            const documentos = await respuesta.json();
+            documentosSlider.replaceChildren();
+            if (documentos.length === 0) {
+                const vacio = document.createElement('p');
+                vacio.className = 'documentos-estado';
+                vacio.textContent = 'Aún no hay documentos destacados para consulta pública.';
+                documentosSlider.append(vacio);
+                documentosPuntos.replaceChildren();
+                botonAnterior.hidden = true;
+                botonSiguiente.hidden = true;
+                return;
+            }
+            documentos.forEach((documento) => documentosSlider.append(crearTarjetaDocumento(documento)));
+            actualizarPuntos();
+        } catch (error) {
+            documentosSlider.replaceChildren();
+            const mensaje = document.createElement('p');
+            mensaje.className = 'documentos-estado';
+            mensaje.textContent = error.message;
+            documentosSlider.append(mensaje);
+        }
+    }
+
+    cargarDocumentosPublicos();
+</script>
+
+<style>
+    :global(.documentos-slider) {
+        display: flex;
+        gap: 1.5rem;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        scroll-behavior: smooth;
+    }
+
+    :global(.documentos-slider::-webkit-scrollbar) {
+        display: none;
+    }
+
+    :global(.documento-publico-card) {
+        display: flex;
+        flex: 0 0 100%;
+        flex-direction: column;
+        overflow: hidden;
+        scroll-snap-align: start;
+        border: 1px solid #e5e1d6;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 5px 16px rgb(30 41 59 / 9%);
+    }
+
+    :global(.documento-publico-cubierta) {
+        display: flex;
+        min-height: 186px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        background: linear-gradient(120deg, #1b7a38, #2e7d32);
+        color: #fff;
+    }
+
+    :global(.documento-publico-icono) {
+        display: grid;
+        width: 62px;
+        height: 72px;
+        place-items: center;
+        border: 2px solid rgb(255 255 255 / 85%);
+        border-radius: 8px;
+        background: rgb(255 255 255 / 15%);
+        font-size: 17px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+    }
+
+    :global(.documento-publico-marca) {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+    }
+
+    :global(.documento-publico-contenido) {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    :global(.documento-publico-fecha) {
+        color: #1b7a38;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    :global(.documento-publico-tipo) {
+        align-self: flex-start;
+        margin-top: 10px;
+        border-radius: 999px;
+        background: #eaf5ec;
+        padding: 4px 10px;
+        color: #14602b;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    :global(.documento-publico-titulo) {
+        margin-top: 10px;
+        color: #1e293b;
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1.3;
+    }
+
+    :global(.documento-publico-descripcion) {
+        display: -webkit-box;
+        overflow: hidden;
+        margin-top: 10px;
+        color: #475569;
+        line-height: 1.55;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+    }
+
+    :global(.documento-publico-descarga) {
+        margin-top: auto;
+        padding-top: 18px;
+        color: #1b7a38;
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    :global(.documentos-flecha) {
+        position: absolute;
+        top: 44%;
+        z-index: 1;
+        display: grid;
+        width: 42px;
+        height: 42px;
+        place-items: center;
+        border: 1px solid #e5e1d6;
+        border-radius: 50%;
+        background: #fff;
+        color: #1b7a38;
+        box-shadow: 0 3px 12px rgb(30 41 59 / 12%);
+    }
+
+    :global(.documentos-flecha:hover) {
+        background: #eaf5ec;
+    }
+
+    :global(.documentos-punto) {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: #b8d8c0;
+    }
+
+    :global(.documentos-punto.activo) {
+        background: #1b7a38;
+    }
+
+    :global(.documentos-estado) {
+        width: 100%;
+        border: 1px solid #e5e1d6;
+        border-radius: 12px;
+        background: #fff;
+        padding: 20px;
+        color: #475569;
+    }
+
+    @media (min-width: 640px) {
+        :global(.documento-publico-card) {
+            flex-basis: calc((100% - 1.5rem) / 2);
+        }
+    }
+
+    @media (min-width: 1024px) {
+        :global(.documento-publico-card) {
+            flex-basis: calc((100% - 3rem) / 3);
+        }
+    }
+</style>

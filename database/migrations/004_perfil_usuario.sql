@@ -1,0 +1,2 @@
+ALTER TABLE persona
+    ADD COLUMN IF NOT EXISTS foto_perfil_url VARCHAR(255);

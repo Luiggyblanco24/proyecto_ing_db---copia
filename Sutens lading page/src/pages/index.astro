@@ -1,0 +1,39 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Bienvenido from '../components/ComponentesIndex/Bienvenido.astro';
+import Historia from '../components/ComponentesNosotros/Historia.astro';
+---
+
+<Layout>
+	<Bienvenido />
+	<section class="bg-white px-4 py-16 sm:py-20">
+		<Historia />
+	</section>
+	<section class="px-4 py-16 sm:py-20">
+		<div class="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
+			<a href="/Secretarias/" class="rounded-xl border border-[#e5e1d6] bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+				<span class="text-sm font-bold uppercase tracking-wider text-[#1b7a38]">Presencia territorial</span>
+				<h2 class="mt-3 text-2xl font-bold text-[#1e293b]">Conoce las subdirectivas</h2>
+				<p class="mt-3 leading-relaxed text-[#475569]">Encuentra a los presidentes, vicepresidentes y equipos administrativos de cada subdirectiva.</p>
+			</a>
+			<a href="/Nosotros/" class="rounded-xl border border-[#e5e1d6] bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+				<span class="text-sm font-bold uppercase tracking-wider text-[#1b7a38]">Organización</span>
+				<h2 class="mt-3 text-2xl font-bold text-[#1e293b]">Nuestra directiva</h2>
+				<p class="mt-3 leading-relaxed text-[#475569]">Conoce quiénes representan a la Directiva Departamental y revisa la galería de actividades.</p>
+			</a>
+			<a href="/Comunicaciones/" class="rounded-xl border border-[#e5e1d6] bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+				<span class="text-sm font-bold uppercase tracking-wider text-[#1b7a38]">Información sindical</span>
+				<h2 class="mt-3 text-2xl font-bold text-[#1e293b]">Comunicaciones</h2>
+				<p class="mt-3 leading-relaxed text-[#475569]">Consulta noticias, documentos y actividades de interés para las y los afiliados.</p>
+			</a>
+		</div>
+	</section>
+	<section class="bg-[#1b7a38] px-4 py-14 text-center text-white">
+		<h2 class="text-3xl font-bold">La unidad fortalece nuestros derechos</h2>
+		<p class="mx-auto mt-3 max-w-2xl text-lg">Afíliate en línea o descarga el formulario para hacer parte de SUTENS.</p>
+		<div class="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+			<a href="/register.html" class="rounded-lg bg-[#f59e0b] px-6 py-3 font-bold text-[#1e293b] hover:bg-[#d97706]">Afíliate en línea</a>
+			<a href="/Formatodeafiliacionsutens.pdf" download class="rounded-lg border border-white px-6 py-3 font-bold text-white hover:bg-white/10">Descargar formulario</a>
+		</div>
+	</section>
+</Layout>

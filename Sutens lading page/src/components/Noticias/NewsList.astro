@@ -1,0 +1,57 @@
+---
+import { sanityClient } from "../../lib/sanity.js";
+
+const query = `*[_type == "news"] | order(publishedAt desc) {
+  _id,
+  title,
+  slug,
+  description,
+  "imageUrl": image.asset->url,
+  publishedAt
+}`;
+
+const news = await sanityClient.fetch(query);
+---
+
+<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    {
+        news.map((item) => (
+            <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                {item.imageUrl && (
+                    <img
+                        src={item.imageUrl}
+                        alt={item.title}
+                        class="w-full h-48 object-cover"
+                        loading="lazy"
+                    />
+                )}
+                <div class="p-4">
+                    <h2 class="text-xl font-bold mb-2 text-gray-800">
+                        {item.title}
+                    </h2>
+                    <p class="text-gray-600 mb-4 line-clamp-3">
+                        {item.description}
+                    </p>
+                    <time class="text-sm text-gray-500">
+                        {new Date(item.publishedAt).toLocaleDateString("es-ES")}
+                    </time>
+                    <a
+                        href={`/news/${item.slug.current}`}
+                        class="mt-3 inline-block text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                        Leer más →
+                    </a>
+                </div>
+            </article>
+        ))
+    }
+</div>
+
+<style>
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>

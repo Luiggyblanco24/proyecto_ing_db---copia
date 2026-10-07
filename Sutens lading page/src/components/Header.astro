@@ -1,0 +1,50 @@
+---
+---
+
+<header class="fixed inset-x-0 top-0 z-50 border-b border-[#e5e1d6] bg-white/95 shadow-sm backdrop-blur">
+  <div class="mx-auto flex min-h-[76px] max-w-7xl items-center justify-between gap-5 px-4 py-2 sm:px-6">
+    <a href="/" class="shrink-0" aria-label="SUTENS, inicio">
+      <img class="h-14 w-[188px] object-contain object-left sm:w-[220px]" src="/brand/sutens-logo-horizontal.png" alt="SUTENS, Defensa de la Educación, Unidad de los Trabajadores" />
+    </a>
+
+    <nav class="hidden items-center gap-6 lg:flex" aria-label="Navegación principal">
+      <a href="/" class="font-semibold text-[#1e293b] hover:text-[#1b7a38]">Inicio</a>
+      <a href="/Secretarias/" class="font-semibold text-[#1e293b] hover:text-[#1b7a38]">Subdirectivas</a>
+      <a href="/Nosotros/" class="font-semibold text-[#1e293b] hover:text-[#1b7a38]">Nosotros</a>
+      <a href="/Comunicaciones/" class="font-semibold text-[#1e293b] hover:text-[#1b7a38]">Comunicaciones</a>
+    </nav>
+
+    <div class="hidden items-center gap-3 lg:flex">
+      <a href="/login.html" class="rounded-lg border border-[#1b7a38] px-4 py-2 font-semibold text-[#1b7a38] hover:bg-[#eaf5ec]">Iniciar sesión</a>
+      <a href="/Afiliate/" class="rounded-lg bg-[#f59e0b] px-4 py-2 font-semibold text-[#1e293b] hover:bg-[#d97706]">Afíliate</a>
+    </div>
+
+    <button id="menu-btn" class="grid h-11 w-11 place-items-center rounded-lg border border-[#e5e1d6] text-[#1b7a38] lg:hidden" type="button" aria-expanded="false" aria-controls="menu" aria-label="Abrir menú">
+      <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+  </div>
+
+  <nav id="menu" class="hidden border-t border-[#e5e1d6] bg-white px-5 py-4 lg:hidden" aria-label="Navegación móvil">
+    <div class="mx-auto flex max-w-7xl flex-col gap-1">
+      <a class="rounded-lg px-3 py-3 font-semibold text-[#1e293b] hover:bg-[#eaf5ec]" href="/">Inicio</a>
+      <a class="rounded-lg px-3 py-3 font-semibold text-[#1e293b] hover:bg-[#eaf5ec]" href="/Secretarias/">Subdirectivas</a>
+      <a class="rounded-lg px-3 py-3 font-semibold text-[#1e293b] hover:bg-[#eaf5ec]" href="/Nosotros/">Nosotros</a>
+      <a class="rounded-lg px-3 py-3 font-semibold text-[#1e293b] hover:bg-[#eaf5ec]" href="/Comunicaciones/">Comunicaciones</a>
+      <a class="rounded-lg px-3 py-3 font-semibold text-[#1b7a38] hover:bg-[#eaf5ec]" href="/login.html">Iniciar sesión</a>
+      <a class="rounded-lg bg-[#f59e0b] px-3 py-3 text-center font-semibold text-[#1e293b]" href="/Afiliate/">Afíliate</a>
+    </div>
+  </nav>
+</header>
+
+<script>
+  const button = document.getElementById('menu-btn');
+  const menu = document.getElementById('menu');
+  button?.addEventListener('click', () => {
+    const willOpen = menu?.classList.contains('hidden') ?? false;
+    menu?.classList.toggle('hidden', !willOpen);
+    button.setAttribute('aria-expanded', String(willOpen));
+    button.setAttribute('aria-label', willOpen ? 'Cerrar menú' : 'Abrir menú');
+  });
+</script>

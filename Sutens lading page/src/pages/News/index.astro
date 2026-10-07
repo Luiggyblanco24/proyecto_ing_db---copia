@@ -1,0 +1,28 @@
+---
+import NewsList from "../../components/Noticias/NewsList.astro";
+---
+
+<html lang="es">
+    <head>
+        <title>Ultimas noticias</title>
+        <meta name="description" content="Últimas noticias y actualizaciones" />
+    </head>
+    <body class="bg-gray-50">
+        <header class="bg-white shadow-sm">
+            <div class="container mx-auto px-4 py-6">
+                <h1 class="text-3xl font-bold text-gray-800">
+                    Lo mas nuevo    
+                </h1>
+            </div>
+        </header>
+
+        <main class="container mx-auto px-4 py-8">
+            <section>
+                <h2 class="text-2xl font-bold mb-6 text-gray-700">
+                    Últimas Noticias
+                </h2>
+                <NewsList />
+            </section>
+        </main>
+    </body>
+</html>

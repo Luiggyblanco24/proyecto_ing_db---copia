@@ -1,0 +1,160 @@
+---
+// src/components/SlotNoticias.astro
+---
+
+<!-- Sección de Noticias con Slider Reutilizable -->
+<section class="py-10">
+    <div class="max-w-6xl mx-auto px-6">
+        <!-- Encabezado -->
+
+        <!-- Slider Container -->
+        <div class="relative">
+            <!-- Slider -->
+            <div class="overflow-hidden">
+                <div id="news-slider" class="flex transition-transform duration-500 ease-in-out">
+                    <!-- Slot para las noticias -->
+                    <slot />
+                </div>
+            </div>
+
+            <!-- Botones de navegación - Solo mostrar si hay más de 1 grupo -->
+            <button id="prev-btn" class="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 bg-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center text-emerald-600 hover:text-emerald-700 hover:shadow-xl transition-all duration-300 z-10 opacity-0 pointer-events-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </button>
+            <button id="next-btn" class="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 bg-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center text-emerald-600 hover:text-emerald-700 hover:shadow-xl transition-all duration-300 z-10 opacity-0 pointer-events-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Indicadores -->
+        <div id="slider-dots" class="flex justify-center space-x-2 mt-8">
+            <!-- Los dots se generan automáticamente con JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        // JavaScript simplificado para el slider
+        document.addEventListener('DOMContentLoaded', function() {
+            const slider = document.getElementById('news-slider');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const dotsContainer = document.getElementById('slider-dots');
+            
+            if (!slider) return;
+            
+            const slides = Array.from(slider.children);
+            let currentIndex = 0;
+            let slidesToShow = 1;
+            
+            function updateSlidesToShow() {
+                const width = window.innerWidth;
+                if (width >= 1024) {
+                    slidesToShow = 3;
+                } else if (width >= 768) {
+                    slidesToShow = 2;
+                } else {
+                    slidesToShow = 1;
+                }
+                return slidesToShow;
+            }
+            
+            function setupSlider() {
+                const slidesToShow = updateSlidesToShow();
+                const totalGroups = Math.ceil(slides.length / slidesToShow);
+                
+                // Configurar ancho de cada slide
+                slides.forEach(slide => {
+                    slide.style.width = `${100 / slidesToShow}%`;
+                    slide.style.flexShrink = '0';
+                });
+                
+                // Configurar botones de navegación
+                if (totalGroups > 1) {
+                    prevBtn.classList.remove('opacity-0', 'pointer-events-none');
+                    nextBtn.classList.remove('opacity-0', 'pointer-events-none');
+                } else {
+                    prevBtn.classList.add('opacity-0', 'pointer-events-none');
+                    nextBtn.classList.add('opacity-0', 'pointer-events-none');
+                }
+                
+                // Configurar dots
+                dotsContainer.innerHTML = '';
+                for (let i = 0; i < totalGroups; i++) {
+                    const dot = document.createElement('button');
+                    dot.className = `w-3 h-3 rounded-full transition-colors duration-300 ${i === 0 ? 'bg-emerald-600' : 'bg-emerald-300'}`;
+                    dot.addEventListener('click', () => goToSlide(i));
+                    dotsContainer.appendChild(dot);
+                }
+                
+                updateSlider();
+            }
+            
+            function goToSlide(index) {
+                const slidesToShow = updateSlidesToShow();
+                const totalGroups = Math.ceil(slides.length / slidesToShow);
+                currentIndex = Math.max(0, Math.min(index, totalGroups - 1));
+                updateSlider();
+            }
+            
+            function updateSlider() {
+                const translateX = currentIndex * 100;
+                slider.style.transform = `translateX(-${translateX}%)`;
+                
+                // Actualizar dots
+                const dots = dotsContainer.querySelectorAll('button');
+                dots.forEach((dot, index) => {
+                    dot.className = `w-3 h-3 rounded-full transition-colors duration-300 ${index === currentIndex ? 'bg-emerald-600' : 'bg-emerald-300'}`;
+                });
+            }
+            
+            // Event listeners
+            prevBtn.addEventListener('click', () => {
+                const slidesToShow = updateSlidesToShow();
+                const totalGroups = Math.ceil(slides.length / slidesToShow);
+                currentIndex = (currentIndex - 1 + totalGroups) % totalGroups;
+                updateSlider();
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                const slidesToShow = updateSlidesToShow();
+                const totalGroups = Math.ceil(slides.length / slidesToShow);
+                currentIndex = (currentIndex + 1) % totalGroups;
+                updateSlider();
+            });
+            
+            
+            
+            // Recalcular en resize
+            window.addEventListener('resize', setupSlider);
+            
+            // Inicializar
+            setupSlider();
+        });
+    </script>
+</section>
+
+<style>
+    /* Estilos base para el slider */
+    #news-slider {
+        display: flex;
+        transition: transform 0.5s ease-in-out;
+    }
+    
+    /* Asegurar que las tarjetas tengan altura consistente */
+    .h-full {
+        height: 100%;
+    }
+    
+    /* Ocultar botones cuando no hay necesidad de navegación */
+    .opacity-0 {
+        opacity: 0;
+    }
+    
+    .pointer-events-none {
+        pointer-events: none;
+    }
+</style>

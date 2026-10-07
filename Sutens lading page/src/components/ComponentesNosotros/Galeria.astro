@@ -1,0 +1,176 @@
+<div class="mx-auto max-w-6xl">
+  <div id="galeria-mensaje" class="mb-5 hidden rounded-lg border border-[#f59e0b] bg-[#fef3c7] p-4 text-[#1e293b]" role="status"></div>
+  <form id="galeria-nueva" class="mb-8 hidden rounded-xl border border-[#e5e1d6] bg-white p-5 shadow-sm">
+    <h3 class="text-lg font-bold text-[#1b7a38]">Agregar foto a la galería</h3>
+    <div class="mt-4 grid gap-4 sm:grid-cols-2">
+      <label class="text-sm font-semibold text-[#1e293b]">Descripción
+        <input name="descripcion" required maxlength="160" class="mt-1 w-full rounded-lg border border-[#cbd5e1] px-3 py-2" placeholder="Describe brevemente la actividad" />
+      </label>
+      <label class="text-sm font-semibold text-[#1e293b]">Imagen JPG, PNG o WebP (máximo 8 MB)
+        <input name="imagen" type="file" accept="image/jpeg,image/png,image/webp" required class="mt-1 block w-full rounded-lg border border-[#cbd5e1] px-3 py-2" />
+      </label>
+    </div>
+    <button class="mt-4 rounded-lg bg-[#1b7a38] px-5 py-2.5 font-semibold text-white hover:bg-[#14602b]" type="submit">Publicar imagen</button>
+  </form>
+  <div id="galeria-fotos" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite">
+    <p class="col-span-full text-center text-[#475569]">Cargando galería…</p>
+  </div>
+</div>
+
+<script>
+  const fotosGaleria = document.getElementById('galeria-fotos');
+  const mensajeGaleria = document.getElementById('galeria-mensaje');
+  const formularioNuevaFoto = document.getElementById('galeria-nueva');
+  let tokenGaleria = null;
+
+  function mostrarMensajeGaleria(texto, error = false) {
+    mensajeGaleria.textContent = texto;
+    mensajeGaleria.classList.remove('hidden');
+    mensajeGaleria.classList.toggle('border-red-300', error);
+    mensajeGaleria.classList.toggle('bg-red-50', error);
+  }
+
+  async function solicitudGaleria(url, options = {}) {
+    const headers = new Headers(options.headers || {});
+    if (tokenGaleria) headers.set('Authorization', `Bearer ${tokenGaleria}`);
+    if (!(options.body instanceof FormData) && options.body) headers.set('Content-Type', 'application/json');
+    const response = await fetch(url, { ...options, headers });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'No se pudo actualizar la galería');
+    return data;
+  }
+
+  function crearTarjetaFoto(foto, permiteEdicion) {
+    const tarjeta = document.createElement('article');
+    tarjeta.className = 'overflow-hidden rounded-xl border border-[#e5e1d6] bg-white shadow-sm';
+    const imagen = document.createElement('img');
+    imagen.className = 'h-64 w-full bg-[#eaf5ec] object-cover';
+    imagen.src = foto.imagen_url;
+    imagen.alt = foto.descripcion;
+    imagen.loading = 'lazy';
+    tarjeta.append(imagen);
+
+    const contenido = document.createElement('div');
+    contenido.className = 'p-4';
+    const descripcion = document.createElement('p');
+    descripcion.className = 'font-semibold text-[#1e293b]';
+    descripcion.textContent = foto.descripcion;
+    contenido.append(descripcion);
+
+    if (permiteEdicion) {
+      const formulario = document.createElement('form');
+      formulario.className = 'mt-4 space-y-3 border-t border-[#e5e1d6] pt-4';
+      const campoDescripcion = document.createElement('label');
+      campoDescripcion.className = 'block text-sm font-semibold text-[#1e293b]';
+      campoDescripcion.textContent = 'Descripción';
+      const inputDescripcion = document.createElement('input');
+      inputDescripcion.name = 'descripcion';
+      inputDescripcion.maxLength = 160;
+      inputDescripcion.required = true;
+      inputDescripcion.value = foto.descripcion;
+      inputDescripcion.className = 'mt-1 w-full rounded-lg border border-[#cbd5e1] px-3 py-2 font-normal';
+      campoDescripcion.append(inputDescripcion);
+
+      const campoImagen = document.createElement('label');
+      campoImagen.className = 'block text-sm font-semibold text-[#1e293b]';
+      campoImagen.textContent = 'Reemplazar imagen (opcional)';
+      const inputImagen = document.createElement('input');
+      inputImagen.name = 'imagen';
+      inputImagen.type = 'file';
+      inputImagen.accept = 'image/jpeg,image/png,image/webp';
+      inputImagen.className = 'mt-1 block w-full text-sm font-normal';
+      campoImagen.append(inputImagen);
+
+      const acciones = document.createElement('div');
+      acciones.className = 'flex flex-wrap gap-2';
+      const guardar = document.createElement('button');
+      guardar.type = 'submit';
+      guardar.className = 'rounded-lg bg-[#1b7a38] px-4 py-2 font-semibold text-white hover:bg-[#14602b]';
+      guardar.textContent = 'Guardar cambios';
+      const eliminar = document.createElement('button');
+      eliminar.type = 'button';
+      eliminar.className = 'rounded-lg border border-[#b91c1c] px-4 py-2 font-semibold text-[#991b1b] hover:bg-red-50';
+      eliminar.textContent = 'Eliminar';
+      eliminar.addEventListener('click', async () => {
+        if (!confirm('¿Quieres eliminar esta imagen de la galería?')) return;
+        try {
+          await solicitudGaleria(`/api/public/galeria/${foto.id_foto}`, { method: 'DELETE' });
+          await cargarGaleria();
+        } catch (error) {
+          mostrarMensajeGaleria(error.message, true);
+        }
+      });
+      formulario.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData();
+        formData.set('descripcion', inputDescripcion.value.trim());
+        if (inputImagen.files?.[0]) formData.set('imagen', inputImagen.files[0]);
+        try {
+          await solicitudGaleria(`/api/public/galeria/${foto.id_foto}`, { method: 'PATCH', body: formData });
+          mostrarMensajeGaleria('La imagen de la galería se actualizó.');
+          await cargarGaleria();
+        } catch (error) {
+          mostrarMensajeGaleria(error.message, true);
+        }
+      });
+      acciones.append(guardar, eliminar);
+      formulario.append(campoDescripcion, campoImagen, acciones);
+      contenido.append(formulario);
+    }
+    tarjeta.append(contenido);
+    return tarjeta;
+  }
+
+  async function cargarGaleria() {
+    try {
+      const fotos = await solicitudGaleria('/api/public/galeria');
+      fotosGaleria.replaceChildren();
+      if (fotos.length === 0) {
+        const vacio = document.createElement('p');
+        vacio.className = 'col-span-full rounded-xl border border-[#e5e1d6] bg-white p-6 text-center text-[#475569]';
+        vacio.textContent = 'La galería aún no tiene imágenes.';
+        fotosGaleria.append(vacio);
+        return;
+      }
+      fotos.forEach((foto) => fotosGaleria.append(crearTarjetaFoto(foto, Boolean(tokenGaleria))));
+    } catch (error) {
+      fotosGaleria.textContent = error.message;
+    }
+  }
+
+  formularioNuevaFoto.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    try {
+      await solicitudGaleria('/api/public/galeria', { method: 'POST', body: new FormData(formularioNuevaFoto) });
+      formularioNuevaFoto.reset();
+      mostrarMensajeGaleria('La imagen se agregó a la galería.');
+      await cargarGaleria();
+    } catch (error) {
+      mostrarMensajeGaleria(error.message, true);
+    }
+  });
+
+  async function iniciarGaleria() {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const profileResponse = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+        if (profileResponse.ok) {
+          const profile = await profileResponse.json();
+          const cargosDepartamentales = [
+            'Presidente General', 'Vicepresidente General', 'Secretario General', 'Fiscal General', 'Tesorero General',
+          ];
+          if (profile.roles?.includes('Administrador SUTENS') || cargosDepartamentales.includes(profile.cargo_departamental)) {
+            tokenGaleria = token;
+            formularioNuevaFoto.classList.remove('hidden');
+          }
+        }
+      } catch {
+        tokenGaleria = null;
+      }
+    }
+    await cargarGaleria();
+  }
+
+  iniciarGaleria();
+</script>

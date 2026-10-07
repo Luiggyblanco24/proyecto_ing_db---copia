@@ -1,0 +1,104 @@
+---
+import SeccionDerecha from "./SeccionDerecha.astro";
+import LlamarAtencion from "./LlamarAtencion.astro"
+---
+
+<section class="py-24 px-4">
+        <div class="max-w-6xl mx-auto">
+            <!-- Encabezado -->
+            <div class="text-center mb-12">
+                <h1 class="text-4xl md:text-5xl font-bold text-dark mb-4">¡Afíliate a SUTENS!</h1>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Forma parte de nuestra organización y fortalece la defensa de tus derechos laborales.
+                </p>
+            </div>
+
+            <div class="mb-10 flex flex-col items-center justify-between gap-5 rounded-xl border border-[#e5e1d6] bg-white p-6 shadow-sm sm:flex-row sm:p-8">
+                <div>
+                    <h2 class="text-xl font-bold text-[#1b7a38]">Elige cómo iniciar tu afiliación</h2>
+                    <p class="mt-2 text-[#475569]">Puedes completar el registro en línea o descargar el formulario oficial.</p>
+                </div>
+                <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+                    <a href="/register.html" class="rounded-lg bg-[#f59e0b] px-5 py-3 text-center font-semibold text-[#1e293b] hover:bg-[#d97706]">Afiliarme en línea</a>
+                    <a href="/Formatodeafiliacionsutens.pdf" download class="rounded-lg border border-[#1b7a38] px-5 py-3 text-center font-semibold text-[#1b7a38] hover:bg-[#eaf5ec]">Descargar formulario</a>
+                </div>
+            </div>
+
+            <!-- Contenido principal -->
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Columna izquierda - Pasos -->
+                <div class="lg:w-2/3 bg-white rounded-xl shadow-lg p-6 md:p-8">
+                    <h2 class="text-2xl font-bold text-primary mb-6">Proceso de Afiliación</h2>
+                    
+                    <!-- Paso 1 -->
+                    <div class="flex flex-col md:flex-row items-start mb-8">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary flex items-center justify-center font-bold mr-4 mb-4 md:mb-0">1</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-dark mb-2">Descarga el Formulario</h3>
+                            <p class="text-gray-600 mb-4">
+                                Obtén el formulario de afiliación en formato PDF listo para imprimir y llenar.
+                            </p>
+                            <a
+                            href="/Formatodeafiliacionsutens.pdf"
+                            download
+                            class="bg-[#1b7a38] hover:bg-[#14602b] text-white px-4 py-2 rounded-lg">
+                            Descargar Formato
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Paso 2 -->
+                    <div class="flex flex-col md:flex-row items-start mb-8">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary  flex items-center justify-center font-bold mr-4 mb-4 md:mb-0">2</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-dark mb-2">Completa la Información</h3>
+                            <p class="text-gray-600 mb-2">
+                                Llena cuidadosamente todos los campos del formulario con tus datos:
+                            </p>
+                            <ul class="list-disc pl-5 text-gray-600 grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">
+                                <li>Datos personales completos</li>
+                                <li>Información de contacto</li>
+                                <li>Datos laborales</li>
+                                <li>Firma y fecha</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Paso 3 -->
+                    <div class="flex flex-col md:flex-row items-start mb-8">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary flex items-center justify-center font-bold mr-4 mb-4 md:mb-0">3</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-dark mb-2">Envía el Formulario</h3>
+                            <p class="text-gray-600 mb-4">
+                                Una vez completado, envía el formulario escaneado o fotografiado a nuestro correo oficial.
+                            </p>
+                            <div class="bg-secondary p-4 rounded-lg border-l-4 border-primary">
+                                <p class="font-medium text-primary">Correo para envío:</p>
+                                <p class="text-lg font-semibold text-dark">afiliaciones@sutens.org</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Paso 4 -->
+                    <div class="flex flex-col md:flex-row items-start">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary  flex items-center justify-center font-bold mr-4 mb-4 md:mb-0">4</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-dark mb-2">Confirmación</h3>
+                            <p class="text-gray-600">
+                                Recibirás un correo de confirmación en un plazo máximo de 48 horas hábiles. 
+                                Si no lo recibes, contáctanos a través de nuestros canales oficiales.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="lg:w-1/3 ">
+                    <SeccionDerecha></SeccionDerecha>
+                </div>
+            </div>
+            
+            <div class="mt-12 text-center bg-gradient-to-r from-primary to-blue-800 rounded-xl shadow-lg p-8 text-white">
+                <LlamarAtencion></LlamarAtencion>
+            </div>
+        </div>
+    </section>

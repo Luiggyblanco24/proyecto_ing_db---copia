@@ -1,0 +1,33 @@
+---
+import "../styles/global.css";
+import Footer from '../components/Fotter.astro'
+import Header from '../components/Header.astro';
+
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="theme-color" content="#1B7A38" />
+		<meta name="description" content="SUTENS: Defensa de la Educación, Unidad de los Trabajadores." />
+		<link rel="icon" type="image/svg+xml" href="/brand/sutens-icono.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>SUTENS | Defensa de la Educación</title>
+	</head>
+	<body>
+		<Header></Header>
+		<slot />
+		<Footer></Footer>
+	</body>
+</html>
+
+<style>
+	html,
+	body {
+		margin: 0;
+		width: 100%;
+		min-height: 100%;
+	}
+</style>

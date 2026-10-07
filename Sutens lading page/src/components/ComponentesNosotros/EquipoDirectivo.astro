@@ -1,0 +1,59 @@
+<div class="mx-auto max-w-6xl">
+  <div class="mb-10 text-center">
+    <p class="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-[#1b7a38]">Representación sindical</p>
+    <h2 class="text-3xl font-bold text-[#1e293b] sm:text-4xl">Directiva Departamental</h2>
+    <p class="mx-auto mt-3 max-w-2xl text-[#475569]">Conoce a quienes representan a SUTENS a nivel departamental. La información se actualiza cuando cambia la asignación de cargos.</p>
+  </div>
+  <div id="equipo-departamental" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite">
+    <p class="col-span-full text-center text-[#475569]">Cargando integrantes de la directiva…</p>
+  </div>
+</div>
+
+<script>
+  const equipo = document.getElementById('equipo-departamental');
+
+  function crearTarjeta(integrante) {
+    const card = document.createElement('article');
+    card.className = 'overflow-hidden rounded-xl border border-[#e5e1d6] bg-white shadow-sm';
+    const imagen = document.createElement('img');
+    imagen.className = 'h-64 w-full bg-[#eaf5ec] object-cover';
+    imagen.alt = `Foto de ${integrante.nombre}`;
+    if (integrante.foto) imagen.src = integrante.foto;
+    else {
+      imagen.src = '/brand/sutens-icono.svg';
+      imagen.classList.add('object-contain', 'p-10');
+    }
+    const contenido = document.createElement('div');
+    contenido.className = 'p-5 text-center';
+    const nombre = document.createElement('h3');
+    nombre.className = 'text-xl font-bold text-[#1e293b]';
+    nombre.textContent = integrante.nombre;
+    const cargo = document.createElement('p');
+    cargo.className = 'mt-2 font-semibold text-[#1b7a38]';
+    cargo.textContent = integrante.cargo;
+    contenido.append(nombre, cargo);
+    card.append(imagen, contenido);
+    return card;
+  }
+
+  async function cargarEquipoDepartamental() {
+    try {
+      const response = await fetch('/api/public/directivas/departamental');
+      if (!response.ok) throw new Error('No se pudo cargar la directiva');
+      const integrantes = await response.json();
+      equipo.replaceChildren();
+      if (integrantes.length === 0) {
+        const vacio = document.createElement('p');
+        vacio.className = 'col-span-full rounded-xl border border-[#e5e1d6] bg-white p-6 text-center text-[#475569]';
+        vacio.textContent = 'La información de los integrantes de la directiva aún no está disponible.';
+        equipo.append(vacio);
+        return;
+      }
+      integrantes.forEach((integrante) => equipo.append(crearTarjeta(integrante)));
+    } catch {
+      equipo.textContent = 'No fue posible cargar la información de la directiva. Intenta actualizar la página.';
+    }
+  }
+
+  cargarEquipoDepartamental();
+</script>

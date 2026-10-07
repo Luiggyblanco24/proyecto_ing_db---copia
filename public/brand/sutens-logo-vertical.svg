@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 235 136" role="img" aria-label="SUTENS">
+  <g transform="translate(81.5,0)">
+    <rect width="72" height="72" rx="18" fill="#1B7A38"/>
+    <path d="M12 30Q24 24 36 33V58Q24 50 12 55Z" fill="#FFFFFF"/>
+    <path d="M60 30Q48 24 36 33V58Q48 50 60 55Z" fill="#FFFFFF" opacity="0.88"/>
+    <rect x="32" y="8" width="8" height="14" rx="1.5" fill="#F59E0B"/>
+    <polygon points="32,22 40,22 36,31" fill="#F59E0B"/>
+  </g>
+  <g transform="translate(0,92)">
+    <g fill="none" stroke="#1B7A38" stroke-width="8">
+      <path d="M28 13A12 9 0 0 0 4 13A12 9 0 0 0 16 22A12 9 0 0 1 28 31A12 9 0 0 1 16 40A12 9 0 0 1 4 31"/>
+      <path transform="translate(39,0)" d="M4 0V27A13 13 0 0 0 30 27V0"/>
+      <path transform="translate(80,0)" d="M0 4H36M18 4V44"/>
+      <path transform="translate(123,0)" d="M4 0V44M0 4H30M0 22H26M0 40H30"/>
+      <path transform="translate(203,0)" d="M28 13A12 9 0 0 0 4 13A12 9 0 0 0 16 22A12 9 0 0 1 28 31A12 9 0 0 1 16 40A12 9 0 0 1 4 31"/>
+    </g>
+    <polygon transform="translate(160,0)" fill="#1B7A38" points="0,0 8,0 28,27 28,0 36,0 36,44 28,44 8,17 8,44 0,44"/>
+  </g>
+</svg>

@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1b7a38;
+  --color-secondary: #fff;
+  --color-accent: #f59e0b;
+  --color-dark: #1e293b;
+  --color-emerald-600: #1b7a38;
+  --color-emerald-700: #14602b;
+}
+
+:root {
+  color: #1e293b;
+  background: #fff;
+  font-family: Inter, "Open Sans", Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-width: 320px;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 3px;
+}

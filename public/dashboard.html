@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SUTENS - Sindicato Unitario de Trabajadores de la Educación de Norte de Santander</title>
+  <link rel="icon" type="image/svg+xml" href="/brand/sutens-icono.svg" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="marca" href="/dashboard.html" aria-label="SUTENS, inicio">
+      <img src="/brand/sutens-logo-horizontal.svg" alt="SUTENS" />
+    </a>
+    <button id="btn-menu-movil" class="boton-menu-movil" type="button" aria-label="Abrir menú de navegación" aria-controls="nav-vistas" aria-expanded="false">
+      <span class="icono-menu" aria-hidden="true"><span></span><span></span><span></span></span>
+      <span class="texto-menu">Menú</span>
+    </button>
+    <nav id="nav-vistas" class="nav-vistas" aria-label="Navegación principal">
+      <button class="nav-vista activo" data-vista="vista-inicio">Inicio</button>
+      <button class="nav-vista" data-vista="vista-calendario">Calendario</button>
+      <button class="nav-vista" data-vista="vista-biblioteca">Biblioteca sindical</button>
+      <button class="nav-vista" data-vista="vista-biblioteca-educativa">Biblioteca educativa</button>
+      <button class="nav-vista" data-vista="vista-directorio">Estructura sindical</button>
+      <button id="nav-afiliados" class="nav-vista" data-vista="vista-afiliados" hidden>Afiliados</button>
+      <button id="nav-administracion" class="nav-vista" data-vista="vista-administracion" hidden>Administración</button>
+      <button class="nav-vista" data-vista="vista-cuenta">Mi cuenta</button>
+    </nav>
+    <div class="usuario-info">
+      <img id="avatar-topbar" class="avatar avatar-pequeno" alt="Foto de perfil" hidden />
+      <span id="nombre-usuario"></span>
+      <span id="roles-usuario"></span>
+      <button class="btn btn-secundario btn-sm" onclick="cerrarSesion()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main id="vista-inicio" class="contenido vista">
+    <section class="bienvenida">
+      <p class="sobrelinea">SINDICATO UNITARIO · NORTE DE SANTANDER</p>
+      <h1 id="titulo-bienvenida">Bienvenido</h1>
+      <p class="eslogan-institucional">“Defensa de la Educación, Unidad de los Trabajadores”</p>
+      <p id="detalle-bienvenida"></p>
+    </section>
+    <section id="estadisticas-afiliacion" class="estadisticas-afiliacion" aria-live="polite" hidden>
+      <div class="estadisticas-encabezado">
+        <div>
+          <p class="sobrelinea">PADRÓN SINDICAL</p>
+          <h2 id="titulo-estadisticas-afiliacion">Afiliación SUTENS</h2>
+        </div>
+        <p id="mensaje-estadisticas-afiliacion" class="mensaje"></p>
+      </div>
+      <div id="contenido-estadisticas-afiliacion"></div>
+    </section>
+    <section id="recordatorio-evento" class="recordatorio-evento" hidden>
+      <span class="sobrelinea">PRÓXIMA ACTIVIDAD</span>
+      <div>
+        <strong id="recordatorio-titulo"></strong>
+        <p id="recordatorio-detalle"></p>
+      </div>
+      <button class="btn btn-cta btn-sm" type="button" data-abrir-calendario>Ver calendario</button>
+    </section>
+    <div id="opciones-inicio" class="opciones-inicio"></div>
+  </main>
+
+  <main id="vista-calendario" class="contenido vista" hidden>
+    <div class="panel-header">
+      <div>
+        <p class="sobrelinea">AGENDA SINDICAL</p>
+        <h2>Calendario de actividades</h2>
+      </div>
+      <div class="panel-actions">
+        <button id="btn-crear-evento" class="btn btn-primario" type="button" hidden>+ Crear actividad</button>
+        <button id="btn-recargar-calendario" class="btn btn-secundario" type="button">Actualizar</button>
+      </div>
+    </div>
+    <div id="mensaje-calendario" class="mensaje"></div>
+    <form id="form-crear-evento" class="form-evento" hidden>
+      <h3>Nueva actividad</h3>
+      <div class="fila">
+        <div>
+          <label for="evento-titulo">Actividad *</label>
+          <input id="evento-titulo" maxlength="200" required placeholder="Ej. Reunión de afiliados" />
+        </div>
+        <div>
+          <label for="evento-tipo">Tipo *</label>
+          <select id="evento-tipo" required>
+            <option>Reunión</option><option>Asamblea</option><option>Capacitación</option><option>Actividad</option><option>Otro</option>
+          </select>
+        </div>
+      </div>
+      <div id="campo-evento-subdirectiva">
+        <label for="evento-subdirectiva">Subdirectiva *</label>
+        <select id="evento-subdirectiva" required></select>
+      </div>
+      <div class="fila">
+        <div>
+          <label for="evento-inicio">Fecha y hora de inicio *</label>
+          <input id="evento-inicio" type="datetime-local" required />
+        </div>
+        <div>
+          <label for="evento-fin">Fecha y hora de finalización</label>
+          <input id="evento-fin" type="datetime-local" />
+        </div>
+      </div>
+      <label for="evento-lugar">Lugar</label>
+      <input id="evento-lugar" maxlength="200" />
+      <label for="evento-descripcion">Detalles</label>
+      <textarea id="evento-descripcion" rows="3" maxlength="4000"></textarea>
+      <div class="acciones-cuenta">
+        <button class="btn btn-secundario" id="btn-cancelar-evento" type="button">Cancelar</button>
+        <button class="btn btn-primario" type="submit">Guardar actividad</button>
+      </div>
+    </form>
+    <div id="lista-eventos" class="lista-eventos"></div>
+  </main>
+
+  <main id="vista-cuenta" class="contenido vista" hidden>
+    <div class="panel-header">
+      <div>
+        <p class="sobrelinea">CUENTA PERSONAL</p>
+        <h2>Mi cuenta</h2>
+      </div>
+    </div>
+    <div id="mensaje-cuenta" class="mensaje"></div>
+    <section class="cuenta-layout">
+      <div class="cuenta-foto">
+        <img id="avatar-cuenta" class="avatar avatar-grande" alt="Foto de perfil" hidden />
+        <div id="avatar-iniciales" class="avatar avatar-grande avatar-iniciales" aria-hidden="true"></div>
+        <label class="btn btn-secundario" for="foto-perfil">Seleccionar foto</label>
+        <button id="btn-guardar-foto" class="btn btn-primario" type="button" hidden>Guardar foto</button>
+        <input id="foto-perfil" name="foto" type="file" form="form-cuenta" accept="image/jpeg,image/png,image/webp" hidden />
+        <span class="ayuda-campo">JPG, PNG o WebP, máximo 4 MB</span>
+      </div>
+      <form id="form-cuenta" class="form-cuenta">
+        <div class="fila">
+          <div>
+            <label for="cuenta-nombre1">Primer nombre *</label>
+            <input id="cuenta-nombre1" name="nombre1" required maxlength="50" />
+          </div>
+          <div>
+            <label for="cuenta-nombre2">Segundo nombre</label>
+            <input id="cuenta-nombre2" name="nombre2" maxlength="50" />
+          </div>
+        </div>
+        <div class="fila">
+          <div>
+            <label for="cuenta-apellido1">Primer apellido *</label>
+            <input id="cuenta-apellido1" name="apellido1" required maxlength="50" />
+          </div>
+          <div>
+            <label for="cuenta-apellido2">Segundo apellido</label>
+            <input id="cuenta-apellido2" name="apellido2" maxlength="50" />
+          </div>
+        </div>
+        <label for="cuenta-correo">Correo *</label>
+        <input id="cuenta-correo" name="correo" type="email" required maxlength="120" />
+        <div class="fila">
+          <div>
+            <label for="cuenta-contrasena-actual">Contraseña actual</label>
+            <input id="cuenta-contrasena-actual" name="contrasenaActual" type="password" autocomplete="current-password" />
+          </div>
+          <div>
+            <label for="cuenta-contrasena-nueva">Nueva contraseña</label>
+            <input id="cuenta-contrasena-nueva" name="nuevaContrasena" type="password" minlength="8" autocomplete="new-password" />
+          </div>
+        </div>
+        <div class="acciones-cuenta">
+          <button type="submit" class="btn btn-primario">Guardar cambios</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <main id="vista-directorio" class="contenido vista" hidden>
+    <div class="panel-header">
+      <div>
+        <p class="sobrelinea">ORGANIZACIÓN</p>
+        <h2>Subdirectivas, instituciones y sedes</h2>
+      </div>
+      <div class="panel-actions">
+        <button id="btn-crear-subdirectiva" class="btn btn-secundario" style="display: none;">Crear subdirectiva</button>
+        <button id="btn-crear-institucion" class="btn btn-secundario" style="display: none;">Crear institución educativa</button>
+        <button id="btn-crear-sede" class="btn btn-secundario" style="display: none;">Crear sede</button>
+        <button id="btn-recargar-directorio" class="btn btn-secundario">Actualizar</button>
+      </div>
+    </div>
+    <div id="mensaje-directorio" class="mensaje"></div>
+    <div class="tabla-wrapper tabla-estructura">
+      <table>
+        <thead><tr><th>Subdirectiva</th><th>Instituciones educativas y sedes</th></tr></thead>
+        <tbody id="cuerpo-directorio"><tr><td colspan="2">Selecciona esta vista para consultar la estructura.</td></tr></tbody>
+      </table>
+    </div>
+  </main>
+
+  <main id="vista-biblioteca" class="contenido vista" hidden>
+    <div class="panel-header">
+      <div>
+        <p class="sobrelinea">DOCUMENTACIÓN SINDICAL</p>
+        <h2>Biblioteca sindical</h2>
+      </div>
+      <div class="panel-actions">
+        <button id="btn-subir-documento" class="btn btn-primario" type="button" hidden>+ Subir documento</button>
+        <button id="btn-recargar-biblioteca" class="btn btn-secundario" type="button">Actualizar</button>
+      </div>
+    </div>
+    <div id="mensaje-biblioteca" class="mensaje"></div>
+    <div class="filtros-afiliados filtros-biblioteca">
+      <input id="filtro-biblioteca-q" type="search" placeholder="Buscar por título o detalle" aria-label="Buscar documentos" />
+      <select id="filtro-biblioteca-categoria" aria-label="Filtrar por categoría">
+        <option value="">Todas las categorías</option>
+      </select>
+    </div>
+    <form id="form-biblioteca" class="form-evento" hidden>
+      <h3 id="titulo-form-biblioteca">Agregar documento sindical</h3>
+      <input id="documento-id" name="id_documento" type="hidden" />
+      <div class="fila">
+        <div>
+          <label for="documento-titulo">Título *</label>
+          <input id="documento-titulo" name="titulo" required maxlength="200" />
+        </div>
+        <div>
+          <label for="documento-categoria">Categoría *</label>
+          <select id="documento-categoria" name="id_categoria" required></select>
+        </div>
+      </div>
+      <div id="campo-documento-subdirectiva" hidden>
+        <label for="documento-subdirectiva">Subdirectiva</label>
+        <select id="documento-subdirectiva" name="id_subdirectiva"></select>
+      </div>
+      <label for="documento-descripcion">Descripción</label>
+      <textarea id="documento-descripcion" name="descripcion" rows="3" maxlength="4000"></textarea>
+      <div id="campo-documento-publico" class="campo-publicacion" hidden>
+        <label class="control-publicacion" for="documento-publico">
+          <input id="documento-publico" name="publico" type="checkbox" value="true" />
+          <span>Mostrar este documento en Comunicaciones públicas</span>
+        </label>
+        <p class="ayuda-campo">Los documentos marcados aquí aparecerán en el slider de Comunicaciones.</p>
+      </div>
+      <label id="label-documento-archivo" for="documento-archivo">Archivo PDF o Word *</label>
+      <input id="documento-archivo" name="archivo" type="file" accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.doc,.docx" required />
+      <span id="ayuda-documento-archivo" class="ayuda-campo">PDF, DOC o DOCX, máximo 20 MB</span>
+      <div class="acciones-cuenta">
+        <button id="btn-cancelar-documento" class="btn btn-secundario" type="button">Cancelar</button>
+        <button id="btn-guardar-documento" class="btn btn-primario" type="submit">Publicar documento</button>
+      </div>
+    </form>
+    <div id="lista-biblioteca" class="lista-documentos"></div>
+  </main>
+
+  <main id="vista-biblioteca-educativa" class="contenido vista" hidden>
+    <div class="panel-header">
+      <div>
+        <p class="sobrelinea">MATERIALES PARA LA ENSEÑANZA</p>
+        <h2>Biblioteca educativa</h2>
+      </div>
+      <div class="panel-actions">
+        <button id="btn-subir-material-educativo" class="btn btn-primario" type="button">+ Compartir material</button>
+        <button id="btn-recargar-material-educativo" class="btn btn-secundario" type="button">Actualizar</button>
+      </div>
+    </div>
+    <div id="mensaje-biblioteca-educativa" class="mensaje"></div>
+    <form id="form-material-educativo" class="form-evento" hidden>
+      <h3>Compartir material educativo</h3>
+      <label for="material-educativo-titulo">Título *</label>
+      <input id="material-educativo-titulo" name="titulo" maxlength="200" required />
+      <label for="material-educativo-tipo">Tipo de material *</label>
+      <select id="material-educativo-tipo" name="tipo_recurso" required>
+        <option value="guia">Guía para un grado y materia</option>
+        <option value="metodologia_apoyo">Metodología de apoyo para docentes</option>
+      </select>
+      <div id="campos-clasificacion-guia" class="fila">
+        <div>
+          <label for="material-educativo-grado">Grado *</label>
+          <input id="material-educativo-grado" name="grado" maxlength="30" placeholder="Ej. 6°, 10° o primaria" required />
+        </div>
+        <div>
+          <label for="material-educativo-materia">Materia *</label>
+          <select id="material-educativo-materia" name="id_materia" required></select>
+        </div>
+      </div>
+      <label for="material-educativo-descripcion">Descripción</label>
+      <textarea id="material-educativo-descripcion" name="descripcion" rows="3" maxlength="4000" placeholder="Explica para qué sirve o cómo puede usarse este material"></textarea>
+      <label for="material-educativo-archivo">Archivo PDF o Word *</label>
+      <input id="material-educativo-archivo" name="archivo" type="file" accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.doc,.docx" required />
+      <span class="ayuda-campo">PDF, DOC o DOCX, máximo 20 MB. Las metodologías de apoyo son generales y no requieren grado ni materia.</span>
+      <div class="acciones-cuenta">
+        <button id="btn-cancelar-material-educativo" class="btn btn-secundario" type="button">Cancelar</button>
+        <button class="btn btn-primario" type="submit">Compartir material</button>
+      </div>
+    </form>
+    <div id="lista-biblioteca-educativa" class="biblioteca-educativa-grupos"></div>
+  </main>
+
+  <main id="vista-afiliados" class="contenido vista" hidden>
+    <div class="panel-header">
+      <div>
+        <p class="sobrelinea">TU SUBDIRECTIVA</p>
+        <h2 id="titulo-afiliados">Afiliados</h2>
+      </div>
+      <button id="btn-recargar-afiliados" class="btn btn-secundario">Actualizar</button>
+    </div>
+    <div id="mensaje-afiliados" class="mensaje"></div>
+    <div class="filtros-afiliados filtros-padron">
+      <input id="filtro-local-q" type="search" placeholder="Nombre o cédula" aria-label="Buscar afiliados por nombre o cédula" />
+      <select id="filtro-local-cargo" aria-label="Filtrar por cargo sindical"><option value="">Todos los cargos</option></select>
+      <select id="filtro-local-rol" aria-label="Filtrar por rol educativo"><option value="">Todos los roles educativos</option></select>
+      <select id="filtro-local-subdirectiva" aria-label="Filtrar por subdirectiva"><option value="">Todas las subdirectivas</option></select>
+      <button id="btn-buscar-local" class="btn btn-secundario" type="button">Buscar</button>
+      <button id="btn-limpiar-local" class="btn btn-secundario" type="button">Limpiar</button>
+    </div>
+    <div id="acciones-locales" class="seleccion-afiliados" hidden>
+      <span id="contador-local">0 seleccionados</span>
+      <button class="btn btn-secundario btn-sm" type="button" data-accion-seleccion="copiar">Copiar correos</button>
+      <button class="btn btn-secundario btn-sm" type="button" data-accion-seleccion="correo-local">Redactar en CCO</button>
+      <button class="btn btn-secundario btn-sm" type="button" data-accion-seleccion="xlsx-local">Excel</button>
+      <button class="btn btn-secundario btn-sm" type="button" data-accion-seleccion="pdf-local">PDF</button>
+    </div>
+    <div class="tabla-wrapper tabla-afiliados">
+      <table>
+        <thead><tr><th><input class="seleccionar-todos" data-scope="local" type="checkbox" aria-label="Seleccionar afiliados visibles" /></th><th>Nombre</th><th>Cédula</th><th>Correo</th><th>Cargo sindical</th><th>Institución educativa</th><th>Sede</th><th>Rol en sede</th><th>Estado sindical</th></tr></thead>
+        <tbody id="cuerpo-afiliados"><tr><td colspan="9">Cargando afiliados...</td></tr></tbody>
+      </table>
+    </div>
+  </main>
+
+  <main id="vista-administracion" class="contenido vista" hidden>
+    <div class="panel-header">
+      <div>
+        <p class="sobrelinea">GESTIÓN</p>
+        <h2>Afiliados y solicitudes</h2>
+      </div>
+      <div class="panel-actions">
+        <button id="btn-registrar" class="btn btn-primario" style="width: auto; display: none;">+ Registrar usuario</button>
+      </div>
+    </div>
+
+    <div id="mensaje" class="mensaje"></div>
+
+    <div class="admin-modos" role="group" aria-label="Vista de administración">
+      <button id="btn-modo-pendientes" class="admin-modo activo" type="button" aria-pressed="true">
+        Solicitudes pendientes
+      </button>
+      <button id="btn-modo-busqueda" class="admin-modo" type="button" aria-pressed="false">
+        Buscar afiliado para actualizar
+      </button>
+    </div>
+    <div class="filtros-afiliados filtros-administracion">
+      <input id="filtro-global-q" type="search" placeholder="Filtrar pendientes por nombre o cédula" aria-label="Buscar afiliados por nombre o cédula" />
+      <select id="filtro-global-cargo" aria-label="Filtrar por cargo sindical"><option value="">Todos los cargos</option></select>
+      <select id="filtro-global-rol" aria-label="Filtrar por rol educativo"><option value="">Todos los roles educativos</option></select>
+      <select id="filtro-global-subdirectiva" aria-label="Filtrar por subdirectiva"><option value="">Todas las subdirectivas</option></select>
+      <select id="filtro-global-estado" aria-label="Filtrar por estado de solicitud" hidden>
+        <option value="pendiente" selected>Solicitudes pendientes</option><option value="">Todos los estados</option><option value="aprobado">Aprobado</option><option value="rechazado">Rechazado</option>
+      </select>
+      <select id="filtro-global-sindical" aria-label="Filtrar por estado sindical">
+        <option value="">Todos los estados sindicales</option><option value="activo">Activo</option><option value="inactivo">Inactivo</option>
+      </select>
+      <button id="btn-buscar-global" class="btn btn-secundario" type="button">Buscar</button>
+      <button id="btn-limpiar-global" class="btn btn-secundario" type="button">Limpiar</button>
+    </div>
+    <div id="acciones-globales" class="seleccion-afiliados" hidden>
+      <span id="contador-global">0 seleccionados</span>
+      <button class="btn btn-secundario btn-sm" type="button" data-accion-seleccion="copiar">Copiar correos</button>
+      <button class="btn btn-secundario btn-sm" type="button" data-accion-seleccion="correo-global">Redactar en CCO</button>
+      <button class="btn btn-secundario btn-sm" type="button" data-accion-seleccion="xlsx-global">Excel</button>
+      <button class="btn btn-secundario btn-sm" type="button" data-accion-seleccion="pdf-global">PDF</button>
+    </div>
+
+    <div class="tabla-wrapper tabla-afiliados tabla-administracion">
+      <table>
+        <thead>
+          <tr>
+            <th><input class="seleccionar-todos" data-scope="global" type="checkbox" aria-label="Seleccionar afiliados visibles" /></th>
+            <th>Nombre</th>
+            <th>Cédula</th>
+            <th>Correo</th>
+            <th>Usuario</th>
+            <th>Roles</th>
+            <th>Subdirectiva</th>
+            <th>Cargo sindical</th>
+            <th>Institución educativa</th>
+            <th>Sede</th>
+            <th>Rol en sede</th>
+            <th>Solicitud</th>
+            <th>Estado sindical</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="cuerpo-tabla">
+          <tr><td colspan="14" style="text-align:center; color:#6b7280;">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Modal para registrar usuario (solo admin) -->
+  <div class="modal-fondo" id="modal-registrar">
+    <div class="modal">
+      <h2>Registrar usuario</h2>
+      <div id="mensaje-modal" class="mensaje"></div>
+
+      <form id="form-registrar-admin">
+        <div class="fila">
+          <div>
+            <label>Primer nombre *</label>
+            <input type="text" id="r-nombre1" required />
+          </div>
+          <div>
+            <label>Segundo nombre</label>
+            <input type="text" id="r-nombre2" />
+          </div>
+        </div>
+
+        <div class="fila">
+          <div>
+            <label>Primer apellido *</label>
+            <input type="text" id="r-apellido1" required />
+          </div>
+          <div>
+            <label>Segundo apellido</label>
+            <input type="text" id="r-apellido2" />
+          </div>
+        </div>
+
+        <div class="fila">
+          <div>
+            <label>Cédula *</label>
+            <input type="text" id="r-cedula" required />
+          </div>
+          <div>
+            <label>Fecha de nacimiento</label>
+            <input type="date" id="r-fecha_nacimiento" />
+          </div>
+        </div>
+
+        <div class="fila">
+          <div>
+            <label>Correo *</label>
+            <input type="email" id="r-correo" required />
+          </div>
+          <div>
+            <label>Celular</label>
+            <input type="text" id="r-celular" />
+          </div>
+        </div>
+
+        <div class="fila">
+          <div>
+            <label>Usuario *</label>
+            <input type="text" id="r-usuario" required />
+          </div>
+          <div>
+            <label>Contraseña *</label>
+            <input type="password" id="r-password" required />
+          </div>
+        </div>
+
+        <label>Rol *</label>
+        <select id="r-rol" required>
+          <option value="">Selecciona un rol...</option>
+          <option value="Administrador SUTENS">Administrador SUTENS</option>
+          <option value="Afiliado">Afiliado</option>
+        </select>
+
+        <div style="display: flex; gap: 12px; margin-top: 8px;">
+          <button type="submit" class="btn btn-primario">Registrar</button>
+          <button type="button" class="btn btn-secundario" onclick="cerrarModal()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-fondo" id="modal-roles">
+    <div class="modal">
+      <h2>Actualizar roles</h2>
+      <p id="nombre-afiliado-roles"></p>
+      <div id="mensaje-roles" class="mensaje"></div>
+      <form id="form-roles">
+        <input type="hidden" id="id-afiliado-roles" />
+        <div id="opciones-roles" class="lista-roles"></div>
+        <div style="display: flex; gap: 12px; margin-top: 8px;">
+          <button type="submit" class="btn btn-primario">Guardar roles</button>
+          <button type="button" class="btn btn-secundario" onclick="cerrarModalRoles()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-fondo" id="modal-asignacion">
+    <div class="modal">
+      <h2>Asignación sindical</h2>
+      <p id="nombre-afiliado-asignacion"></p>
+      <div id="mensaje-asignacion" class="mensaje"></div>
+      <form id="form-asignacion">
+        <input type="hidden" id="id-afiliado-asignacion" />
+        <label for="asignacion-subdirectiva">Subdirectiva *</label>
+        <select id="asignacion-subdirectiva" required></select>
+        <label for="asignacion-sede">Institución educativa · sede (opcional)</label>
+        <select id="asignacion-sede"></select>
+        <label for="asignacion-cargo">Cargo en la subdirectiva (opcional)</label>
+        <select id="asignacion-cargo"></select>
+        <label for="asignacion-rol-laboral">Rol laboral en la sede (opcional)</label>
+        <select id="asignacion-rol-laboral"></select>
+        <p class="ayuda-campo">Se conserva el cargo de la Directiva Departamental. La afiliación local puede quedar sin cargo sindical; la sede y el rol laboral se asignan juntos o se dejan sin asignar.</p>
+        <div style="display: flex; gap: 12px; margin-top: 8px;">
+          <button type="submit" class="btn btn-primario">Guardar asignación</button>
+          <button type="button" class="btn btn-secundario" onclick="cerrarModalPanel('modal-asignacion')">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-fondo" id="modal-subdirectiva">
+    <div class="modal">
+      <h2>Crear subdirectiva</h2>
+      <div id="mensaje-subdirectiva" class="mensaje"></div>
+      <form id="form-subdirectiva">
+        <label for="nombre-subdirectiva">Nombre *</label>
+        <input id="nombre-subdirectiva" required maxlength="100" />
+        <div style="display: flex; gap: 12px; margin-top: 8px;">
+          <button type="submit" class="btn btn-primario">Crear</button>
+          <button type="button" class="btn btn-secundario" onclick="cerrarModalPanel('modal-subdirectiva')">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-fondo" id="modal-sede">
+    <div class="modal">
+      <h2>Crear sede</h2>
+      <div id="mensaje-sede" class="mensaje"></div>
+      <form id="form-sede">
+        <label for="sede-institucion">Institución educativa *</label>
+        <select id="sede-institucion" required></select>
+        <label for="nombre-sede">Nombre de la sede *</label>
+        <input id="nombre-sede" required maxlength="100" />
+        <div style="display: flex; gap: 12px; margin-top: 8px;">
+          <button type="submit" class="btn btn-primario">Crear</button>
+          <button type="button" class="btn btn-secundario" onclick="cerrarModalPanel('modal-sede')">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-fondo" id="modal-institucion">
+    <div class="modal">
+      <h2>Crear institución educativa</h2>
+      <div id="mensaje-institucion" class="mensaje"></div>
+      <form id="form-institucion">
+        <label for="institucion-subdirectiva">Subdirectiva *</label>
+        <select id="institucion-subdirectiva" required></select>
+        <label for="nombre-institucion">Nombre de la institución o centro educativo *</label>
+        <input id="nombre-institucion" required maxlength="150" />
+        <div style="display: flex; gap: 12px; margin-top: 8px;">
+          <button type="submit" class="btn btn-primario">Crear institución</button>
+          <button type="button" class="btn btn-secundario" onclick="cerrarModalPanel('modal-institucion')">Cancelar</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-fondo" id="modal-renombrar-estructura">
+    <div class="modal">
+      <h2 id="titulo-renombrar-estructura">Cambiar nombre</h2>
+      <div id="mensaje-renombrar-estructura" class="mensaje"></div>
+      <form id="form-renombrar-estructura">
+        <input id="renombrar-tipo" type="hidden" />
+        <input id="renombrar-id" type="hidden" />
+        <label for="renombrar-nombre">Nombre *</label>
+        <input id="renombrar-nombre" required maxlength="150" />
+        <div style="display: flex; gap: 12px; margin-top: 8px;">
+          <button type="submit" class="btn btn-primario">Guardar nombre</button>
+          <button type="button" class="btn btn-secundario" onclick="cerrarModalPanel('modal-renombrar-estructura')">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>
