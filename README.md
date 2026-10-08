@@ -49,9 +49,10 @@ psql -d sutens -f database/migrations/012_resoluciones_publicas.sql
 psql -d sutens -f database/migrations/013_biblioteca_educativa_secretarios.sql
 psql -d sutens -f database/migrations/014_administradores_sin_cargo_sindical.sql
 psql -d sutens -f database/migrations/015_catalogos_roles_administrables.sql
+psql -d sutens -f database/migrations/016_contrasena_temporal.sql
 ```
 
-> La migración 009 ya fue aplicada en la base existente. Aplica las migraciones posteriores que aún estén pendientes, en orden; no ejecutes otra vez una migración que ya terminó correctamente. La 011 crea la galería pública y carga de forma idempotente sus seis imágenes iniciales. La 012 agrega la opción de publicación pública de documentos sindicales. La 013 habilita la biblioteca educativa y permite varios Secretarios Generales. La 014 quita las asignaciones sindicales y laborales a quienes tengan el rol de acceso Administrador SUTENS, sin quitarles ese rol administrativo. La 015 permite clasificar nuevos cargos sindicales para la Directiva Departamental.
+> La migración 009 ya fue aplicada en la base existente. Aplica las migraciones posteriores que aún estén pendientes, en orden; no ejecutes otra vez una migración que ya terminó correctamente. La 011 crea la galería pública y carga de forma idempotente sus seis imágenes iniciales. La 012 agrega la opción de publicación pública de documentos sindicales. La 013 habilita la biblioteca educativa y permite varios Secretarios Generales. La 014 quita las asignaciones sindicales y laborales a quienes tengan el rol de acceso Administrador SUTENS, sin quitarles ese rol administrativo. La 015 permite clasificar nuevos cargos sindicales para la Directiva Departamental. La 016 habilita el restablecimiento temporal de contraseña e invalida sesiones anteriores.
 
 ### Modelo de datos (resumen)
 
@@ -116,6 +117,7 @@ Al abrir `http://localhost:3000` verás el sitio público de SUTENS:
 | POST | `/api/auth/registrar` | Público | Crea afiliado y cuenta con estado pendiente de validación sindical |
 | POST | `/api/auth/login` | Público | Inicio de sesión (devuelve JWT) |
 | GET | `/api/auth/me` | Autenticado | Perfil del usuario actual |
+| POST | `/api/auth/cambiar-contrasena-temporal` | Autenticado con cambio pendiente | Cambia la contraseña temporal; el resto de la API permanece bloqueada hasta completarlo |
 | GET | `/api/public/directivas/departamental` | Público | Integrantes activos de la Directiva Departamental, con foto de perfil |
 | GET | `/api/public/directivas/subdirectivas` | Público | Presidentes, vicepresidentes y cargos administrativos de las subdirectivas |
 | GET | `/api/public/galeria` | Público | Lista imágenes y descripciones de la galería |
@@ -149,6 +151,7 @@ Al abrir `http://localhost:3000` verás el sitio público de SUTENS:
 | PATCH | `/api/afiliados/:id/estado-sindical` | Administrador o Directiva Principal | Marcar afiliado como `activo` o `inactivo` |
 | POST | `/api/afiliados` | Administrador | Registrar usuario (aprobado + rol) |
 | DELETE | `/api/afiliados/:id` | Administrador | Elimina permanentemente afiliación y cuenta; protege la cuenta propia y al último administrador |
+| POST | `/api/afiliados/:id/contrasena-temporal` | Administrador | Genera una contraseña temporal de un solo uso para el próximo ingreso |
 | PATCH | `/api/afiliados/:id/estado` | Administrador o Secretario General | Aprobar/rechazar solicitud |
 | PATCH | `/api/afiliados/:id/roles` | Administrador | Reemplazar roles de un usuario (`{"roles":["Afiliado"]}`) |
 | GET | `/api/membresia/afiliados?q=texto&cargo=Vicepresidente&rol=Profesor&id_subdirectiva=1` | Administrador o dirigente aprobado | Admin/directiva principal consulta el padrón completo; dirigentes locales consultan su subdirectiva asignada |

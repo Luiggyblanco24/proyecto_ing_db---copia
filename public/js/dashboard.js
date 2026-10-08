@@ -170,6 +170,10 @@ async function descargarAfiliados(formato, scope) {
 async function cargarPerfil() {
   try {
     const perfil = await apiFetch('/api/auth/me');
+    if (perfil.requiere_cambio_contrasena) {
+      window.location.href = '/change-password.html';
+      return;
+    }
     perfilActual = perfil;
     document.getElementById('nombre-usuario').textContent =
       `Hola, ${[perfil.nombre1, perfil.apellido1].filter(Boolean).join(' ')}`;
@@ -1028,6 +1032,7 @@ async function cargarUsuarios() {
         ? `<div class="acciones">
          ${a.estado === 'aprobado' ? `<button class="btn btn-secundario btn-sm" onclick="abrirModalAsignacion(${Number(a.id_afiliado)})">Asignación</button>` : ''}
          ${esAdmin && a.usuario ? `<button class="btn btn-secundario btn-sm" onclick="abrirModalRoles(${Number(a.id_afiliado)})">Actualizar roles</button>` : ''}
+         ${esAdmin && a.usuario && String(a.id_afiliado) !== String(perfilActual?.id_afiliado) ? `<button class="btn btn-secundario btn-sm" onclick="restablecerContrasenaTemporal(${Number(a.id_afiliado)})">Restablecer contraseña</button>` : ''}
          ${esAdmin && String(a.id_afiliado) !== String(perfilActual?.id_afiliado) ? `<button class="btn btn-rojo btn-sm" onclick="eliminarAfiliado(${Number(a.id_afiliado)})">Eliminar</button>` : ''}
          ${puedeAprobar && a.estado === 'pendiente' ? `<button class="btn btn-verde btn-sm" onclick="cambiarEstado(${Number(a.id_afiliado)}, 'aprobado')">Aprobar</button>
              <button class="btn btn-rojo btn-sm" onclick="cambiarEstado(${Number(a.id_afiliado)}, 'rechazado')">Rechazar</button>` : ''}
@@ -1249,6 +1254,23 @@ async function eliminarAfiliado(id) {
     mensaje.textContent = resultado.mensaje;
     mensaje.className = 'mensaje exito';
     await cargarUsuarios();
+  } catch (err) {
+    mensaje.textContent = err.message;
+    mensaje.className = 'mensaje error';
+  }
+}
+
+async function restablecerContrasenaTemporal(id) {
+  const afiliado = usuariosActuales.find((usuario) => Number(usuario.id_afiliado) === id);
+  if (!esAdmin || !afiliado?.usuario) return;
+  if (!window.confirm(`¿Generar una contraseña temporal para ${nombreCompleto(afiliado)}? La contraseña actual dejará de funcionar.`)) return;
+
+  const mensaje = document.getElementById('mensaje');
+  try {
+    const resultado = await apiFetch(`/api/afiliados/${id}/contrasena-temporal`, { method: 'POST' });
+    window.alert(`Contraseña temporal de ${nombreCompleto(afiliado)}:\n\n${resultado.contrasenaTemporal}\n\nCompártela de forma privada. Solo se mostrará esta vez; el afiliado deberá cambiarla al iniciar sesión.`);
+    mensaje.textContent = resultado.mensaje;
+    mensaje.className = 'mensaje exito';
   } catch (err) {
     mensaje.textContent = err.message;
     mensaje.className = 'mensaje error';

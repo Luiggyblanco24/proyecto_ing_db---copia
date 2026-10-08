@@ -3,6 +3,7 @@ import multer from 'multer';
 import {
 	registrar,
 	login,
+	cambiarContrasenaTemporal,
 	me,
 	actualizarPerfil,
 } from '../controllers/auth.controller.js';
@@ -34,6 +35,7 @@ router.post('/registrar', registrar);
 
 // POST /api/auth/login      -> inicio de sesión (devuelve JWT)
 router.post('/login', login);
+router.post('/cambiar-contrasena-temporal', autenticar, cambiarContrasenaTemporal);
 
 // GET /api/auth/me          -> perfil del usuario autenticado
 router.get('/me', autenticar, me);

@@ -17,7 +17,9 @@ form.addEventListener('submit', async (e) => {
     });
 
     setToken(data.token);
-    window.location.href = '/dashboard.html';
+    window.location.href = data.requiere_cambio_contrasena
+      ? '/change-password.html'
+      : '/dashboard.html';
   } catch (err) {
     mensaje.textContent = err.message;
     mensaje.className = 'mensaje error';

@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { randomBytes } from 'node:crypto';
 import { pool, query } from '../config/db.js';
 import { normalizarNombre } from '../utils/nombre.js';
 
@@ -298,6 +299,55 @@ export async function eliminarAfiliado(req, res) {
     await client.query('ROLLBACK').catch(() => {});
     console.error(err);
     return res.status(500).json({ error: 'Error al eliminar el afiliado' });
+  } finally {
+    client.release();
+  }
+}
+
+export async function restablecerContrasenaTemporal(req, res) {
+  const { id } = req.params;
+  if (!/^[1-9]\d*$/.test(id)) {
+    return res.status(400).json({ error: 'El afiliado indicado no es válido' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('SELECT pg_advisory_xact_lock(781204)');
+    const { rows: afiliados } = await client.query(
+      `SELECT u.id_usuario
+       FROM afiliado a
+       JOIN usuario u ON u.id_afiliado = a.id_afiliado
+       WHERE a.id_afiliado = $1
+       FOR UPDATE OF u`,
+      [id]
+    );
+    if (afiliados.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Afiliado con cuenta no encontrado' });
+    }
+    if (String(afiliados[0].id_usuario) === String(req.user.id_usuario)) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'Para cambiar tu propia contraseña, usa Mi cuenta' });
+    }
+
+    const contrasenaTemporal = randomBytes(9).toString('base64url');
+    await client.query(
+      `UPDATE usuario
+       SET password_hash = $1, requiere_cambio_contrasena = TRUE,
+           auth_version = auth_version + 1, updated_at = now()
+       WHERE id_usuario = $2`,
+      [bcrypt.hashSync(contrasenaTemporal, 10), afiliados[0].id_usuario]
+    );
+    await client.query('COMMIT');
+    return res.json({
+      mensaje: 'Contraseña temporal generada. Compártela con el afiliado de forma privada.',
+      contrasenaTemporal,
+    });
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    console.error(err);
+    return res.status(500).json({ error: 'No se pudo restablecer la contraseña' });
   } finally {
     client.release();
   }

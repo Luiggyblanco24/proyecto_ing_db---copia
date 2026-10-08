@@ -130,6 +130,7 @@ export async function login(req, res) {
 
   const { rows } = await query(
     `SELECT u.id_usuario, u.id_afiliado, u.usuario, u.password_hash, u.activo,
+            u.requiere_cambio_contrasena, u.auth_version,
             a.estado AS estado_afiliado,
             COALESCE(array_agg(rs.nombre) FILTER (WHERE rs.nombre IS NOT NULL), '{}') AS roles
      FROM usuario u
@@ -165,18 +166,60 @@ export async function login(req, res) {
       id_afiliado: user.id_afiliado,
       usuario: user.usuario,
       roles: user.roles,
+      auth_version: user.auth_version,
     },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
 
-  return res.json({ token, usuario: user.usuario, roles: user.roles });
+  return res.json({
+    token,
+    usuario: user.usuario,
+    roles: user.roles,
+    requiere_cambio_contrasena: user.requiere_cambio_contrasena,
+  });
+}
+
+export async function cambiarContrasenaTemporal(req, res) {
+  const { nuevaContrasena } = req.body || {};
+  if (typeof nuevaContrasena !== 'string' || nuevaContrasena.length < 8 || Buffer.byteLength(nuevaContrasena, 'utf8') > 72) {
+    return res.status(400).json({ error: 'La nueva contraseña debe tener al menos 8 caracteres y máximo 72 bytes' });
+  }
+
+  try {
+    const { rows } = await query(
+      `UPDATE usuario
+       SET password_hash = $1, requiere_cambio_contrasena = FALSE,
+           auth_version = auth_version + 1, updated_at = now()
+       WHERE id_usuario = $2 AND requiere_cambio_contrasena = TRUE
+       RETURNING auth_version`,
+      [bcrypt.hashSync(nuevaContrasena, 10), req.user.id_usuario]
+    );
+    if (rows.length === 0) {
+      return res.status(409).json({ error: 'La contraseña temporal ya fue cambiada o la cuenta no requiere este cambio' });
+    }
+    const token = jwt.sign(
+      {
+        id_usuario: req.user.id_usuario,
+        id_afiliado: req.user.id_afiliado,
+        usuario: req.user.usuario,
+        roles: req.user.roles,
+        auth_version: rows[0].auth_version,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    );
+    return res.json({ mensaje: 'Contraseña actualizada. Ya puedes continuar.', token });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'No se pudo actualizar la contraseña' });
+  }
 }
 
 // Perfil del usuario autenticado (nombre completo + roles)
 export async function me(req, res) {
   const { rows } = await query(
-    `SELECT u.id_usuario, u.id_afiliado, u.usuario,
+    `SELECT u.id_usuario, u.id_afiliado, u.usuario, u.requiere_cambio_contrasena,
             p.nombre1, p.nombre2, p.apellido1, p.apellido2, p.correo, p.foto_perfil_url,
            a.estado, a.estado_sindical,
            asignacion.id_subdirectiva, asignacion.subdirectiva,

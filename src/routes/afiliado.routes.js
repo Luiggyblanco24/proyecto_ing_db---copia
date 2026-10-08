@@ -4,6 +4,7 @@ import {
   listarRoles,
   actualizarRoles,
   eliminarAfiliado,
+  restablecerContrasenaTemporal,
   cambiarEstado,
   registrarPorAdmin,
 } from '../controllers/afiliado.controller.js';
@@ -35,6 +36,7 @@ router.post('/', autorizar('Administrador SUTENS'), registrarPorAdmin);
 router.patch('/:id/estado', autorizarSecretarioGeneral(), cambiarEstado);
 router.patch('/:id/roles', autorizar('Administrador SUTENS'), actualizarRoles);
 router.delete('/:id', autorizar('Administrador SUTENS'), eliminarAfiliado);
+router.post('/:id/contrasena-temporal', autorizar('Administrador SUTENS'), restablecerContrasenaTemporal);
 router.patch('/:id/asignacion', autorizarDirectivaPrincipal(), asignarAfiliado);
 router.patch('/:id/estado-sindical', autorizarDirectivaPrincipal(), cambiarEstadoSindical);
 

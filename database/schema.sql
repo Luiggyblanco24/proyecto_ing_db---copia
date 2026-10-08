@@ -58,6 +58,8 @@ CREATE TABLE usuario (
                      REFERENCES afiliado(id_afiliado) ON DELETE CASCADE,
     usuario       VARCHAR(50)  NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,          -- hash bcrypt
+    requiere_cambio_contrasena BOOLEAN NOT NULL DEFAULT FALSE,
+    auth_version  INTEGER      NOT NULL DEFAULT 0,
     activo        BOOLEAN      NOT NULL DEFAULT TRUE,
     created_at    TIMESTAMPTZ  NOT NULL DEFAULT now(),
     updated_at    TIMESTAMPTZ  NOT NULL DEFAULT now()
