@@ -393,6 +393,40 @@
         </tbody>
       </table>
     </div>
+
+    <section id="gestion-catalogos-roles" hidden>
+      <div class="panel-header">
+        <div>
+          <p class="sobrelinea">CONFIGURACIÓN</p>
+          <h2>Opciones de cargos y roles</h2>
+        </div>
+      </div>
+      <p class="ayuda-campo">Los cargos que agregues estarán disponibles para asignarlos; no conceden permisos de acceso al sistema automáticamente.</p>
+      <div class="fila">
+        <form id="form-cargo-sindical">
+          <h3>Agregar cargo sindical</h3>
+          <div id="mensaje-cargo-sindical" class="mensaje"></div>
+          <label for="nuevo-cargo-sindical">Nombre *</label>
+          <input id="nuevo-cargo-sindical" maxlength="50" required />
+          <label class="opcion-rol">
+            <input id="nuevo-cargo-repetible" type="checkbox" />
+            <span>Puede repetirse en una subdirectiva</span>
+          </label>
+          <label class="opcion-rol">
+            <input id="nuevo-cargo-departamental" type="checkbox" />
+            <span>Disponible en la Directiva Departamental</span>
+          </label>
+          <button class="btn btn-primario" type="submit">Agregar cargo</button>
+        </form>
+        <form id="form-rol-laboral">
+          <h3>Agregar rol docente</h3>
+          <div id="mensaje-rol-laboral" class="mensaje"></div>
+          <label for="nuevo-rol-laboral">Nombre *</label>
+          <input id="nuevo-rol-laboral" maxlength="50" required />
+          <button class="btn btn-primario" type="submit">Agregar rol docente</button>
+        </form>
+      </div>
+    </section>
   </main>
 
   <!-- Modal para registrar usuario (solo admin) -->

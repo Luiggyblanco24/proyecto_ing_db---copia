@@ -48,9 +48,10 @@ psql -d sutens -f database/migrations/011_galeria_publica.sql
 psql -d sutens -f database/migrations/012_resoluciones_publicas.sql
 psql -d sutens -f database/migrations/013_biblioteca_educativa_secretarios.sql
 psql -d sutens -f database/migrations/014_administradores_sin_cargo_sindical.sql
+psql -d sutens -f database/migrations/015_catalogos_roles_administrables.sql
 ```
 
-> La migración 009 ya fue aplicada en la base existente. Aplica las migraciones posteriores que aún estén pendientes, en orden; no ejecutes otra vez una migración que ya terminó correctamente. La 011 crea la galería pública y carga de forma idempotente sus seis imágenes iniciales. La 012 agrega la opción de publicación pública de documentos sindicales. La 013 habilita la biblioteca educativa y permite varios Secretarios Generales. La 014 quita las asignaciones sindicales y laborales a quienes tengan el rol de acceso Administrador SUTENS, sin quitarles ese rol administrativo.
+> La migración 009 ya fue aplicada en la base existente. Aplica las migraciones posteriores que aún estén pendientes, en orden; no ejecutes otra vez una migración que ya terminó correctamente. La 011 crea la galería pública y carga de forma idempotente sus seis imágenes iniciales. La 012 agrega la opción de publicación pública de documentos sindicales. La 013 habilita la biblioteca educativa y permite varios Secretarios Generales. La 014 quita las asignaciones sindicales y laborales a quienes tengan el rol de acceso Administrador SUTENS, sin quitarles ese rol administrativo. La 015 permite clasificar nuevos cargos sindicales para la Directiva Departamental.
 
 ### Modelo de datos (resumen)
 
@@ -147,6 +148,7 @@ Al abrir `http://localhost:3000` verás el sitio público de SUTENS:
 | PATCH | `/api/afiliados/:id/asignacion` | Administrador o Directiva Principal | Actualizar afiliación local; sede y rol laboral son opcionales y se asignan juntos, al igual que el cargo local |
 | PATCH | `/api/afiliados/:id/estado-sindical` | Administrador o Directiva Principal | Marcar afiliado como `activo` o `inactivo` |
 | POST | `/api/afiliados` | Administrador | Registrar usuario (aprobado + rol) |
+| DELETE | `/api/afiliados/:id` | Administrador | Elimina permanentemente afiliación y cuenta; protege la cuenta propia y al último administrador |
 | PATCH | `/api/afiliados/:id/estado` | Administrador o Secretario General | Aprobar/rechazar solicitud |
 | PATCH | `/api/afiliados/:id/roles` | Administrador | Reemplazar roles de un usuario (`{"roles":["Afiliado"]}`) |
 | GET | `/api/membresia/afiliados?q=texto&cargo=Vicepresidente&rol=Profesor&id_subdirectiva=1` | Administrador o dirigente aprobado | Admin/directiva principal consulta el padrón completo; dirigentes locales consultan su subdirectiva asignada |
@@ -159,6 +161,8 @@ Al abrir `http://localhost:3000` verás el sitio público de SUTENS:
 | PATCH | `/api/subdirectivas/sedes/:id` | Administrador o Directiva Principal | Cambia el nombre de una sede |
 | GET | `/api/subdirectivas/cargos` | Administrador o Directiva Principal | Lista cargos sindicales y si pueden repetirse |
 | GET | `/api/subdirectivas/roles-laborales` | Administrador o Directiva Principal | Lista roles educativos disponibles para asignar en una sede |
+| POST | `/api/subdirectivas/cargos` | Administrador | Agrega una opción de cargo sindical |
+| POST | `/api/subdirectivas/roles-laborales` | Administrador | Agrega una opción de rol docente |
 | POST | `/api/subdirectivas` | Administrador o Directiva Principal | Crear subdirectiva (`{"nombre":"..."}`) |
 
 ### Ejemplo de uso

@@ -2,7 +2,9 @@ import { Router } from 'express';
 import {
   listarSubdirectivas,
   listarCargosSindicales,
+  crearCargoSindical,
   listarRolesLaborales,
+  crearRolLaboral,
   crearSubdirectiva,
   renombrarSubdirectiva,
   crearInstitucion,
@@ -11,7 +13,7 @@ import {
   renombrarSede,
 } from '../controllers/subdirectiva.controller.js';
 import { autenticar } from '../middleware/auth.js';
-import { autorizarDirectivaPrincipal } from '../middleware/rbac.js';
+import { autorizar, autorizarDirectivaPrincipal } from '../middleware/rbac.js';
 
 const router = Router();
 
@@ -20,6 +22,8 @@ router.use(autenticar);
 router.get('/', listarSubdirectivas);
 router.get('/cargos', listarCargosSindicales);
 router.get('/roles-laborales', listarRolesLaborales);
+router.post('/cargos', autorizar('Administrador SUTENS'), crearCargoSindical);
+router.post('/roles-laborales', autorizar('Administrador SUTENS'), crearRolLaboral);
 router.post('/', autorizarDirectivaPrincipal(), crearSubdirectiva);
 router.patch('/:id', autorizarDirectivaPrincipal(), renombrarSubdirectiva);
 router.post('/:id/instituciones', autorizarDirectivaPrincipal(), crearInstitucion);

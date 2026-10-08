@@ -244,6 +244,65 @@ export async function actualizarRoles(req, res) {
   }
 }
 
+export async function eliminarAfiliado(req, res) {
+  const { id } = req.params;
+  if (!/^[1-9]\d*$/.test(id)) {
+    return res.status(400).json({ error: 'El afiliado indicado no es válido' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('SELECT pg_advisory_xact_lock(781204)');
+
+    const { rows: afiliados } = await client.query(
+      `SELECT u.id_usuario
+       FROM afiliado a
+       LEFT JOIN usuario u ON u.id_afiliado = a.id_afiliado
+       WHERE a.id_afiliado = $1
+       FOR UPDATE OF a`,
+      [id]
+    );
+    if (afiliados.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Afiliado no encontrado' });
+    }
+
+    const idUsuario = afiliados[0].id_usuario;
+    if (String(idUsuario) === String(req.user.id_usuario)) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({ error: 'No puedes eliminar tu propia cuenta' });
+    }
+
+    if (idUsuario) {
+      const { rows: administradores } = await client.query(
+        `SELECT COUNT(DISTINCT u.id_usuario)::int AS total,
+                BOOL_OR(u.id_usuario = $1) AS es_administrador
+         FROM usuario u
+         JOIN usuario_rol ur ON ur.id_usuario = u.id_usuario
+         JOIN rol_sistema rs ON rs.id_rol_sistema = ur.id_rol_sistema
+         WHERE rs.nombre = 'Administrador SUTENS'`,
+        [idUsuario]
+      );
+
+      if (administradores[0].es_administrador && administradores[0].total <= 1) {
+        await client.query('ROLLBACK');
+        return res.status(409).json({ error: 'No se puede eliminar al último administrador' });
+      }
+    }
+
+    await client.query('DELETE FROM afiliado WHERE id_afiliado = $1', [id]);
+    await client.query('COMMIT');
+    return res.json({ mensaje: 'Afiliado eliminado permanentemente' });
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    console.error(err);
+    return res.status(500).json({ error: 'Error al eliminar el afiliado' });
+  } finally {
+    client.release();
+  }
+}
+
 // Aprobar o rechazar una solicitud de afiliación (HU-07)
 export async function cambiarEstado(req, res) {
   const { id } = req.params;

@@ -14,12 +14,12 @@ INSERT INTO rol_sistema (nombre, descripcion) VALUES
     ('Público',              'Solo portal y formulario de afiliación');
 
 -- Cargos sindicales
-INSERT INTO cargo_sindical (nombre, es_repetible) VALUES
-    ('Presidente', FALSE), ('Vicepresidente', FALSE), ('Tesorero', FALSE),
-    ('Secretario', FALSE), ('Fiscal', FALSE), ('Afiliado', TRUE),
-    ('Presidente General', FALSE), ('Vicepresidente General', FALSE),
-    ('Secretario General', TRUE), ('Fiscal General', FALSE),
-    ('Tesorero General', FALSE);
+INSERT INTO cargo_sindical (nombre, es_repetible, es_departamental) VALUES
+    ('Presidente', FALSE, FALSE), ('Vicepresidente', FALSE, FALSE), ('Tesorero', FALSE, FALSE),
+    ('Secretario', FALSE, FALSE), ('Fiscal', FALSE, FALSE), ('Afiliado', TRUE, FALSE),
+    ('Presidente General', FALSE, TRUE), ('Vicepresidente General', FALSE, TRUE),
+    ('Secretario General', TRUE, TRUE), ('Fiscal General', FALSE, TRUE),
+    ('Tesorero General', FALSE, TRUE);
 
 -- Roles laborales
 INSERT INTO rol_laboral (nombre) VALUES

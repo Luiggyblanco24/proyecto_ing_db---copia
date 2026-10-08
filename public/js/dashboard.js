@@ -239,6 +239,7 @@ async function cargarPerfil() {
     document.getElementById('btn-subir-documento').hidden = !puedeSubirBiblioteca;
     document.getElementById('campo-documento-subdirectiva').hidden = !esAdmin;
     document.getElementById('nav-administracion').hidden = !(esAdmin || esDirectivaPrincipal);
+    document.getElementById('gestion-catalogos-roles').hidden = !esAdmin;
     if (puedeVerAfiliados) document.getElementById('nav-afiliados').hidden = false;
     renderizarOpcionesInicio();
     if (perfil.estado === 'aprobado') await cargarEstadisticasAfiliacion();
@@ -1027,6 +1028,7 @@ async function cargarUsuarios() {
         ? `<div class="acciones">
          ${a.estado === 'aprobado' ? `<button class="btn btn-secundario btn-sm" onclick="abrirModalAsignacion(${Number(a.id_afiliado)})">Asignación</button>` : ''}
          ${esAdmin && a.usuario ? `<button class="btn btn-secundario btn-sm" onclick="abrirModalRoles(${Number(a.id_afiliado)})">Actualizar roles</button>` : ''}
+         ${esAdmin && String(a.id_afiliado) !== String(perfilActual?.id_afiliado) ? `<button class="btn btn-rojo btn-sm" onclick="eliminarAfiliado(${Number(a.id_afiliado)})">Eliminar</button>` : ''}
          ${puedeAprobar && a.estado === 'pendiente' ? `<button class="btn btn-verde btn-sm" onclick="cambiarEstado(${Number(a.id_afiliado)}, 'aprobado')">Aprobar</button>
              <button class="btn btn-rojo btn-sm" onclick="cambiarEstado(${Number(a.id_afiliado)}, 'rechazado')">Rechazar</button>` : ''}
            </div>`
@@ -1148,10 +1150,9 @@ function actualizarCargosAsignacion(idCargo = '') {
   const idSubdirectiva = document.getElementById('asignacion-subdirectiva').value;
   const subdirectiva = subdirectivasDisponibles.find((item) => String(item.id_subdirectiva) === idSubdirectiva);
   const cargos = cargosSindicales.filter((cargo) => {
-    const esCargoGeneral = cargo.nombre.endsWith(' General');
     return subdirectiva?.es_principal
-      ? esCargoGeneral || cargo.nombre === 'Afiliado'
-      : !esCargoGeneral;
+      ? cargo.es_departamental || cargo.nombre === 'Afiliado'
+      : !cargo.es_departamental;
   });
   const selectorCargo = document.getElementById('asignacion-cargo');
   selectorCargo.innerHTML = `<option value="">${subdirectiva?.es_principal ? 'Selecciona un cargo...' : 'Sin cargo en esta subdirectiva'}</option>` +
@@ -1237,6 +1238,23 @@ async function cambiarEstado(id, estado) {
   }
 }
 
+async function eliminarAfiliado(id) {
+  const afiliado = usuariosActuales.find((usuario) => Number(usuario.id_afiliado) === id);
+  if (!esAdmin || !afiliado) return;
+  if (!window.confirm(`¿Eliminar permanentemente a ${nombreCompleto(afiliado)}? Se borrarán su cuenta, afiliación y asignaciones. Esta acción no se puede deshacer.`)) return;
+
+  const mensaje = document.getElementById('mensaje');
+  try {
+    const resultado = await apiFetch(`/api/afiliados/${id}`, { method: 'DELETE' });
+    mensaje.textContent = resultado.mensaje;
+    mensaje.className = 'mensaje exito';
+    await cargarUsuarios();
+  } catch (err) {
+    mensaje.textContent = err.message;
+    mensaje.className = 'mensaje error';
+  }
+}
+
 // ---------- Modal de registro (admin) ----------
 function abrirModal() {
   document.getElementById('modal-registrar').classList.add('visible');
@@ -1305,6 +1323,48 @@ document.getElementById('form-roles').addEventListener('submit', async (e) => {
       cerrarModalRoles();
       await cargarUsuarios();
     }, 600);
+  } catch (err) {
+    mensaje.textContent = err.message;
+    mensaje.className = 'mensaje error';
+  }
+});
+
+document.getElementById('form-cargo-sindical').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const mensaje = document.getElementById('mensaje-cargo-sindical');
+  mensaje.className = 'mensaje';
+  try {
+    await apiFetch('/api/subdirectivas/cargos', {
+      method: 'POST',
+      body: JSON.stringify({
+        nombre: document.getElementById('nuevo-cargo-sindical').value.trim(),
+        es_repetible: document.getElementById('nuevo-cargo-repetible').checked,
+        es_departamental: document.getElementById('nuevo-cargo-departamental').checked,
+      }),
+    });
+    document.getElementById('form-cargo-sindical').reset();
+    mensaje.textContent = 'Cargo sindical agregado.';
+    mensaje.className = 'mensaje exito';
+    await cargarEstructuraSindical();
+  } catch (err) {
+    mensaje.textContent = err.message;
+    mensaje.className = 'mensaje error';
+  }
+});
+
+document.getElementById('form-rol-laboral').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const mensaje = document.getElementById('mensaje-rol-laboral');
+  mensaje.className = 'mensaje';
+  try {
+    await apiFetch('/api/subdirectivas/roles-laborales', {
+      method: 'POST',
+      body: JSON.stringify({ nombre: document.getElementById('nuevo-rol-laboral').value.trim() }),
+    });
+    document.getElementById('form-rol-laboral').reset();
+    mensaje.textContent = 'Rol docente agregado.';
+    mensaje.className = 'mensaje exito';
+    await cargarEstructuraSindical();
   } catch (err) {
     mensaje.textContent = err.message;
     mensaje.className = 'mensaje error';

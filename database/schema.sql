@@ -118,6 +118,7 @@ CREATE TABLE cargo_sindical (
     id_cargo_sindical SMALLINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     nombre            VARCHAR(50) NOT NULL UNIQUE,
     es_repetible      BOOLEAN NOT NULL DEFAULT FALSE,
+    es_departamental  BOOLEAN NOT NULL DEFAULT FALSE,
     CONSTRAINT uq_cargo_sindical_repetible UNIQUE (id_cargo_sindical, es_repetible)
 );
 

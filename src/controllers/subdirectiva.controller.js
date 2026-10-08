@@ -31,11 +31,42 @@ export async function listarSubdirectivas(req, res) {
 
 export async function listarCargosSindicales(req, res) {
   const { rows } = await query(
-    'SELECT id_cargo_sindical, nombre, es_repetible FROM cargo_sindical ORDER BY nombre',
+    'SELECT id_cargo_sindical, nombre, es_repetible, es_departamental FROM cargo_sindical ORDER BY nombre',
     []
   );
 
   return res.json(rows);
+}
+
+export async function crearCargoSindical(req, res) {
+  const nombre = typeof req.body?.nombre === 'string' ? req.body.nombre.trim() : '';
+  const esRepetible = req.body?.es_repetible === true;
+  const esDepartamental = req.body?.es_departamental === true;
+  if (!nombre || nombre.length > 50) {
+    return res.status(400).json({ error: 'Indica un cargo sindical de máximo 50 caracteres' });
+  }
+  if (req.body?.es_repetible !== undefined && typeof req.body.es_repetible !== 'boolean') {
+    return res.status(400).json({ error: 'La opción de cargo repetible no es válida' });
+  }
+  if (req.body?.es_departamental !== undefined && typeof req.body.es_departamental !== 'boolean') {
+    return res.status(400).json({ error: 'La opción de cargo departamental no es válida' });
+  }
+
+  try {
+    const { rows } = await query(
+      `INSERT INTO cargo_sindical (nombre, es_repetible, es_departamental)
+       VALUES ($1, $2, $3)
+       RETURNING id_cargo_sindical, nombre, es_repetible, es_departamental`,
+      [nombre, esRepetible, esDepartamental]
+    );
+    return res.status(201).json(rows[0]);
+  } catch (err) {
+    if (err.code === '23505') {
+      return res.status(409).json({ error: 'Ya existe un cargo sindical con ese nombre' });
+    }
+    console.error(err);
+    return res.status(500).json({ error: 'Error al crear el cargo sindical' });
+  }
 }
 
 export async function listarRolesLaborales(req, res) {
@@ -45,6 +76,29 @@ export async function listarRolesLaborales(req, res) {
   );
 
   return res.json(rows);
+}
+
+export async function crearRolLaboral(req, res) {
+  const nombre = typeof req.body?.nombre === 'string' ? req.body.nombre.trim() : '';
+  if (!nombre || nombre.length > 50) {
+    return res.status(400).json({ error: 'Indica un rol docente de máximo 50 caracteres' });
+  }
+
+  try {
+    const { rows } = await query(
+      `INSERT INTO rol_laboral (nombre)
+       VALUES ($1)
+       RETURNING id_rol_laboral, nombre`,
+      [nombre]
+    );
+    return res.status(201).json(rows[0]);
+  } catch (err) {
+    if (err.code === '23505') {
+      return res.status(409).json({ error: 'Ya existe un rol docente con ese nombre' });
+    }
+    console.error(err);
+    return res.status(500).json({ error: 'Error al crear el rol docente' });
+  }
 }
 
 export async function crearSubdirectiva(req, res) {
@@ -239,7 +293,7 @@ export async function asignarAfiliado(req, res) {
     let cargos = [];
     if (id_cargo_sindical) {
       const resultadoCargos = await client.query(
-      'SELECT id_cargo_sindical, nombre, es_repetible FROM cargo_sindical WHERE id_cargo_sindical = $1',
+      'SELECT id_cargo_sindical, nombre, es_repetible, es_departamental FROM cargo_sindical WHERE id_cargo_sindical = $1',
         [id_cargo_sindical]
       );
       cargos = resultadoCargos.rows;
@@ -267,11 +321,9 @@ export async function asignarAfiliado(req, res) {
     }
 
     const cargo = cargos[0];
-    const cargoGeneral = cargo && [
-      'Presidente General', 'Vicepresidente General', 'Secretario General', 'Fiscal General', 'Tesorero General',
-    ].includes(cargo.nombre);
-    if ((cargoGeneral && !subdirectivas[0].es_principal) ||
-        (cargo && !cargoGeneral && cargo.nombre !== 'Afiliado' && subdirectivas[0].es_principal)) {
+    const cargoDepartamental = cargo?.es_departamental || cargo?.nombre === 'Afiliado';
+    if ((cargoDepartamental && !subdirectivas[0].es_principal) ||
+        (cargo && !cargoDepartamental && subdirectivas[0].es_principal)) {
       await client.query('ROLLBACK');
       return res.status(400).json({ error: 'El cargo seleccionado no corresponde al tipo de directiva' });
     }

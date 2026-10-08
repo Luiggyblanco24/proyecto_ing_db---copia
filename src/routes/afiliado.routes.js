@@ -3,6 +3,7 @@ import {
   listarAfiliados,
   listarRoles,
   actualizarRoles,
+  eliminarAfiliado,
   cambiarEstado,
   registrarPorAdmin,
 } from '../controllers/afiliado.controller.js';
@@ -33,6 +34,7 @@ router.post('/', autorizar('Administrador SUTENS'), registrarPorAdmin);
 // PATCH /api/afiliados/:id/estado  { estado: 'aprobado' | 'rechazado' }
 router.patch('/:id/estado', autorizarSecretarioGeneral(), cambiarEstado);
 router.patch('/:id/roles', autorizar('Administrador SUTENS'), actualizarRoles);
+router.delete('/:id', autorizar('Administrador SUTENS'), eliminarAfiliado);
 router.patch('/:id/asignacion', autorizarDirectivaPrincipal(), asignarAfiliado);
 router.patch('/:id/estado-sindical', autorizarDirectivaPrincipal(), cambiarEstadoSindical);
 
