@@ -428,8 +428,10 @@ async function cargarEventos() {
       const fechaInicio = new Date(evento.fecha_inicio);
       const fechaFin = evento.fecha_fin ? new Date(evento.fecha_fin) : null;
       const inicioPasado = fechaInicio <= new Date();
+      const finConfirmacion = fechaFin || new Date(fechaInicio.getTime() + 3 * 3600 * 1000);
       const puedeConfirmar = perfilActual?.estado === 'aprobado' &&
-        evento.estado === 'programado' && !inicioPasado;
+        evento.estado === 'programado' && new Date() < finConfirmacion;
+      const puedeEliminar = esAdmin || esDirectivaPrincipal;
       const puedeCompletar = evento.estado === 'programado' && inicioPasado && puedeMarcarEventoRealizado(evento);
       const puedeCancelar = evento.estado === 'programado' && !inicioPasado && puedeMarcarEventoRealizado(evento);
       const etiquetasEstado = {
@@ -468,6 +470,7 @@ async function cargarEventos() {
               ${puedeConfirmar ? `<button class="btn btn-secundario btn-sm btn-asistencia" type="button" data-id-evento="${Number(evento.id_evento)}" data-confirmada="${!evento.mi_asistencia}">${evento.mi_asistencia ? 'Cancelar asistencia' : 'Confirmar asistencia'}</button>` : ''}
               ${puedeCompletar ? `<button class="btn btn-verde btn-sm btn-evento-realizado" type="button" data-id-evento="${Number(evento.id_evento)}">Marcar como realizada</button>` : ''}
               ${puedeCancelar ? `<button class="btn btn-rojo btn-sm btn-evento-cancelar" type="button" data-id-evento="${Number(evento.id_evento)}">Cancelar actividad</button>` : ''}
+              ${puedeEliminar ? `<button class="btn btn-rojo btn-sm btn-evento-eliminar" type="button" data-id-evento="${Number(evento.id_evento)}">Eliminar</button>` : ''}
               ${evento.estado === 'realizado' && evento.mi_asistencia ? '<span class="badge verde">Asistencia confirmada</span>' : ''}
             </div>
           </div>
@@ -482,6 +485,9 @@ async function cargarEventos() {
     });
     document.querySelectorAll('.btn-exportar-asistentes').forEach((boton) => {
       boton.addEventListener('click', () => descargarAsistentes(boton));
+    });
+    document.querySelectorAll('.btn-evento-eliminar').forEach((boton) => {
+      boton.addEventListener('click', () => eliminarEventoCalendario(boton));
     });
     document.querySelectorAll('.btn-evento-cancelar').forEach((boton) => {
       boton.addEventListener('click', () => cancelarEventoCalendario(boton));
@@ -509,6 +515,23 @@ async function abrirEvento(idEvento) {
   tarjeta.classList.add('evento-destacado');
   tarjeta.scrollIntoView({ behavior: 'smooth', block: 'center' });
   tarjeta.focus({ preventScroll: true });
+}
+
+async function eliminarEventoCalendario(boton) {
+  if (!window.confirm('¿Eliminar esta actividad? Dejará de mostrarse a todos los afiliados.')) return;
+  const mensaje = document.getElementById('mensaje-calendario');
+  boton.disabled = true;
+  try {
+    const resultado = await apiFetch(`/api/calendario/eventos/${boton.dataset.idEvento}`, { method: 'DELETE' });
+    await cargarEventos();
+    await cargarNotificaciones();
+    mensaje.textContent = resultado.mensaje;
+    mensaje.className = 'mensaje exito';
+  } catch (err) {
+    mensaje.textContent = err.message;
+    mensaje.className = 'mensaje error';
+    boton.disabled = false;
+  }
 }
 
 async function descargarAsistentes(boton) {
@@ -1022,6 +1045,16 @@ async function eliminarDocumentoBiblioteca(idDocumento) {
   }
 }
 
+const etiquetasEstructura = { subdirectiva: 'subdirectiva', institucion: 'institución', sede: 'sede' };
+
+function botonEditarEstructura(tipo, id, nombre) {
+  return `<button class="boton-icono-editar" type="button" data-renombrar="${tipo}" data-id="${escapeHTML(id)}" data-nombre="${escapeHTML(nombre)}" aria-label="Editar nombre de ${escapeHTML(nombre)}" title="Editar ${etiquetasEstructura[tipo]}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>`;
+}
+
+function botonEliminarEstructura(tipo, id, nombre) {
+  return `<button class="boton-icono-editar boton-icono-eliminar" type="button" data-eliminar="${tipo}" data-id="${escapeHTML(id)}" data-nombre="${escapeHTML(nombre)}" aria-label="Eliminar ${escapeHTML(nombre)}" title="Eliminar ${etiquetasEstructura[tipo]}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5"/><path d="M14 11v5"/></svg></button>`;
+}
+
 async function cargarDirectorio() {
   const tbody = document.getElementById('cuerpo-directorio');
   const mensaje = document.getElementById('mensaje-directorio');
@@ -1038,7 +1071,7 @@ async function cargarDirectorio() {
           <div class="nombre-subdirectiva-directorio">
             <strong>${escapeHTML(subdirectiva.nombre)}</strong>
             ${subdirectiva.es_principal ? '<span class="badge azul">Principal</span>' : ''}
-            ${puedeGestionarAfiliados ? `<button class="boton-icono-editar" type="button" data-renombrar="subdirectiva" data-id="${escapeHTML(subdirectiva.id_subdirectiva)}" data-nombre="${escapeHTML(subdirectiva.nombre)}" aria-label="Editar nombre de ${escapeHTML(subdirectiva.nombre)}" title="Editar subdirectiva"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>` : ''}
+            ${puedeGestionarAfiliados ? `${botonEditarEstructura('subdirectiva', subdirectiva.id_subdirectiva, subdirectiva.nombre)}${subdirectiva.es_principal ? '' : botonEliminarEstructura('subdirectiva', subdirectiva.id_subdirectiva, subdirectiva.nombre)}<button class="boton-agregar-estructura" type="button" data-crear="institucion" data-id="${escapeHTML(subdirectiva.id_subdirectiva)}">+ Institución</button>` : ''}
           </div>
         </td>
         <td>${subdirectiva.instituciones.length
@@ -1046,10 +1079,10 @@ async function cargarDirectorio() {
             <section class="institucion-directorio">
               <div class="nombre-institucion-directorio">
                 <strong>${escapeHTML(institucion.nombre)}</strong>
-                ${puedeGestionarAfiliados ? `<button class="boton-icono-editar" type="button" data-renombrar="institucion" data-id="${escapeHTML(institucion.id_institucion)}" data-nombre="${escapeHTML(institucion.nombre)}" aria-label="Editar nombre de ${escapeHTML(institucion.nombre)}" title="Editar institución"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>` : ''}
+                ${puedeGestionarAfiliados ? `${botonEditarEstructura('institucion', institucion.id_institucion, institucion.nombre)}${botonEliminarEstructura('institucion', institucion.id_institucion, institucion.nombre)}<button class="boton-agregar-estructura" type="button" data-crear="sede" data-id="${escapeHTML(institucion.id_institucion)}">+ Sede</button>` : ''}
               </div>
               <div class="sedes-directorio">${institucion.sedes.length
-                ? institucion.sedes.map((sede) => `<span class="sede-directorio"><span class="sede-etiqueta">${escapeHTML(sede.nombre)}</span>${puedeGestionarAfiliados ? `<button class="boton-icono-editar" type="button" data-renombrar="sede" data-id="${escapeHTML(sede.id_sede)}" data-nombre="${escapeHTML(sede.nombre)}" aria-label="Editar nombre de ${escapeHTML(sede.nombre)}" title="Editar sede"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>` : ''}</span>`).join('')
+                ? institucion.sedes.map((sede) => `<span class="sede-directorio"><span class="sede-etiqueta">${escapeHTML(sede.nombre)}</span>${puedeGestionarAfiliados ? `${botonEditarEstructura('sede', sede.id_sede, sede.nombre)}${botonEliminarEstructura('sede', sede.id_sede, sede.nombre)}` : ''}</span>`).join('')
                 : '<span class="ayuda-campo">Sin sedes registradas</span>'}</div>
             </section>
           `).join('')
@@ -1577,22 +1610,8 @@ document.getElementById('btn-crear-subdirectiva').addEventListener('click', () =
   document.getElementById('mensaje-subdirectiva').className = 'mensaje';
   document.getElementById('modal-subdirectiva').classList.add('visible');
 });
-document.getElementById('btn-crear-institucion').addEventListener('click', () => {
-  document.getElementById('mensaje-institucion').className = 'mensaje';
-  poblarSelectSubdirectivas('institucion-subdirectiva');
-  document.getElementById('modal-institucion').classList.add('visible');
-});
-document.getElementById('btn-crear-sede').addEventListener('click', () => {
-  const mensaje = document.getElementById('mensaje-sede');
-  mensaje.className = 'mensaje';
-  const cantidadInstituciones = poblarSelectInstituciones('sede-institucion');
-  document.querySelector('#form-sede [type="submit"]').disabled = cantidadInstituciones === 0;
-  if (cantidadInstituciones === 0) {
-    mensaje.textContent = 'Primero crea una institución educativa para poder registrar sus sedes.';
-    mensaje.className = 'mensaje error';
-  }
-  document.getElementById('modal-sede').classList.add('visible');
-});
+document.getElementById('btn-crear-institucion').addEventListener('click', () => abrirModalCrearInstitucion());
+document.getElementById('btn-crear-sede').addEventListener('click', () => abrirModalCrearSede());
 
 document.getElementById('form-asignacion').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -1697,10 +1716,67 @@ function abrirModalRenombrarEstructura(tipo, id, nombre) {
   document.getElementById('modal-renombrar-estructura').classList.add('visible');
 }
 
+function abrirModalCrearInstitucion(idSubdirectiva = '') {
+  document.getElementById('mensaje-institucion').className = 'mensaje';
+  document.getElementById('form-institucion').reset();
+  poblarSelectSubdirectivas('institucion-subdirectiva', idSubdirectiva);
+  document.getElementById('modal-institucion').classList.add('visible');
+  document.getElementById('nombre-institucion').focus();
+}
+
+function abrirModalCrearSede(idInstitucion = '') {
+  const mensaje = document.getElementById('mensaje-sede');
+  mensaje.className = 'mensaje';
+  document.getElementById('form-sede').reset();
+  const cantidadInstituciones = poblarSelectInstituciones('sede-institucion');
+  if (idInstitucion) document.getElementById('sede-institucion').value = String(idInstitucion);
+  document.querySelector('#form-sede [type="submit"]').disabled = cantidadInstituciones === 0;
+  if (cantidadInstituciones === 0) {
+    mensaje.textContent = 'Primero crea una institución educativa para poder registrar sus sedes.';
+    mensaje.className = 'mensaje error';
+  }
+  document.getElementById('modal-sede').classList.add('visible');
+  document.getElementById('nombre-sede').focus();
+}
+
+async function eliminarEstructura(tipo, id, nombre) {
+  const advertencias = {
+    subdirectiva: `¿Eliminar la subdirectiva "${nombre}" junto con sus instituciones y sedes? Esta acción no se puede deshacer.`,
+    institucion: `¿Eliminar la institución "${nombre}" junto con todas sus sedes? Esta acción no se puede deshacer.`,
+    sede: `¿Eliminar la sede "${nombre}"? Esta acción no se puede deshacer.`,
+  };
+  if (!window.confirm(advertencias[tipo])) return;
+  const rutas = {
+    subdirectiva: `/api/subdirectivas/${id}`,
+    institucion: `/api/subdirectivas/instituciones/${id}`,
+    sede: `/api/subdirectivas/sedes/${id}`,
+  };
+  const mensaje = document.getElementById('mensaje-directorio');
+  try {
+    const resultado = await apiFetch(rutas[tipo], { method: 'DELETE' });
+    await cargarEstructuraSindical();
+    await cargarDirectorio();
+    mensaje.textContent = resultado.mensaje;
+    mensaje.className = 'mensaje exito';
+  } catch (err) {
+    mensaje.textContent = err.message;
+    mensaje.className = 'mensaje error';
+  }
+}
+
 document.getElementById('cuerpo-directorio').addEventListener('click', (event) => {
-  const boton = event.target.closest('[data-renombrar]');
-  if (!boton || !puedeGestionarAfiliados) return;
-  abrirModalRenombrarEstructura(boton.dataset.renombrar, boton.dataset.id, boton.dataset.nombre);
+  if (!puedeGestionarAfiliados) return;
+  const boton = event.target.closest('[data-renombrar], [data-eliminar], [data-crear]');
+  if (!boton) return;
+  if (boton.dataset.renombrar) {
+    abrirModalRenombrarEstructura(boton.dataset.renombrar, boton.dataset.id, boton.dataset.nombre);
+  } else if (boton.dataset.eliminar) {
+    eliminarEstructura(boton.dataset.eliminar, boton.dataset.id, boton.dataset.nombre);
+  } else if (boton.dataset.crear === 'institucion') {
+    abrirModalCrearInstitucion(boton.dataset.id);
+  } else if (boton.dataset.crear === 'sede') {
+    abrirModalCrearSede(boton.dataset.id);
+  }
 });
 
 document.getElementById('form-renombrar-estructura').addEventListener('submit', async (event) => {

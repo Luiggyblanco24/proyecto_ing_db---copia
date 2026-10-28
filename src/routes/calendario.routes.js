@@ -3,6 +3,7 @@ import {
 	actualizarAsistencia,
 	crearEvento,
 	cancelarEvento,
+	eliminarEvento,
 	listarEventos,
 	listarNotificaciones,
 	marcarEventoRealizado,
@@ -22,5 +23,6 @@ router.post('/eventos', crearEvento);
 router.patch('/eventos/:id/asistencia', actualizarAsistencia);
 router.patch('/eventos/:id/realizado', marcarEventoRealizado);
 router.patch('/eventos/:id/cancelar', cancelarEvento);
+router.delete('/eventos/:id', eliminarEvento);
 
 export default router;

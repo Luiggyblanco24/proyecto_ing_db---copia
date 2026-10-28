@@ -320,6 +320,8 @@ CREATE TABLE evento (
     completado_at   TIMESTAMPTZ,
     cancelado_at    TIMESTAMPTZ,
     motivo_cancelacion TEXT,
+    eliminado_at    TIMESTAMPTZ,
+    id_usuario_eliminacion BIGINT REFERENCES usuario(id_usuario) ON DELETE SET NULL,
     id_subdirectiva BIGINT       REFERENCES subdirectiva(id_subdirectiva) ON DELETE SET NULL,
     id_usuario      BIGINT       REFERENCES usuario(id_usuario) ON DELETE SET NULL,  -- creador
     created_at      TIMESTAMPTZ  NOT NULL DEFAULT now(),
@@ -334,17 +336,12 @@ CREATE TABLE evento_asistencia (
     PRIMARY KEY (id_evento, id_afiliado)
 );
 
-CREATE TABLE notificacion_evento (
+CREATE TABLE evento_notificacion_leida (
     id_afiliado BIGINT      NOT NULL REFERENCES afiliado(id_afiliado) ON DELETE CASCADE,
     id_evento   BIGINT      NOT NULL REFERENCES evento(id_evento) ON DELETE CASCADE,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-    leida_at    TIMESTAMPTZ,
+    leida_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
     PRIMARY KEY (id_afiliado, id_evento)
 );
-
-CREATE INDEX idx_notificacion_evento_pendientes
-    ON notificacion_evento (id_afiliado, created_at DESC)
-    WHERE leida_at IS NULL;
 
 -- ============================================================================
 -- ÍNDICES para consultas frecuentes

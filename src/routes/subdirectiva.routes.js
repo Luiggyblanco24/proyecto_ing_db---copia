@@ -11,6 +11,9 @@ import {
   renombrarInstitucion,
   crearSede,
   renombrarSede,
+  eliminarSubdirectiva,
+  eliminarInstitucion,
+  eliminarSede,
 } from '../controllers/subdirectiva.controller.js';
 import { autenticar } from '../middleware/auth.js';
 import { autorizar, autorizarDirectivaPrincipal } from '../middleware/rbac.js';
@@ -30,5 +33,8 @@ router.post('/:id/instituciones', autorizarDirectivaPrincipal(), crearInstitucio
 router.patch('/instituciones/:id', autorizarDirectivaPrincipal(), renombrarInstitucion);
 router.post('/instituciones/:id/sedes', autorizarDirectivaPrincipal(), crearSede);
 router.patch('/sedes/:id', autorizarDirectivaPrincipal(), renombrarSede);
+router.delete('/sedes/:id', autorizarDirectivaPrincipal(), eliminarSede);
+router.delete('/instituciones/:id', autorizarDirectivaPrincipal(), eliminarInstitucion);
+router.delete('/:id', autorizarDirectivaPrincipal(), eliminarSubdirectiva);
 
 export default router;

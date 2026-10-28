@@ -1,4 +1,4 @@
-import { pool, query } from '../config/db.js';
+import { query } from '../config/db.js';
 
 const tiposEvento = ['Reunión', 'Asamblea', 'Capacitación', 'Actividad', 'Otro'];
 const cargosLocales = ['Presidente', 'Vicepresidente', 'Secretario', 'Fiscal', 'Tesorero'];
@@ -65,6 +65,7 @@ export async function listarEventos(req, res) {
      FROM evento e
      LEFT JOIN subdirectiva sd ON sd.id_subdirectiva = e.id_subdirectiva
      WHERE e.fecha_inicio >= now() - interval '30 days'
+       AND e.eliminado_at IS NULL
        AND (
          $1::boolean = TRUE
          OR e.id_subdirectiva IS NULL
@@ -128,78 +129,54 @@ export async function crearEvento(req, res) {
     if (directivas.length === 0) return res.status(400).json({ error: 'La subdirectiva no existe' });
   }
 
-  const cliente = await pool.connect();
-  let evento;
-  let notificados;
-  try {
-    await cliente.query('BEGIN');
-    const { rows } = await cliente.query(
-      `INSERT INTO evento (titulo, tipo, descripcion, fecha_inicio, fecha_fin, lugar, id_subdirectiva, id_usuario)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       RETURNING id_evento, titulo, tipo, descripcion, fecha_inicio, fecha_fin, lugar, id_subdirectiva`,
-      [
-        nombreEvento,
-        tipoEvento,
-        typeof descripcion === 'string' && descripcion.trim() ? descripcion.trim() : null,
-        inicio,
-        fin,
-        typeof lugar === 'string' && lugar.trim() ? lugar.trim() : null,
-        idSubdirectiva,
-        req.user.id_usuario,
-      ]
-    );
-    evento = rows[0];
+  const { rows } = await query(
+    `INSERT INTO evento (titulo, tipo, descripcion, fecha_inicio, fecha_fin, lugar, id_subdirectiva, id_usuario)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+     RETURNING id_evento, titulo, tipo, descripcion, fecha_inicio, fecha_fin, lugar, id_subdirectiva`,
+    [
+      nombreEvento,
+      tipoEvento,
+      typeof descripcion === 'string' && descripcion.trim() ? descripcion.trim() : null,
+      inicio,
+      fin,
+      typeof lugar === 'string' && lugar.trim() ? lugar.trim() : null,
+      idSubdirectiva,
+      req.user.id_usuario,
+    ]
+  );
 
-    // Actividades generales o de la subdirectiva principal llegan a todos los afiliados aprobados;
-    // las locales, solo a los miembros de esa subdirectiva.
-    const notificacion = await cliente.query(
-      `INSERT INTO notificacion_evento (id_afiliado, id_evento)
-       SELECT a.id_afiliado, $1
-       FROM afiliado a
-       WHERE a.estado = 'aprobado'
-         AND a.id_afiliado IS DISTINCT FROM $3::bigint
-         AND (
-           $2::bigint IS NULL
-           OR EXISTS (SELECT 1 FROM subdirectiva s WHERE s.id_subdirectiva = $2 AND s.es_principal)
-           OR EXISTS (
-             SELECT 1 FROM subdirectiva_afiliado sa
-             WHERE sa.id_afiliado = a.id_afiliado AND sa.id_subdirectiva = $2
-           )
-         )
-       ON CONFLICT DO NOTHING`,
-      [evento.id_evento, idSubdirectiva, req.user.id_afiliado ?? null]
-    );
-    notificados = notificacion.rowCount;
-    await cliente.query('COMMIT');
-  } catch (error) {
-    await cliente.query('ROLLBACK').catch(() => {});
-    throw error;
-  } finally {
-    cliente.release();
-  }
-
-  return res.status(201).json({
-    mensaje: 'Actividad agregada al calendario',
-    evento,
-    notificados,
-  });
+  return res.status(201).json({ mensaje: 'Actividad agregada al calendario', evento: rows[0] });
 }
 
+// Las notificaciones se calculan con el mismo alcance del calendario; solo se guardan las leídas.
 export async function listarNotificaciones(req, res) {
   if (!req.user.id_afiliado) return res.json([]);
   const { rows } = await query(
-    `SELECT n.id_evento, n.created_at, e.titulo, e.tipo, e.fecha_inicio, e.lugar,
+    `SELECT e.id_evento, e.titulo, e.tipo, e.fecha_inicio, e.lugar,
             sd.nombre AS subdirectiva
-     FROM notificacion_evento n
-     JOIN evento e ON e.id_evento = n.id_evento
+     FROM afiliado a
+     JOIN evento e ON e.eliminado_at IS NULL
      LEFT JOIN subdirectiva sd ON sd.id_subdirectiva = e.id_subdirectiva
-     WHERE n.id_afiliado = $1
-       AND n.leida_at IS NULL
+     WHERE a.id_afiliado = $1
+       AND a.estado = 'aprobado'
        AND e.estado = 'programado'
-       AND e.fecha_inicio > now()
+       AND now() < COALESCE(e.fecha_fin, e.fecha_inicio + interval '3 hours')
+       AND e.id_usuario IS DISTINCT FROM $2::bigint
+       AND (
+         e.id_subdirectiva IS NULL
+         OR sd.es_principal = TRUE
+         OR EXISTS (
+           SELECT 1 FROM subdirectiva_afiliado sa
+           WHERE sa.id_afiliado = a.id_afiliado AND sa.id_subdirectiva = e.id_subdirectiva
+         )
+       )
+       AND NOT EXISTS (
+         SELECT 1 FROM evento_notificacion_leida l
+         WHERE l.id_afiliado = a.id_afiliado AND l.id_evento = e.id_evento
+       )
      ORDER BY e.fecha_inicio ASC
      LIMIT 20`,
-    [req.user.id_afiliado]
+    [req.user.id_afiliado, req.user.id_usuario ?? null]
   );
   return res.json(rows);
 }
@@ -211,10 +188,22 @@ export async function marcarNotificacionesLeidas(req, res) {
     return res.status(400).json({ error: 'Actividad no válida' });
   }
   const { rowCount } = await query(
-    `UPDATE notificacion_evento
-     SET leida_at = now()
-     WHERE id_afiliado = $1 AND leida_at IS NULL
-       AND ($2::bigint IS NULL OR id_evento = $2)`,
+    `INSERT INTO evento_notificacion_leida (id_afiliado, id_evento)
+     SELECT $1, e.id_evento
+     FROM evento e
+     LEFT JOIN subdirectiva sd ON sd.id_subdirectiva = e.id_subdirectiva
+     WHERE e.eliminado_at IS NULL
+       AND ($2::bigint IS NULL OR e.id_evento = $2)
+       AND now() < COALESCE(e.fecha_fin, e.fecha_inicio + interval '3 hours')
+       AND (
+         e.id_subdirectiva IS NULL
+         OR sd.es_principal = TRUE
+         OR EXISTS (
+           SELECT 1 FROM subdirectiva_afiliado sa
+           WHERE sa.id_afiliado = $1 AND sa.id_subdirectiva = e.id_subdirectiva
+         )
+       )
+     ON CONFLICT DO NOTHING`,
     [req.user.id_afiliado, idEvento === undefined ? null : String(idEvento)]
   );
   return res.json({ actualizadas: rowCount });
@@ -231,11 +220,11 @@ export async function buscarEventoVisible(req, idEvento) {
     .filter((asignacion) => !asignacion.es_principal)
     .map((asignacion) => String(asignacion.id_subdirectiva)))];
   const { rows } = await query(
-    `SELECT e.id_evento, e.id_subdirectiva, e.fecha_inicio, e.estado,
+    `SELECT e.id_evento, e.id_subdirectiva, e.fecha_inicio, e.fecha_fin, e.estado,
             sd.es_principal
      FROM evento e
      LEFT JOIN subdirectiva sd ON sd.id_subdirectiva = e.id_subdirectiva
-     WHERE e.id_evento = $1
+     WHERE e.id_evento = $1 AND e.eliminado_at IS NULL
        AND (
          $2::boolean = TRUE
          OR e.id_subdirectiva IS NULL
@@ -245,6 +234,29 @@ export async function buscarEventoVisible(req, idEvento) {
     [idEvento, esAdministrador || esDirectivaPrincipal, subdirectivasVisibles]
   );
   return rows[0] ? { evento: rows[0], asignaciones, esAdministrador, esDirectivaPrincipal } : null;
+}
+
+// La asistencia se puede confirmar mientras la actividad no haya terminado (3 h si no tiene fin).
+function confirmacionAbierta(evento) {
+  if (evento.estado !== 'programado') return false;
+  const fin = evento.fecha_fin
+    ? new Date(evento.fecha_fin)
+    : new Date(new Date(evento.fecha_inicio).getTime() + 3 * 3600 * 1000);
+  return new Date() < fin;
+}
+
+export async function eliminarEvento(req, res) {
+  const acceso = await buscarEventoVisible(req, req.params.id);
+  if (!acceso) return res.status(404).json({ error: 'Actividad no encontrada' });
+  if (!acceso.esAdministrador && !acceso.esDirectivaPrincipal) {
+    return res.status(403).json({ error: 'Solo un administrador o la directiva departamental puede eliminar actividades' });
+  }
+  await query(
+    `UPDATE evento SET eliminado_at = now(), id_usuario_eliminacion = $2
+     WHERE id_evento = $1 AND eliminado_at IS NULL`,
+    [acceso.evento.id_evento, req.user.id_usuario]
+  );
+  return res.json({ mensaje: 'Actividad eliminada' });
 }
 
 export function puedeGestionarEvento(req, acceso, evento) {
@@ -265,8 +277,8 @@ export async function actualizarAsistencia(req, res) {
 
   const acceso = await buscarEventoVisible(req, id);
   if (!acceso) return res.status(404).json({ error: 'Actividad no encontrada' });
-  if (acceso.evento.estado !== 'programado' || new Date(acceso.evento.fecha_inicio) <= new Date()) {
-    return res.status(409).json({ error: 'Ya no se puede cambiar la asistencia después del inicio' });
+  if (!confirmacionAbierta(acceso.evento)) {
+    return res.status(409).json({ error: 'La actividad ya finalizó; no se puede cambiar la asistencia' });
   }
 
   const { rows } = await query(

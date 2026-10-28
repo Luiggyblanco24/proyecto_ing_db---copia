@@ -790,6 +790,38 @@ input:focus, select:focus {
   stroke-width: 2;
 }
 
+.boton-icono-eliminar {
+  color: #c62828;
+}
+
+.boton-icono-eliminar:hover {
+  border-color: #f3c4c4;
+  background: #fdecec;
+}
+
+.boton-agregar-estructura {
+  flex: 0 0 auto;
+  padding: 3px 10px;
+  color: var(--verde-institucional);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: #fff;
+  border: 1px dashed var(--verde-institucional);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.boton-agregar-estructura:hover {
+  background: var(--verde-suave);
+}
+
+.boton-agregar-estructura:focus-visible {
+  outline: 2px solid var(--verde-institucional);
+  outline-offset: 2px;
+}
+
 .cuenta-layout {
   display: grid;
   grid-template-columns: 190px minmax(0, 1fr);

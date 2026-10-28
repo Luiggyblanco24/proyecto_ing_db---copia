@@ -237,6 +237,105 @@ export async function renombrarSede(req, res) {
   }
 }
 
+export async function eliminarSede(req, res) {
+  const { id } = req.params;
+  if (!idValido(id)) return res.status(400).json({ error: 'Sede no válida' });
+
+  try {
+    const { rows } = await query(
+      `SELECT s.nombre,
+              (SELECT COUNT(*)::int FROM subdirectiva_afiliado sa WHERE sa.id_sede = s.id_sede) +
+              (SELECT COUNT(*)::int FROM afiliado_sede asd WHERE asd.id_sede = s.id_sede) AS asignaciones
+       FROM sede s WHERE s.id_sede = $1`,
+      [id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Sede no encontrada' });
+    if (rows[0].asignaciones > 0) {
+      return res.status(409).json({ error: 'No se puede eliminar la sede porque tiene afiliados asignados. Reasígnalos primero.' });
+    }
+    await query('DELETE FROM sede WHERE id_sede = $1', [id]);
+    return res.json({ mensaje: `Sede "${rows[0].nombre}" eliminada` });
+  } catch (err) {
+    if (err.code === '23503') {
+      return res.status(409).json({ error: 'No se puede eliminar la sede porque tiene registros asociados' });
+    }
+    console.error(err);
+    return res.status(500).json({ error: 'Error al eliminar la sede' });
+  }
+}
+
+export async function eliminarInstitucion(req, res) {
+  const { id } = req.params;
+  if (!idValido(id)) return res.status(400).json({ error: 'Institución no válida' });
+
+  try {
+    const { rows } = await query(
+      `SELECT i.nombre,
+              (SELECT COUNT(*)::int FROM sede s WHERE s.id_institucion = i.id_institucion) AS sedes,
+              (SELECT COUNT(*)::int FROM sede s
+                 JOIN subdirectiva_afiliado sa ON sa.id_sede = s.id_sede
+                WHERE s.id_institucion = i.id_institucion) +
+              (SELECT COUNT(*)::int FROM sede s
+                 JOIN afiliado_sede asd ON asd.id_sede = s.id_sede
+                WHERE s.id_institucion = i.id_institucion) AS asignaciones
+       FROM institucion i WHERE i.id_institucion = $1`,
+      [id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Institución educativa no encontrada' });
+    if (rows[0].asignaciones > 0) {
+      return res.status(409).json({ error: 'No se puede eliminar la institución porque alguna de sus sedes tiene afiliados asignados. Reasígnalos primero.' });
+    }
+    await query('DELETE FROM institucion WHERE id_institucion = $1', [id]);
+    return res.json({ mensaje: `Institución "${rows[0].nombre}" eliminada junto con ${rows[0].sedes} sede(s)` });
+  } catch (err) {
+    if (err.code === '23503') {
+      return res.status(409).json({ error: 'No se puede eliminar la institución porque tiene registros asociados' });
+    }
+    console.error(err);
+    return res.status(500).json({ error: 'Error al eliminar la institución educativa' });
+  }
+}
+
+export async function eliminarSubdirectiva(req, res) {
+  const { id } = req.params;
+  if (!idValido(id)) return res.status(400).json({ error: 'Subdirectiva no válida' });
+
+  try {
+    const { rows } = await query(
+      `SELECT sd.nombre, sd.es_principal,
+              (SELECT COUNT(*)::int FROM subdirectiva_afiliado sa WHERE sa.id_subdirectiva = sd.id_subdirectiva) AS afiliados,
+              (SELECT COUNT(*)::int FROM evento e WHERE e.id_subdirectiva = sd.id_subdirectiva AND e.eliminado_at IS NULL) AS eventos,
+              (SELECT COUNT(*)::int FROM documento d WHERE d.id_subdirectiva = sd.id_subdirectiva) AS documentos,
+              (SELECT COUNT(*)::int FROM institucion i WHERE i.id_subdirectiva = sd.id_subdirectiva) AS instituciones
+       FROM subdirectiva sd WHERE sd.id_subdirectiva = $1`,
+      [id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Subdirectiva no encontrada' });
+    const subdirectiva = rows[0];
+    if (subdirectiva.es_principal) {
+      return res.status(409).json({ error: 'La subdirectiva principal no se puede eliminar' });
+    }
+    const bloqueos = [
+      subdirectiva.afiliados && `${subdirectiva.afiliados} afiliado(s) asignado(s)`,
+      subdirectiva.eventos && `${subdirectiva.eventos} actividad(es)`,
+      subdirectiva.documentos && `${subdirectiva.documentos} documento(s)`,
+    ].filter(Boolean);
+    if (bloqueos.length > 0) {
+      return res.status(409).json({
+        error: `No se puede eliminar la subdirectiva porque tiene ${bloqueos.join(', ')}. Reasígnalos o elimínalos primero.`,
+      });
+    }
+    await query('DELETE FROM subdirectiva WHERE id_subdirectiva = $1 AND es_principal = FALSE', [id]);
+    return res.json({ mensaje: `Subdirectiva "${subdirectiva.nombre}" eliminada junto con ${subdirectiva.instituciones} institución(es)` });
+  } catch (err) {
+    if (err.code === '23503') {
+      return res.status(409).json({ error: 'No se puede eliminar la subdirectiva porque tiene registros asociados' });
+    }
+    console.error(err);
+    return res.status(500).json({ error: 'Error al eliminar la subdirectiva' });
+  }
+}
+
 export async function asignarAfiliado(req, res) {
   const { id } = req.params;
   const { id_subdirectiva, id_sede, id_cargo_sindical, id_rol_laboral } = req.body || {};
