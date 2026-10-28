@@ -18,6 +18,7 @@ form.addEventListener('submit', async (e) => {
     celular: document.getElementById('celular').value.trim(),
     usuario: document.getElementById('usuario').value.trim(),
     password: document.getElementById('password').value,
+    autorizo_tratamiento: document.getElementById('autorizo-tratamiento').checked,
   };
 
   try {
@@ -26,7 +27,7 @@ form.addEventListener('submit', async (e) => {
       body: JSON.stringify(datos),
     });
 
-    mensaje.textContent = data.mensaje;
+    mensaje.textContent = `${data.mensaje} Número de radicado: ${data.radicado}.`;
     mensaje.className = 'mensaje exito';
     form.reset();
     form.hidden = true;

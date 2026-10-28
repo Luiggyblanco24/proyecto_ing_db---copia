@@ -19,7 +19,7 @@ import { autorizarDirectivaPrincipal } from '../middleware/rbac.js';
 const router = Router();
 const cargarImagen = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 8 * 1024 * 1024, files: 1 },
+  limits: { fileSize: 4 * 1024 * 1024, files: 1 },
   fileFilter(req, file, callback) {
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) {
       callback(new Error('La galería solo admite imágenes JPG, PNG o WebP'));

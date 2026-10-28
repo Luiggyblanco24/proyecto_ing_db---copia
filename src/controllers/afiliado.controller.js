@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import { randomBytes } from 'node:crypto';
 import { pool, query } from '../config/db.js';
 import { normalizarNombre } from '../utils/nombre.js';
+import { textoAvisoDatos, versionAvisoDatos } from '../services/consentimiento.service.js';
 
 // Lista de afiliados (con filtro opcional por estado). Solo Administrador.
 export async function consultarAfiliados(req, idSubdirectiva = null) {
@@ -24,7 +25,12 @@ export async function consultarAfiliados(req, idSubdirectiva = null) {
   if (busqueda) {
     params.push(`%${busqueda}%`);
     condiciones.push(`(
-      concat_ws(' ', p.nombre1, p.nombre2, p.apellido1, p.apellido2) ILIKE $${params.length}
+      (
+        COALESCE(p.nombre1, '') ||
+        CASE WHEN p.nombre2 IS NOT NULL THEN ' ' || p.nombre2 ELSE '' END ||
+        ' ' || p.apellido1 ||
+        CASE WHEN p.apellido2 IS NOT NULL THEN ' ' || p.apellido2 ELSE '' END
+      ) ILIKE $${params.length}
       OR p.cedula ILIKE $${params.length}
     )`);
   }
@@ -297,6 +303,11 @@ export async function eliminarAfiliado(req, res) {
     return res.json({ mensaje: 'Afiliado eliminado permanentemente' });
   } catch (err) {
     await client.query('ROLLBACK').catch(() => {});
+    if (err.code === '23503') {
+      return res.status(409).json({
+        error: 'No se puede eliminar el afiliado porque existen registros asociados que deben conservarse',
+      });
+    }
     console.error(err);
     return res.status(500).json({ error: 'Error al eliminar el afiliado' });
   } finally {
@@ -332,12 +343,13 @@ export async function restablecerContrasenaTemporal(req, res) {
     }
 
     const contrasenaTemporal = randomBytes(9).toString('base64url');
+    const passwordHash = await bcrypt.hash(contrasenaTemporal, 10);
     await client.query(
       `UPDATE usuario
        SET password_hash = $1, requiere_cambio_contrasena = TRUE,
            auth_version = auth_version + 1, updated_at = now()
        WHERE id_usuario = $2`,
-      [bcrypt.hashSync(contrasenaTemporal, 10), afiliados[0].id_usuario]
+      [passwordHash, afiliados[0].id_usuario]
     );
     await client.query('COMMIT');
     return res.json({
@@ -356,30 +368,55 @@ export async function restablecerContrasenaTemporal(req, res) {
 // Aprobar o rechazar una solicitud de afiliación (HU-07)
 export async function cambiarEstado(req, res) {
   const { id } = req.params;
-  const { estado } = req.body; // 'aprobado' | 'rechazado'
+  const { estado } = req.body || {}; // 'aprobado' | 'rechazado'
 
+  if (!/^[1-9]\d*$/.test(id)) {
+    return res.status(400).json({ error: 'El afiliado indicado no es válido' });
+  }
   if (!['aprobado', 'rechazado'].includes(estado)) {
     return res.status(400).json({ error: 'Estado inválido. Usa "aprobado" o "rechazado"' });
   }
 
-  const fechaAprobacion = estado === 'aprobado' ? new Date() : null;
-  const estadoSindical = 'inactivo';
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const { rows: afiliados } = await client.query(
+      'SELECT id_afiliado, estado FROM afiliado WHERE id_afiliado = $1 FOR UPDATE',
+      [id]
+    );
+    if (afiliados.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Afiliado no encontrado' });
+    }
+    if (afiliados[0].estado !== 'pendiente') {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ error: 'Solo se pueden resolver solicitudes pendientes' });
+    }
 
-  const { rows } = await query(
-    `UPDATE afiliado
-     SET estado = $1,
-       fecha_aprobacion = $2,
-       estado_sindical = $3
-     WHERE id_afiliado = $4
-     RETURNING id_afiliado, estado`,
-    [estado, fechaAprobacion, estadoSindical, id]
-  );
-
-  if (rows.length === 0) {
-    return res.status(404).json({ error: 'Afiliado no encontrado' });
+    const { rows } = await client.query(
+      `UPDATE afiliado
+       SET estado = $1,
+           fecha_aprobacion = CASE WHEN $1 = 'aprobado' THEN now() ELSE NULL END,
+           estado_sindical = 'inactivo'
+       WHERE id_afiliado = $2
+       RETURNING id_afiliado, estado, radicado`,
+      [estado, id]
+    );
+    await client.query(
+      `INSERT INTO auditoria_decision_afiliado
+         (id_afiliado, id_usuario_actor, usuario_actor, estado_anterior, estado_nuevo)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [id, req.user.id_usuario, req.user.usuario, afiliados[0].estado, estado]
+    );
+    await client.query('COMMIT');
+    return res.json({ mensaje: `Solicitud ${estado}`, afiliado: rows[0] });
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    console.error('No se pudo resolver la solicitud de afiliación:', err);
+    return res.status(500).json({ error: 'No se pudo resolver la solicitud de afiliación' });
+  } finally {
+    client.release();
   }
-
-  return res.json({ mensaje: `Solicitud ${estado}`, afiliado: rows[0] });
 }
 
 // Registro de usuario hecho por un Administrador (afiliado queda aprobado y con rol)
@@ -387,14 +424,29 @@ export async function registrarPorAdmin(req, res) {
   const {
     nombre1, nombre2, apellido1, apellido2,
     cedula, fecha_nacimiento, correo, celular,
-    usuario, password, rol,
-  } = req.body;
+    usuario, password, rol, autorizo_tratamiento,
+  } = req.body || {};
 
   if (!nombre1 || !apellido1 || !cedula || !correo || !usuario || !password || !rol) {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
   }
+  if (autorizo_tratamiento !== true) {
+    return res.status(400).json({ error: 'Confirma que el titular otorgó autorización expresa y que cuentas con su soporte' });
+  }
+  if (typeof password !== 'string' || password.length < 8 || Buffer.byteLength(password, 'utf8') > 72) {
+    return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres y máximo 72 bytes' });
+  }
 
   try {
+    const { rows: roles } = await query(
+      'SELECT id_rol_sistema FROM rol_sistema WHERE nombre = $1',
+      [rol]
+    );
+    if (roles.length === 0) {
+      return res.status(400).json({ error: 'El rol seleccionado no existe' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
     const { rows } = await query(
       `WITH nueva_persona AS (
          INSERT INTO persona (nombre1, nombre2, apellido1, apellido2, cedula, fecha_nacimiento, correo, celular)
@@ -404,29 +456,42 @@ export async function registrarPorAdmin(req, res) {
        nuevo_afiliado AS (
          INSERT INTO afiliado (id_persona, estado, fecha_aprobacion, estado_sindical)
          SELECT id_persona, 'aprobado', now(), 'inactivo' FROM nueva_persona
+         RETURNING id_afiliado, radicado
+       ),
+       nueva_autorizacion AS (
+         INSERT INTO autorizacion_datos_afiliado
+           (id_afiliado, version_aviso, texto_aviso, origen, id_usuario_actor)
+         SELECT id_afiliado, $12, $13, 'registro_admin', $14
+         FROM nuevo_afiliado
          RETURNING id_afiliado
        ),
        nuevo_usuario AS (
          INSERT INTO usuario (id_afiliado, usuario, password_hash)
-         SELECT id_afiliado, $9, $10 FROM nuevo_afiliado
+         SELECT a.id_afiliado, $9, $10
+         FROM nuevo_afiliado a
+         JOIN nueva_autorizacion n ON n.id_afiliado = a.id_afiliado
+         RETURNING id_usuario
+       ),
+       nueva_asignacion AS (
+         INSERT INTO usuario_rol (id_usuario, id_rol_sistema)
+         SELECT id_usuario, $11 FROM nuevo_usuario
          RETURNING id_usuario
        )
-       INSERT INTO usuario_rol (id_usuario, id_rol_sistema)
-       SELECT u.id_usuario, rs.id_rol_sistema
-       FROM nuevo_usuario u, rol_sistema rs
-       WHERE rs.nombre = $11
-       RETURNING id_usuario`,
+       SELECT nueva_asignacion.id_usuario, nuevo_afiliado.radicado
+       FROM nueva_asignacion CROSS JOIN nuevo_afiliado`,
       [
         normalizarNombre(nombre1), nombre2 ? normalizarNombre(nombre2) : null,
         normalizarNombre(apellido1), apellido2 ? normalizarNombre(apellido2) : null,
         cedula, fecha_nacimiento || null, correo, celular || null,
-        usuario, bcrypt.hashSync(password, 10), rol,
+        usuario, passwordHash, roles[0].id_rol_sistema, versionAvisoDatos,
+        textoAvisoDatos, req.user.id_usuario,
       ]
     );
 
     return res.status(201).json({
       mensaje: 'Usuario registrado y aprobado',
       id_usuario: rows[0].id_usuario,
+      radicado: rows[0].radicado,
     });
   } catch (err) {
     if (err.code === '23505') {

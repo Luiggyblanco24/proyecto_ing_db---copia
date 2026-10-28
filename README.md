@@ -50,9 +50,21 @@ psql -d sutens -f database/migrations/013_biblioteca_educativa_secretarios.sql
 psql -d sutens -f database/migrations/014_administradores_sin_cargo_sindical.sql
 psql -d sutens -f database/migrations/015_catalogos_roles_administrables.sql
 psql -d sutens -f database/migrations/016_contrasena_temporal.sql
+psql -d sutens -f database/migrations/017_radicados_sesiones_y_auditoria.sql
+psql -d sutens -f database/migrations/018_autorizacion_datos_personales.sql
+psql -d sutens -f database/migrations/019_origen_autorizacion_datos.sql
+psql -d sutens -f database/migrations/020_indices_busqueda_afiliados.sql
 ```
 
 > La migración 009 ya fue aplicada en la base existente. Aplica las migraciones posteriores que aún estén pendientes, en orden; no ejecutes otra vez una migración que ya terminó correctamente. La 011 crea la galería pública y carga de forma idempotente sus seis imágenes iniciales. La 012 agrega la opción de publicación pública de documentos sindicales. La 013 habilita la biblioteca educativa y permite varios Secretarios Generales. La 014 quita las asignaciones sindicales y laborales a quienes tengan el rol de acceso Administrador SUTENS, sin quitarles ese rol administrativo. La 015 permite clasificar nuevos cargos sindicales para la Directiva Departamental. La 016 habilita el restablecimiento temporal de contraseña e invalida sesiones anteriores.
+
+La migración 017 agrega un radicado único a cada afiliado, sesiones revocables con expiración por inactividad (30 minutos por defecto; configurable con `JWT_IDLE_TIMEOUT_MINUTES`) y auditoría de aprobación/rechazo. Después de aplicarla, los JWT emitidos antes de la migración deberán renovarse iniciando sesión. `JWT_EXPIRES_IN` admite una duración en segundos o con sufijo `s`, `m`, `h` o `d`.
+
+La migración 018 registra la versión y el texto aceptado del aviso de tratamiento de datos durante la afiliación; el formulario público lo exige y el alta administrativa registra al responsable que confirma disponer del soporte de autorización del titular. La migración 019 añade el origen y responsable del registro administrativo. El texto y el aviso de privacidad deben ser revisados y aprobados por el responsable jurídico antes de producción. No se inventan consentimientos para afiliaciones históricas.
+
+Las cargas de documentos tienen un máximo de 5 MB y las imágenes públicas un máximo de 4 MB; ejecuta de nuevo `database/supabase-storage.sql` en Supabase para sincronizar los límites de los buckets existentes.
+
+La migración 020 instala índices trigram concurrentes para acelerar las búsquedas parciales de afiliados por nombre y cédula sin bloquear las escrituras normales durante la creación.
 
 ### Modelo de datos (resumen)
 
@@ -133,7 +145,7 @@ Al abrir `http://localhost:3000` verás el sitio público de SUTENS:
 | GET | `/api/biblioteca/educativa/:id/archivo` | Afiliado aprobado | Descarga una copia PDF con portada SUTENS del material educativo |
 | POST | `/api/biblioteca/educativa` | Afiliado aprobado | Comparte guía por grado y materia o metodología general de apoyo docente |
 | DELETE | `/api/biblioteca/educativa/:id` | Autor o Directiva Departamental activa | Elimina material educativo |
-| POST | `/api/biblioteca` | Admin o presidente, vicepresidente, secretario o fiscal activo | Sube un PDF, DOC o DOCX (máximo 20 MB) |
+| POST | `/api/biblioteca` | Admin o presidente, vicepresidente, secretario o fiscal activo | Sube un PDF, DOC o DOCX (máximo 5 MB) |
 | PATCH | `/api/biblioteca/:id` | Autor, admin o Directiva Departamental | Edita título, categoría, descripción o reemplaza el archivo |
 | PATCH | `/api/biblioteca/:id/publicacion` | Administrador o Directiva Departamental | Publica u oculta un documento sindical en Comunicaciones |
 | DELETE | `/api/biblioteca/:id` | Autor, admin o Directiva Departamental | Elimina el registro y el archivo privado |

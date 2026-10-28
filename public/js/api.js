@@ -9,6 +9,14 @@ function setToken(token) {
 }
 
 function cerrarSesion() {
+  const token = getToken();
+  if (token) {
+    fetch('/api/auth/logout', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      keepalive: true,
+    }).catch(() => {});
+  }
   localStorage.removeItem('token');
   window.location.href = '/';
 }
@@ -25,6 +33,10 @@ async function apiFetch(url, options = {}) {
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
+    if (res.status === 401 && token) {
+      localStorage.removeItem('token');
+      window.location.assign('/login.html?sesion=expirada');
+    }
     throw new Error(data.error || 'Error en la petición');
   }
   return data;

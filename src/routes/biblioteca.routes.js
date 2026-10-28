@@ -27,7 +27,7 @@ const tiposPermitidos = new Map([
 
 const cargarArchivo = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 20 * 1024 * 1024, files: 1 },
+  limits: { fileSize: 5 * 1024 * 1024, files: 1 },
   fileFilter(req, file, callback) {
     const extension = path.extname(file.originalname).toLocaleLowerCase('en');
     if (tiposPermitidos.get(extension) !== file.mimetype) {

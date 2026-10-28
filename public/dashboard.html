@@ -240,7 +240,7 @@
       </div>
       <label id="label-documento-archivo" for="documento-archivo">Archivo PDF o Word *</label>
       <input id="documento-archivo" name="archivo" type="file" accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.doc,.docx" required />
-      <span id="ayuda-documento-archivo" class="ayuda-campo">PDF, DOC o DOCX, máximo 20 MB</span>
+      <span id="ayuda-documento-archivo" class="ayuda-campo">PDF, DOC o DOCX, máximo 5 MB</span>
       <div class="acciones-cuenta">
         <button id="btn-cancelar-documento" class="btn btn-secundario" type="button">Cancelar</button>
         <button id="btn-guardar-documento" class="btn btn-primario" type="submit">Publicar documento</button>
@@ -284,7 +284,7 @@
       <textarea id="material-educativo-descripcion" name="descripcion" rows="3" maxlength="4000" placeholder="Explica para qué sirve o cómo puede usarse este material"></textarea>
       <label for="material-educativo-archivo">Archivo PDF o Word *</label>
       <input id="material-educativo-archivo" name="archivo" type="file" accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.doc,.docx" required />
-      <span class="ayuda-campo">PDF, DOC o DOCX, máximo 20 MB. Las metodologías de apoyo son generales y no requieren grado ni materia.</span>
+      <span class="ayuda-campo">PDF, DOC o DOCX, máximo 5 MB. Las metodologías de apoyo son generales y no requieren grado ni materia.</span>
       <div class="acciones-cuenta">
         <button id="btn-cancelar-material-educativo" class="btn btn-secundario" type="button">Cancelar</button>
         <button class="btn btn-primario" type="submit">Compartir material</button>
@@ -497,6 +497,11 @@
           <option value="Administrador SUTENS">Administrador SUTENS</option>
           <option value="Afiliado">Afiliado</option>
         </select>
+
+        <label class="consentimiento" for="r-autorizo-tratamiento">
+          <input type="checkbox" id="r-autorizo-tratamiento" required />
+          Confirmo que el titular otorgó autorización expresa para este tratamiento y que cuento con el soporte correspondiente.
+        </label>
 
         <div style="display: flex; gap: 12px; margin-top: 8px;">
           <button type="submit" class="btn btn-primario">Registrar</button>

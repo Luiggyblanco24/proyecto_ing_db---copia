@@ -14,6 +14,7 @@ export async function obtenerAfiliadosVisibles(req) {
      JOIN cargo_sindical cs ON cs.id_cargo_sindical = sa.id_cargo_sindical
      WHERE a.id_afiliado = $1
        AND a.estado = 'aprobado'
+       AND a.estado_sindical = 'activo'
        AND cs.nombre IN (
          'Presidente General', 'Vicepresidente General', 'Secretario General', 'Fiscal General', 'Tesorero General',
          'Presidente', 'Vicepresidente', 'Secretario', 'Fiscal'

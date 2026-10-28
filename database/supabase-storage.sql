@@ -4,7 +4,7 @@ INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 VALUES
   ('sutens-public', 'sutens-public', TRUE, 4194304,
     ARRAY['image/jpeg', 'image/png', 'image/webp']),
-  ('sutens-private', 'sutens-private', FALSE, 20971520,
+  ('sutens-private', 'sutens-private', FALSE, 5242880,
     ARRAY['application/pdf', 'application/msword',
           'application/vnd.openxmlformats-officedocument.wordprocessingml.document'])
 ON CONFLICT (id) DO UPDATE

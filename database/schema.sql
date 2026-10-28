@@ -13,10 +13,13 @@
 
 -- Extensiones útiles (gen_random_uuid, crypt)
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- ============================================================================
 -- 1. PERSONAS Y AFILIADOS
 -- ============================================================================
+
+CREATE SEQUENCE afiliado_radicado_seq;
 
 CREATE TABLE persona (
     id_persona       BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -32,8 +35,23 @@ CREATE TABLE persona (
     created_at       TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
+CREATE INDEX idx_persona_nombre_completo_trgm
+    ON persona USING gin (
+      (
+        COALESCE(nombre1, '') ||
+        CASE WHEN nombre2 IS NOT NULL THEN ' ' || nombre2 ELSE '' END ||
+        ' ' || apellido1 ||
+        CASE WHEN apellido2 IS NOT NULL THEN ' ' || apellido2 ELSE '' END
+      ) gin_trgm_ops
+    );
+
+CREATE INDEX idx_persona_cedula_trgm
+    ON persona USING gin (cedula gin_trgm_ops);
+
 CREATE TABLE afiliado (
     id_afiliado      BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    radicado         VARCHAR(24)  NOT NULL
+                        DEFAULT ('SUTENS-' || lpad(nextval('afiliado_radicado_seq')::text, 8, '0')),
     id_persona       BIGINT       NOT NULL UNIQUE
                         REFERENCES persona(id_persona) ON DELETE CASCADE,
     -- Estado del proceso de afiliación (panel de aprobación, HU-07)
@@ -47,6 +65,9 @@ CREATE TABLE afiliado (
     CONSTRAINT ck_afiliado_estado_sindical
         CHECK (estado_sindical IN ('activo', 'inactivo'))
 );
+
+CREATE UNIQUE INDEX uq_afiliado_radicado
+    ON afiliado (radicado);
 
 -- ============================================================================
 -- 2. USUARIOS Y RBAC (Control de Acceso Basado en Roles)
@@ -64,6 +85,48 @@ CREATE TABLE usuario (
     created_at    TIMESTAMPTZ  NOT NULL DEFAULT now(),
     updated_at    TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
+
+CREATE TABLE autorizacion_datos_afiliado (
+    id_autorizacion  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_afiliado      BIGINT NOT NULL REFERENCES afiliado(id_afiliado) ON DELETE RESTRICT,
+    version_aviso    VARCHAR(40) NOT NULL,
+    texto_aviso      TEXT NOT NULL,
+    origen           VARCHAR(24) NOT NULL DEFAULT 'registro_web',
+    id_usuario_actor BIGINT REFERENCES usuario(id_usuario) ON DELETE SET NULL,
+    aceptada_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT ck_autorizacion_origen CHECK (origen IN ('registro_web', 'registro_admin')),
+    CONSTRAINT uq_autorizacion_afiliado_version UNIQUE (id_afiliado, version_aviso)
+);
+
+CREATE TABLE sesion_usuario (
+    id_sesion          UUID PRIMARY KEY,
+    id_usuario         BIGINT NOT NULL REFERENCES usuario(id_usuario) ON DELETE CASCADE,
+    auth_version       INTEGER NOT NULL,
+    ultima_actividad_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    expira_at          TIMESTAMPTZ NOT NULL,
+    revocada_at        TIMESTAMPTZ,
+    created_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT ck_sesion_expiracion CHECK (expira_at > created_at)
+);
+
+CREATE INDEX idx_sesion_usuario_vigente
+    ON sesion_usuario (id_usuario, expira_at)
+    WHERE revocada_at IS NULL;
+
+CREATE TABLE auditoria_decision_afiliado (
+    id_auditoria       BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_afiliado        BIGINT NOT NULL REFERENCES afiliado(id_afiliado) ON DELETE RESTRICT,
+    id_usuario_actor   BIGINT REFERENCES usuario(id_usuario) ON DELETE SET NULL,
+    usuario_actor      VARCHAR(50) NOT NULL,
+    estado_anterior    VARCHAR(20) NOT NULL,
+    estado_nuevo       VARCHAR(20) NOT NULL,
+    created_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT ck_auditoria_estado_anterior CHECK (estado_anterior = 'pendiente'),
+    CONSTRAINT ck_auditoria_estado_nuevo CHECK (estado_nuevo IN ('aprobado', 'rechazado'))
+);
+
+CREATE INDEX idx_auditoria_decision_afiliado_fecha
+    ON auditoria_decision_afiliado (id_afiliado, created_at DESC);
 
 -- Roles de ACCESO al sistema (RBAC), independientes del cargo laboral.
 CREATE TABLE rol_sistema (

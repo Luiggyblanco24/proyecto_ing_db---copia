@@ -863,8 +863,8 @@ function configurarFormularioBiblioteca(modo) {
     ? 'Reemplazar archivo (opcional)'
     : 'Archivo PDF o Word *';
   document.getElementById('ayuda-documento-archivo').textContent = editando
-    ? 'Deja vacío para conservar el archivo actual. PDF, DOC o DOCX, máximo 20 MB.'
-    : 'PDF, DOC o DOCX, máximo 20 MB';
+    ? 'Deja vacío para conservar el archivo actual. PDF, DOC o DOCX, máximo 5 MB.'
+    : 'PDF, DOC o DOCX, máximo 5 MB';
   archivo.required = !editando;
   document.getElementById('campo-documento-subdirectiva').hidden = editando || !esAdmin;
   actualizarControlPublicacionDocumento();
@@ -884,7 +884,7 @@ function ocultarFormularioBiblioteca() {
   document.getElementById('titulo-form-biblioteca').textContent = 'Agregar documento sindical';
   document.getElementById('btn-guardar-documento').textContent = 'Publicar documento';
   document.getElementById('label-documento-archivo').textContent = 'Archivo PDF o Word *';
-  document.getElementById('ayuda-documento-archivo').textContent = 'PDF, DOC o DOCX, máximo 20 MB';
+  document.getElementById('ayuda-documento-archivo').textContent = 'PDF, DOC o DOCX, máximo 5 MB';
   document.getElementById('documento-publico').checked = false;
   document.getElementById('campo-documento-publico').hidden = true;
   document.getElementById('campo-documento-subdirectiva').hidden = !esAdmin;
@@ -1307,6 +1307,7 @@ document.getElementById('form-registrar-admin').addEventListener('submit', async
     usuario: document.getElementById('r-usuario').value.trim(),
     password: document.getElementById('r-password').value,
     rol: document.getElementById('r-rol').value,
+    autorizo_tratamiento: document.getElementById('r-autorizo-tratamiento').checked,
   };
 
   try {
@@ -1315,12 +1316,9 @@ document.getElementById('form-registrar-admin').addEventListener('submit', async
       body: JSON.stringify(datos),
     });
 
-    mensaje.textContent = data.mensaje;
+    mensaje.textContent = `${data.mensaje}. Radicado: ${data.radicado}.`;
     mensaje.className = 'mensaje exito';
-    setTimeout(() => {
-      cerrarModal();
-      cargarUsuarios();
-    }, 800);
+    cargarUsuarios();
   } catch (err) {
     mensaje.textContent = err.message;
     mensaje.className = 'mensaje error';

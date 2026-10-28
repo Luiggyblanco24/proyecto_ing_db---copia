@@ -19,10 +19,13 @@ const news = await sanityClient.fetch(query);
             <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                 {item.imageUrl && (
                     <img
-                        src={item.imageUrl}
+                        src={`${item.imageUrl}?w=800&h=480&fit=crop&auto=format&q=75`}
                         alt={item.title}
                         class="w-full h-48 object-cover"
                         loading="lazy"
+                        decoding="async"
+                        width="800"
+                        height="480"
                     />
                 )}
                 <div class="p-4">
@@ -36,7 +39,7 @@ const news = await sanityClient.fetch(query);
                         {new Date(item.publishedAt).toLocaleDateString("es-ES")}
                     </time>
                     <a
-                        href={`/news/${item.slug.current}`}
+                        href={`/news/${encodeURIComponent(item.slug.current)}`}
                         class="mt-3 inline-block text-blue-600 hover:text-blue-800 font-medium"
                     >
                         Leer más →

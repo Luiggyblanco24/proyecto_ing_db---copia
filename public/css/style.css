@@ -159,6 +159,21 @@ input:focus, select:focus {
   gap: 12px;
 }
 
+.consentimiento {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 4px 0 18px;
+  line-height: 1.5;
+}
+
+.consentimiento input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: auto;
+  margin: 2px 0 0;
+  padding: 0;
+}
+
 /* ---------- Botones ---------- */
 .btn {
   display: inline-block;

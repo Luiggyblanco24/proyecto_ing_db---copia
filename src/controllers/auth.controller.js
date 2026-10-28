@@ -1,8 +1,9 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import { randomUUID } from 'node:crypto';
 import { pool, query } from '../config/db.js';
 import { normalizarNombre } from '../utils/nombre.js';
+import { emitirTokenSesion } from '../services/auth-session.service.js';
+import { textoAvisoDatos, versionAvisoDatos } from '../services/consentimiento.service.js';
 import {
   eliminarObjetoStorage,
   rutaObjetoFotoPerfil,
@@ -33,8 +34,8 @@ export async function registrar(req, res) {
   const {
     nombre1, nombre2, apellido1, apellido2,
     cedula, fecha_nacimiento, correo, celular,
-    usuario, password,
-  } = req.body;
+    usuario, password, autorizo_tratamiento,
+  } = req.body || {};
   const primerNombre = typeof nombre1 === 'string' ? nombre1.trim() : '';
   const primerApellido = typeof apellido1 === 'string' ? apellido1.trim() : '';
   const correoNormalizado = typeof correo === 'string' ? correo.trim().toLocaleLowerCase('es') : '';
@@ -44,6 +45,9 @@ export async function registrar(req, res) {
 
   if (!primerNombre || !primerApellido || !cedulaNormalizada || !correoNormalizado || !usuarioNormalizado || !password) {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
+  }
+  if (autorizo_tratamiento !== true) {
+    return res.status(400).json({ error: 'Debes autorizar el tratamiento de datos personales para solicitar la afiliación' });
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoNormalizado) || correoNormalizado.length > 120) {
     return res.status(400).json({ error: 'Escribe un correo válido de máximo 120 caracteres' });
@@ -89,14 +93,20 @@ export async function registrar(req, res) {
     const { rows: afiliados } = await client.query(
       `INSERT INTO afiliado (id_persona)
        VALUES ($1)
-       RETURNING id_afiliado`,
+       RETURNING id_afiliado, radicado`,
       [personas[0].id_persona]
     );
+    await client.query(
+      `INSERT INTO autorizacion_datos_afiliado (id_afiliado, version_aviso, texto_aviso)
+       VALUES ($1, $2, $3)`,
+      [afiliados[0].id_afiliado, versionAvisoDatos, textoAvisoDatos]
+    );
+    const passwordHash = await bcrypt.hash(password, 10);
     const { rows: usuarios } = await client.query(
       `INSERT INTO usuario (id_afiliado, usuario, password_hash)
        VALUES ($1, $2, $3)
        RETURNING id_usuario`,
-      [afiliados[0].id_afiliado, usuarioNormalizado, bcrypt.hashSync(password, 10)]
+      [afiliados[0].id_afiliado, usuarioNormalizado, passwordHash]
     );
     await client.query(
       `INSERT INTO usuario_rol (id_usuario, id_rol_sistema)
@@ -107,6 +117,7 @@ export async function registrar(req, res) {
     await client.query('COMMIT');
     return res.status(201).json({
       mensaje: 'Tu solicitud de afiliación fue recibida y quedó pendiente de validación por la Directiva.',
+      radicado: afiliados[0].radicado,
     });
   } catch (err) {
     if (client) await client.query('ROLLBACK').catch(() => {});
@@ -122,25 +133,31 @@ export async function registrar(req, res) {
 
 // Inicio de sesión
 export async function login(req, res) {
-  const { usuario, password } = req.body;
+  const { usuario, password } = req.body || {};
 
-  if (!usuario || !password) {
+  if (typeof usuario !== 'string' || !usuario.trim() || typeof password !== 'string' || !password) {
     return res.status(400).json({ error: 'Usuario y contraseña son obligatorios' });
   }
 
-  const { rows } = await query(
-    `SELECT u.id_usuario, u.id_afiliado, u.usuario, u.password_hash, u.activo,
-            u.requiere_cambio_contrasena, u.auth_version,
-            a.estado AS estado_afiliado,
-            COALESCE(array_agg(rs.nombre) FILTER (WHERE rs.nombre IS NOT NULL), '{}') AS roles
-     FROM usuario u
-     JOIN afiliado a ON a.id_afiliado = u.id_afiliado
-     LEFT JOIN usuario_rol ur ON ur.id_usuario = u.id_usuario
-     LEFT JOIN rol_sistema rs ON rs.id_rol_sistema = ur.id_rol_sistema
-     WHERE u.usuario = $1
-     GROUP BY u.id_usuario, a.estado`,
-    [usuario]
-  );
+  let rows;
+  try {
+    ({ rows } = await query(
+      `SELECT u.id_usuario, u.id_afiliado, u.usuario, u.password_hash, u.activo,
+              u.requiere_cambio_contrasena, u.auth_version,
+              a.estado AS estado_afiliado,
+              COALESCE(array_agg(rs.nombre) FILTER (WHERE rs.nombre IS NOT NULL), '{}') AS roles
+       FROM usuario u
+       JOIN afiliado a ON a.id_afiliado = u.id_afiliado
+       LEFT JOIN usuario_rol ur ON ur.id_usuario = u.id_usuario
+       LEFT JOIN rol_sistema rs ON rs.id_rol_sistema = ur.id_rol_sistema
+       WHERE u.usuario = $1
+       GROUP BY u.id_usuario, a.estado`,
+      [usuario]
+    ));
+  } catch (error) {
+    console.error('No se pudo consultar la cuenta para iniciar sesión:', error);
+    return res.status(500).json({ error: 'No se pudo iniciar sesión' });
+  }
 
   const user = rows[0];
   if (!user) {
@@ -155,22 +172,24 @@ export async function login(req, res) {
     return res.status(403).json({ error: 'Tu afiliación aún no ha sido aprobada' });
   }
 
-  const valido = bcrypt.compareSync(password, user.password_hash);
+  let valido;
+  try {
+    valido = await bcrypt.compare(password, user.password_hash);
+  } catch (error) {
+    console.error('No se pudo verificar la contraseña de la cuenta:', error);
+    return res.status(500).json({ error: 'No se pudo iniciar sesión' });
+  }
   if (!valido) {
     return res.status(401).json({ error: 'Credenciales inválidas' });
   }
 
-  const token = jwt.sign(
-    {
-      id_usuario: user.id_usuario,
-      id_afiliado: user.id_afiliado,
-      usuario: user.usuario,
-      roles: user.roles,
-      auth_version: user.auth_version,
-    },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-  );
+  let token;
+  try {
+    token = await emitirTokenSesion(user);
+  } catch (error) {
+    console.error('No se pudo crear la sesión de usuario:', error);
+    return res.status(500).json({ error: 'No se pudo iniciar sesión' });
+  }
 
   return res.json({
     token,
@@ -178,6 +197,23 @@ export async function login(req, res) {
     roles: user.roles,
     requiere_cambio_contrasena: user.requiere_cambio_contrasena,
   });
+}
+
+export async function cerrarSesion(req, res) {
+  try {
+    await query(
+      `UPDATE sesion_usuario
+       SET revocada_at = now()
+       WHERE id_sesion = $1::uuid
+         AND id_usuario = $2
+         AND revocada_at IS NULL`,
+      [req.user.sid, req.user.id_usuario]
+    );
+    return res.status(204).end();
+  } catch (error) {
+    console.error('No se pudo cerrar la sesión:', error);
+    return res.status(500).json({ error: 'No se pudo cerrar la sesión' });
+  }
 }
 
 export async function cambiarContrasenaTemporal(req, res) {
@@ -193,22 +229,18 @@ export async function cambiarContrasenaTemporal(req, res) {
            auth_version = auth_version + 1, updated_at = now()
        WHERE id_usuario = $2 AND requiere_cambio_contrasena = TRUE
        RETURNING auth_version`,
-      [bcrypt.hashSync(nuevaContrasena, 10), req.user.id_usuario]
+      [await bcrypt.hash(nuevaContrasena, 10), req.user.id_usuario]
     );
     if (rows.length === 0) {
       return res.status(409).json({ error: 'La contraseña temporal ya fue cambiada o la cuenta no requiere este cambio' });
     }
-    const token = jwt.sign(
-      {
-        id_usuario: req.user.id_usuario,
-        id_afiliado: req.user.id_afiliado,
-        usuario: req.user.usuario,
-        roles: req.user.roles,
-        auth_version: rows[0].auth_version,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-    );
+    const token = await emitirTokenSesion({
+      id_usuario: req.user.id_usuario,
+      id_afiliado: req.user.id_afiliado,
+      usuario: req.user.usuario,
+      roles: req.user.roles,
+      auth_version: rows[0].auth_version,
+    });
     return res.json({ mensaje: 'Contraseña actualizada. Ya puedes continuar.', token });
   } catch (err) {
     console.error(err);
@@ -332,7 +364,7 @@ export async function actualizarPerfil(req, res) {
       return res.status(404).json({ error: 'No se encontró tu cuenta' });
     }
 
-    if (nuevaContrasena && !bcrypt.compareSync(contrasenaActual, cuentas[0].password_hash)) {
+    if (nuevaContrasena && !await bcrypt.compare(contrasenaActual, cuentas[0].password_hash)) {
       await client.query('ROLLBACK');
       return res.status(400).json({ error: 'La contraseña actual no coincide' });
     }
@@ -369,7 +401,7 @@ export async function actualizarPerfil(req, res) {
     if (nuevaContrasena) {
       await client.query(
         'UPDATE usuario SET password_hash = $1, updated_at = now() WHERE id_usuario = $2',
-        [bcrypt.hashSync(nuevaContrasena, 10), req.user.id_usuario]
+        [await bcrypt.hash(nuevaContrasena, 10), req.user.id_usuario]
       );
     }
 

@@ -18,6 +18,10 @@
     const imagen = document.createElement('img');
     imagen.className = 'h-64 w-full bg-[#eaf5ec] object-cover';
     imagen.alt = `Foto de ${integrante.nombre}`;
+    imagen.loading = 'lazy';
+    imagen.decoding = 'async';
+    imagen.width = 640;
+    imagen.height = 256;
     if (integrante.foto) imagen.src = integrante.foto;
     else {
       imagen.src = '/brand/sutens-icono.svg';
