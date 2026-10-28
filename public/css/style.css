@@ -963,6 +963,120 @@ input:focus, select:focus {
   text-align: center;
 }
 
+.notificaciones {
+  position: relative;
+}
+
+.btn-campana {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  color: var(--verde-oscuro);
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.btn-campana svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.contador-notificaciones {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  padding: 0 5px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  background: #c62828;
+  border-radius: 9px;
+}
+
+.panel-notificaciones {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 50;
+  width: min(340px, calc(100vw - 24px));
+  max-height: 70vh;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 15%);
+}
+
+.panel-notificaciones-encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.btn-enlace {
+  padding: 0;
+  color: var(--verde-oscuro);
+  font-size: 12px;
+  font-weight: 600;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.panel-notificaciones ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.panel-notificaciones li button {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  color: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--borde);
+  cursor: pointer;
+}
+
+.panel-notificaciones li button:hover {
+  background: #f1f8f3;
+}
+
+.panel-notificaciones li strong,
+.panel-notificaciones li span {
+  display: block;
+}
+
+.panel-notificaciones li span {
+  color: var(--gris-texto);
+  font-size: 12px;
+}
+
+.panel-notificaciones .sin-notificaciones {
+  padding: 16px 14px;
+  color: var(--gris-texto);
+  font-size: 13px;
+}
+
 .lista-documentos {
   display: grid;
   gap: 10px;

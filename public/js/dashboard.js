@@ -462,6 +462,9 @@ async function cargarEventos() {
                   ? `<ul>${evento.asistentes.map((asistente) => `<li>${escapeHTML(asistente.nombre)}</li>`).join('')}</ul>`
                   : '<p>Aún no hay confirmaciones.</p>'}
               </details>
+              ${puedeMarcarEventoRealizado(evento) && Number(evento.asistentes_confirmados) > 0 ? `
+                <button class="btn btn-secundario btn-sm btn-exportar-asistentes" type="button" data-id-evento="${Number(evento.id_evento)}" data-formato="excel">Descargar Excel</button>
+                <button class="btn btn-secundario btn-sm btn-exportar-asistentes" type="button" data-id-evento="${Number(evento.id_evento)}" data-formato="pdf">Descargar PDF</button>` : ''}
               ${puedeConfirmar ? `<button class="btn btn-secundario btn-sm btn-asistencia" type="button" data-id-evento="${Number(evento.id_evento)}" data-confirmada="${!evento.mi_asistencia}">${evento.mi_asistencia ? 'Cancelar asistencia' : 'Confirmar asistencia'}</button>` : ''}
               ${puedeCompletar ? `<button class="btn btn-verde btn-sm btn-evento-realizado" type="button" data-id-evento="${Number(evento.id_evento)}">Marcar como realizada</button>` : ''}
               ${puedeCancelar ? `<button class="btn btn-rojo btn-sm btn-evento-cancelar" type="button" data-id-evento="${Number(evento.id_evento)}">Cancelar actividad</button>` : ''}
@@ -477,6 +480,9 @@ async function cargarEventos() {
     document.querySelectorAll('.btn-evento-realizado').forEach((boton) => {
       boton.addEventListener('click', () => completarEvento(boton));
     });
+    document.querySelectorAll('.btn-exportar-asistentes').forEach((boton) => {
+      boton.addEventListener('click', () => descargarAsistentes(boton));
+    });
     document.querySelectorAll('.btn-evento-cancelar').forEach((boton) => {
       boton.addEventListener('click', () => cancelarEventoCalendario(boton));
     });
@@ -489,10 +495,11 @@ async function cargarEventos() {
 }
 
 async function abrirEventoRecordado() {
-  const recordatorio = document.getElementById('recordatorio-evento');
-  const idEvento = recordatorio.dataset.idEvento;
-  if (!idEvento) return;
+  const idEvento = document.getElementById('recordatorio-evento').dataset.idEvento;
+  if (idEvento) await abrirEvento(idEvento);
+}
 
+async function abrirEvento(idEvento) {
   await mostrarVista('vista-calendario');
   const tarjeta = document.getElementById(`evento-${Number(idEvento)}`);
   if (!tarjeta) return;
@@ -503,6 +510,93 @@ async function abrirEventoRecordado() {
   tarjeta.scrollIntoView({ behavior: 'smooth', block: 'center' });
   tarjeta.focus({ preventScroll: true });
 }
+
+async function descargarAsistentes(boton) {
+  const mensaje = document.getElementById('mensaje-calendario');
+  const { idEvento, formato } = boton.dataset;
+  boton.disabled = true;
+  try {
+    const respuesta = await fetch(`/api/calendario/eventos/${idEvento}/asistentes/exportar?formato=${formato}`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    if (!respuesta.ok) {
+      const error = await respuesta.json().catch(() => ({}));
+      throw new Error(error.error || 'No se pudo descargar la lista de asistentes');
+    }
+    const url = URL.createObjectURL(await respuesta.blob());
+    const enlace = document.createElement('a');
+    enlace.href = url;
+    enlace.download = `asistentes-evento-${idEvento}.${formato === 'excel' ? 'xlsx' : 'pdf'}`;
+    enlace.click();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    mensaje.textContent = err.message;
+    mensaje.className = 'mensaje error';
+  } finally {
+    boton.disabled = false;
+  }
+}
+
+// ---------- Notificaciones de actividades ----------
+async function cargarNotificaciones() {
+  const contador = document.getElementById('contador-notificaciones');
+  const lista = document.getElementById('lista-notificaciones');
+  try {
+    const notificaciones = await apiFetch('/api/calendario/notificaciones');
+    contador.textContent = notificaciones.length > 9 ? '9+' : String(notificaciones.length);
+    contador.hidden = notificaciones.length === 0;
+    document.getElementById('btn-leer-notificaciones').hidden = notificaciones.length === 0;
+    lista.innerHTML = notificaciones.length === 0
+      ? '<li class="sin-notificaciones">No tienes actividades pendientes por revisar.</li>'
+      : notificaciones.map((notificacion) => `
+        <li>
+          <button type="button" data-id-evento="${Number(notificacion.id_evento)}">
+            <strong>${escapeHTML(notificacion.titulo)}</strong>
+            <span>${escapeHTML(new Date(notificacion.fecha_inicio).toLocaleString('es-CO'))} · ${escapeHTML(notificacion.subdirectiva || 'Directiva Departamental')}</span>
+          </button>
+        </li>`).join('');
+  } catch {
+    // Un fallo de red no debe interrumpir el panel.
+  }
+}
+
+function alternarPanelNotificaciones(abrir) {
+  const panel = document.getElementById('panel-notificaciones');
+  const boton = document.getElementById('btn-notificaciones');
+  panel.hidden = !abrir;
+  boton.setAttribute('aria-expanded', String(abrir));
+  if (abrir) cargarNotificaciones();
+}
+
+async function marcarNotificacionesLeidas(idEvento) {
+  await apiFetch('/api/calendario/notificaciones/leer', {
+    method: 'PATCH',
+    body: JSON.stringify(idEvento ? { id_evento: idEvento } : {}),
+  });
+  await cargarNotificaciones();
+}
+
+document.getElementById('btn-notificaciones').addEventListener('click', (event) => {
+  event.stopPropagation();
+  alternarPanelNotificaciones(document.getElementById('panel-notificaciones').hidden);
+});
+document.getElementById('btn-leer-notificaciones').addEventListener('click', () => marcarNotificacionesLeidas());
+document.getElementById('lista-notificaciones').addEventListener('click', async (event) => {
+  const boton = event.target.closest('button[data-id-evento]');
+  if (!boton) return;
+  alternarPanelNotificaciones(false);
+  await marcarNotificacionesLeidas(boton.dataset.idEvento).catch(() => {});
+  await abrirEvento(boton.dataset.idEvento);
+});
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('.notificaciones')) alternarPanelNotificaciones(false);
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') alternarPanelNotificaciones(false);
+});
+setInterval(() => {
+  if (document.visibilityState === 'visible') cargarNotificaciones();
+}, 60000);
 
 async function cambiarAsistenciaEvento(boton) {
   const mensaje = document.getElementById('mensaje-calendario');
@@ -1849,6 +1943,7 @@ async function inicializarPanel() {
     }
   }
   await cargarEventos();
+  await cargarNotificaciones();
   await mostrarVista('vista-inicio');
 }
 

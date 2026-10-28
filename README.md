@@ -54,6 +54,7 @@ psql -d sutens -f database/migrations/017_radicados_sesiones_y_auditoria.sql
 psql -d sutens -f database/migrations/018_autorizacion_datos_personales.sql
 psql -d sutens -f database/migrations/019_origen_autorizacion_datos.sql
 psql -d sutens -f database/migrations/020_indices_busqueda_afiliados.sql
+psql -d sutens -f database/migrations/021_notificaciones_eventos.sql
 ```
 
 > La migración 009 ya fue aplicada en la base existente. Aplica las migraciones posteriores que aún estén pendientes, en orden; no ejecutes otra vez una migración que ya terminó correctamente. La 011 crea la galería pública y carga de forma idempotente sus seis imágenes iniciales. La 012 agrega la opción de publicación pública de documentos sindicales. La 013 habilita la biblioteca educativa y permite varios Secretarios Generales. La 014 quita las asignaciones sindicales y laborales a quienes tengan el rol de acceso Administrador SUTENS, sin quitarles ese rol administrativo. La 015 permite clasificar nuevos cargos sindicales para la Directiva Departamental. La 016 habilita el restablecimiento temporal de contraseña e invalida sesiones anteriores.

@@ -33,7 +33,7 @@ function datosExportacion(afiliados) {
   }));
 }
 
-function protegerTextoExcel(valor) {
+export function protegerTextoExcel(valor) {
   const texto = String(valor ?? '');
   return /^[=+@\-]/.test(texto) ? `'${texto}` : texto;
 }

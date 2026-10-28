@@ -334,6 +334,18 @@ CREATE TABLE evento_asistencia (
     PRIMARY KEY (id_evento, id_afiliado)
 );
 
+CREATE TABLE notificacion_evento (
+    id_afiliado BIGINT      NOT NULL REFERENCES afiliado(id_afiliado) ON DELETE CASCADE,
+    id_evento   BIGINT      NOT NULL REFERENCES evento(id_evento) ON DELETE CASCADE,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    leida_at    TIMESTAMPTZ,
+    PRIMARY KEY (id_afiliado, id_evento)
+);
+
+CREATE INDEX idx_notificacion_evento_pendientes
+    ON notificacion_evento (id_afiliado, created_at DESC)
+    WHERE leida_at IS NULL;
+
 -- ============================================================================
 -- ÍNDICES para consultas frecuentes
 -- ============================================================================
