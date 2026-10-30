@@ -862,13 +862,65 @@ function crearTarjetaMaterialEducativo(documento) {
   `;
 }
 
+let documentosEducativos = [];
+
 async function cargarBibliotecaEducativa() {
-  const lista = document.getElementById('lista-biblioteca-educativa');
   const mensaje = document.getElementById('mensaje-biblioteca-educativa');
   mensaje.className = 'mensaje';
   try {
     await cargarMateriasEducativas();
-    const documentos = await apiFetch('/api/biblioteca/educativa');
+    documentosEducativos = await apiFetch('/api/biblioteca/educativa');
+    actualizarFiltrosEducativos();
+  } catch (error) {
+    document.getElementById('lista-biblioteca-educativa').replaceChildren();
+    mensaje.textContent = error.message;
+    mensaje.className = 'mensaje error';
+    return;
+  }
+  renderizarBibliotecaEducativa();
+}
+
+function normalizarBusqueda(texto) {
+  return String(texto || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es');
+}
+
+function actualizarFiltrosEducativos() {
+  const selectMateria = document.getElementById('filtro-educativa-materia');
+  const selectGrado = document.getElementById('filtro-educativa-grado');
+  const materiaActual = selectMateria.value;
+  const gradoActual = selectGrado.value;
+  selectMateria.innerHTML = '<option value="">Todas las materias</option>'
+    + materiasEducativas.map((materia) =>
+      `<option value="${Number(materia.id_materia)}">${escapeHTML(materia.nombre)}</option>`).join('');
+  const grados = [...new Set(documentosEducativos.map((documento) => documento.grado).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, 'es', { numeric: true }));
+  selectGrado.innerHTML = '<option value="">Todos los grados</option>'
+    + grados.map((grado) => `<option value="${escapeHTML(grado)}">${escapeHTML(grado)}</option>`).join('');
+  selectMateria.value = materiaActual;
+  selectGrado.value = grados.includes(gradoActual) ? gradoActual : '';
+}
+
+function renderizarBibliotecaEducativa() {
+  const lista = document.getElementById('lista-biblioteca-educativa');
+  const mensaje = document.getElementById('mensaje-biblioteca-educativa');
+  const texto = normalizarBusqueda(document.getElementById('filtro-educativa-q').value.trim());
+  const idMateria = document.getElementById('filtro-educativa-materia').value;
+  const grado = document.getElementById('filtro-educativa-grado').value;
+  const materiaFiltro = materiasEducativas.find((materia) => String(materia.id_materia) === idMateria);
+  const filtrando = Boolean(texto || idMateria || grado);
+  const documentos = documentosEducativos.filter((documento) => {
+    if (texto && !normalizarBusqueda(`${documento.titulo} ${documento.descripcion || ''} ${documento.materia || ''} ${documento.grado || ''}`).includes(texto)) return false;
+    if (grado && documento.grado !== grado) return false;
+    if (idMateria) {
+      // Las metodologías de apoyo son material pedagógico y no tienen materia propia
+      const esPedagogia = normalizarBusqueda(materiaFiltro?.nombre) === 'pedagogia';
+      const coincide = String(documento.id_materia) === idMateria
+        || (esPedagogia && documento.tipo_recurso === 'metodologia_apoyo' && !grado);
+      if (!coincide) return false;
+    }
+    return true;
+  });
+  try {
     lista.replaceChildren();
     const guias = documentos.filter((documento) => documento.tipo_recurso === 'guia');
     const metodologias = documentos.filter((documento) => documento.tipo_recurso === 'metodologia_apoyo');
@@ -876,7 +928,9 @@ async function cargarBibliotecaEducativa() {
     if (guias.length === 0 && metodologias.length === 0) {
       const vacio = document.createElement('p');
       vacio.className = 'vacio-eventos';
-      vacio.textContent = 'Todavía no hay materiales educativos. Comparte una guía o una metodología de apoyo.';
+      vacio.textContent = filtrando
+        ? 'No hay materiales que coincidan con la búsqueda.'
+        : 'Todavía no hay materiales educativos. Comparte una guía o una metodología de apoyo.';
       lista.append(vacio);
       return;
     }
@@ -1520,6 +1574,9 @@ document.getElementById('form-rol-laboral').addEventListener('submit', async (ev
 
 document.getElementById('btn-recargar-biblioteca').addEventListener('click', cargarBiblioteca);
 document.getElementById('filtro-biblioteca-q').addEventListener('input', cargarBiblioteca);
+['filtro-educativa-q', 'filtro-educativa-materia', 'filtro-educativa-grado'].forEach((id) => {
+  document.getElementById(id).addEventListener(id.endsWith('-q') ? 'input' : 'change', renderizarBibliotecaEducativa);
+});
 document.getElementById('filtro-biblioteca-categoria').addEventListener('change', cargarBiblioteca);
 document.getElementById('btn-recargar-material-educativo').addEventListener('click', cargarBibliotecaEducativa);
 document.getElementById('btn-subir-material-educativo').addEventListener('click', async () => {
