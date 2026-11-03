@@ -6,7 +6,14 @@
   boton.className = 'chatbot-boton';
   boton.setAttribute('aria-label', 'Abrir asistente');
   boton.setAttribute('aria-expanded', 'false');
-  boton.textContent = '💬';
+  boton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg>';
+  boton.setAttribute('aria-describedby', 'chatbot-tooltip');
+
+  const tooltip = document.createElement('span');
+  tooltip.id = 'chatbot-tooltip';
+  tooltip.className = 'chatbot-tooltip';
+  tooltip.setAttribute('role', 'tooltip');
+  tooltip.textContent = '¿Necesitas ayuda?';
 
   const panel = document.createElement('section');
   panel.className = 'chatbot-panel';
@@ -54,5 +61,5 @@
   });
 
   agregarMensaje('Hola, soy el asistente de SUTENS. ¿En qué puedo ayudarte?', 'bot');
-  document.body.append(boton, panel);
+  document.body.append(boton, tooltip, panel);
 })();

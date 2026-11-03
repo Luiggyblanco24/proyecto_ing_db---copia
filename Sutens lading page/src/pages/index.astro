@@ -2,6 +2,18 @@
 import Layout from '../layouts/Layout.astro';
 import Bienvenido from '../components/ComponentesIndex/Bienvenido.astro';
 import Historia from '../components/ComponentesNosotros/Historia.astro';
+
+const tarjetas = [
+	{ href: '/Secretarias/', img: '/Actividades/1.jpg', etiqueta: 'Presencia territorial', titulo: 'Conoce las subdirectivas', texto: 'Encuentra a los presidentes, vicepresidentes y equipos administrativos de cada subdirectiva.' },
+	{ href: '/Nosotros/', img: '/Actividades/3.jpg', etiqueta: 'Organización', titulo: 'Nuestra directiva', texto: 'Conoce quiénes representan a la Directiva Departamental y revisa la galería de actividades.' },
+	{ href: '/Comunicaciones/', img: '/Actividades/6.jpg', etiqueta: 'Información sindical', titulo: 'Comunicaciones', texto: 'Consulta noticias, documentos y actividades de interés para las y los afiliados.' },
+];
+
+const pasos = [
+	{ titulo: 'Elige cómo afiliarte', texto: 'Regístrate en línea o descarga el formulario de afiliación en PDF.' },
+	{ titulo: 'Completa tus datos', texto: 'Diligencia la información y autoriza el tratamiento de tus datos personales.' },
+	{ titulo: 'Únete a tu subdirectiva', texto: 'Tu afiliación se asigna a la subdirectiva que te corresponde.' },
+];
 ---
 
 <Layout>
@@ -10,22 +22,36 @@ import Historia from '../components/ComponentesNosotros/Historia.astro';
 		<Historia />
 	</section>
 	<section class="px-4 py-16 sm:py-20">
-		<div class="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
-			<a href="/Secretarias/" class="rounded-xl border border-[#e5e1d6] bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-				<span class="text-sm font-bold uppercase tracking-wider text-[#1b7a38]">Presencia territorial</span>
-				<h2 class="mt-3 text-2xl font-bold text-[#1e293b]">Conoce las subdirectivas</h2>
-				<p class="mt-3 leading-relaxed text-[#475569]">Encuentra a los presidentes, vicepresidentes y equipos administrativos de cada subdirectiva.</p>
-			</a>
-			<a href="/Nosotros/" class="rounded-xl border border-[#e5e1d6] bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-				<span class="text-sm font-bold uppercase tracking-wider text-[#1b7a38]">Organización</span>
-				<h2 class="mt-3 text-2xl font-bold text-[#1e293b]">Nuestra directiva</h2>
-				<p class="mt-3 leading-relaxed text-[#475569]">Conoce quiénes representan a la Directiva Departamental y revisa la galería de actividades.</p>
-			</a>
-			<a href="/Comunicaciones/" class="rounded-xl border border-[#e5e1d6] bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-				<span class="text-sm font-bold uppercase tracking-wider text-[#1b7a38]">Información sindical</span>
-				<h2 class="mt-3 text-2xl font-bold text-[#1e293b]">Comunicaciones</h2>
-				<p class="mt-3 leading-relaxed text-[#475569]">Consulta noticias, documentos y actividades de interés para las y los afiliados.</p>
-			</a>
+		<div class="mx-auto max-w-6xl">
+			<h2 class="mb-10 text-center text-3xl font-extrabold tracking-tight text-[#1e293b] sm:text-4xl">Explora SUTENS</h2>
+			<div class="grid gap-6 md:grid-cols-3">
+				{tarjetas.map((t) => (
+					<a href={t.href} class="group overflow-hidden rounded-xl border border-[#e5e1d6] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+						<img src={t.img} alt="" loading="lazy" decoding="async" width="600" height="400" class="aspect-[3/2] w-full object-cover transition duration-500 motion-safe:group-hover:scale-105" />
+						<div class="p-6">
+							<span class="text-sm font-bold uppercase tracking-wider text-[#1b7a38]">{t.etiqueta}</span>
+							<h3 class="mt-2 text-2xl font-bold text-[#1e293b]">{t.titulo}</h3>
+							<p class="mt-3 leading-relaxed text-[#475569]">{t.texto}</p>
+							<span class="mt-4 inline-block font-bold text-[#1b7a38]">Ver más →</span>
+						</div>
+					</a>
+				))}
+			</div>
+		</div>
+	</section>
+	<section class="bg-white px-4 py-16 sm:py-20" aria-labelledby="como-afiliarse">
+		<div class="mx-auto max-w-6xl">
+			<p class="text-center text-sm font-bold uppercase tracking-[0.15em] text-[#1b7a38]">Hacer parte es sencillo</p>
+			<h2 id="como-afiliarse" class="mt-2 text-center text-3xl font-extrabold tracking-tight text-[#1e293b] sm:text-4xl">Cómo afiliarte</h2>
+			<ol class="mt-10 grid gap-6 md:grid-cols-3">
+				{pasos.map((p, i) => (
+					<li class="rounded-xl border border-[#e5e1d6] bg-[#f8f6ef] p-7">
+						<span class="grid h-11 w-11 place-items-center rounded-full bg-[#1b7a38] text-lg font-bold text-white" aria-hidden="true">{i + 1}</span>
+						<h3 class="mt-4 text-xl font-bold text-[#1e293b]">{p.titulo}</h3>
+						<p class="mt-2 leading-relaxed text-[#475569]">{p.texto}</p>
+					</li>
+				))}
+			</ol>
 		</div>
 	</section>
 	<section class="bg-[#1b7a38] px-4 py-14 text-center text-white">

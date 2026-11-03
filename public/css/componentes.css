@@ -1,0 +1,419 @@
+/* Componentes unificados del panel (todas las vistas). Usa solo los tokens de style.css. */
+
+/* ---------- Cabecera de página (coherente con el hero de Inicio) ---------- */
+.vista > .panel-header {
+  position: relative;
+  overflow: hidden;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 28px 32px;
+  border-radius: var(--ui-r-xl);
+  color: #fff;
+  background:
+    radial-gradient(circle at 92% 20%, rgba(255, 255, 255, 0.1) 0 90px, transparent 91px),
+    radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.07) 0 150px, transparent 151px),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0 2px, transparent 2px 24px),
+    linear-gradient(135deg, var(--ui-verde-900) 0%, var(--ui-verde-700) 100%);
+  box-shadow: var(--ui-sombra-2);
+}
+
+.vista > .panel-header .sobrelinea {
+  margin-bottom: 6px;
+  color: #bbf7d0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.vista > .panel-header h2 {
+  color: #fff;
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.panel-descripcion {
+  max-width: 56ch;
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.vista > .panel-header .btn-primario,
+.vista > .panel-header .btn-verde {
+  background: #fff;
+  color: var(--ui-verde-900);
+}
+
+.vista > .panel-header .btn-primario:hover,
+.vista > .panel-header .btn-verde:hover {
+  background: #dcfce7;
+}
+
+.vista > .panel-header .btn-secundario {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.vista > .panel-header .btn-secundario:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+/* Cabeceras secundarias dentro de una vista (p. ej. cargos y roles) */
+.vista :not(.vista) .panel-header,
+.vista section .panel-header {
+  margin-bottom: 16px;
+}
+
+.vista section .panel-header h2 {
+  color: var(--ui-verde-900);
+  font-weight: 800;
+}
+
+.vista section .panel-descripcion {
+  color: var(--ui-muted);
+}
+
+/* ---------- Tarjetas y superficies ---------- */
+.card,
+.tabla-wrapper,
+.filtros-afiliados,
+.form-evento,
+.evento-item,
+.documento-item,
+.cuenta-layout,
+.grupo-biblioteca-educativa,
+.recordatorio-evento,
+.modal {
+  border-color: var(--ui-border);
+  border-radius: var(--ui-r-lg);
+  background: var(--ui-surface);
+  box-shadow: var(--ui-sombra-1);
+}
+
+.evento-item,
+.documento-item {
+  transition: transform var(--ui-t), box-shadow var(--ui-t), border-color var(--ui-t);
+}
+
+.evento-item:hover,
+.documento-item:hover {
+  transform: translateY(-2px);
+  border-color: #86efac;
+  box-shadow: var(--ui-sombra-2);
+}
+
+/* ---------- Botones ---------- */
+.evento-fecha {
+  align-self: start;
+  padding: 12px 6px;
+  border-radius: var(--ui-r-md);
+  background: linear-gradient(160deg, var(--ui-verde-700), var(--ui-verde-900));
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(20, 83, 45, 0.22);
+}
+
+.evento-fecha span {
+  color: #bbf7d0;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.evento-fecha strong {
+  font-weight: 800;
+}
+
+.documento-icono {
+  border-radius: var(--ui-r-md);
+  background: linear-gradient(160deg, var(--ui-verde-700), var(--ui-verde-900));
+  color: #fff;
+}
+
+.evento-titulo h3,
+.documento-titulo h4 {
+  font-weight: 800;
+}
+
+.evento-metadata,
+.evento-asistencia {
+  color: var(--ui-muted);
+}
+
+.evento-metadata {
+  display: block;
+  white-space: normal;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--ui-r-md);
+  font-family: inherit;
+  transition: background var(--ui-t), border-color var(--ui-t), color var(--ui-t), transform var(--ui-t), box-shadow var(--ui-t);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-primario,
+.btn-verde {
+  background: linear-gradient(135deg, var(--ui-verde-700), var(--ui-verde-900));
+  box-shadow: 0 4px 12px rgba(21, 128, 61, 0.25);
+}
+
+.btn-primario:hover,
+.btn-verde:hover {
+  background: linear-gradient(135deg, var(--ui-verde-600), var(--ui-verde-700));
+}
+
+.btn-secundario {
+  border-color: #bbd9c6;
+  background: var(--ui-surface);
+  color: var(--ui-verde-900);
+}
+
+.btn-secundario:hover {
+  border-color: var(--ui-verde-700);
+  background: var(--verde-suave);
+}
+
+.btn-rojo {
+  background: #dc2626;
+}
+
+.btn-cta {
+  color: #422006;
+}
+
+/* ---------- Formularios ---------- */
+input,
+select,
+textarea {
+  border-color: #c9dccf;
+  border-radius: var(--ui-r-sm);
+  background: var(--ui-surface);
+  color: var(--ui-text);
+  font-family: inherit;
+  transition: border-color var(--ui-t), box-shadow var(--ui-t);
+}
+
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #c9dccf;
+  font-size: 14px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--ui-verde-600);
+  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.18);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #6b7f73;
+}
+
+label {
+  color: var(--ui-text);
+}
+
+/* ---------- Filtros y modos ---------- */
+.filtros-afiliados {
+  padding: 18px;
+}
+
+.admin-modo {
+  border-radius: 999px;
+  border-color: var(--ui-border);
+  font-family: inherit;
+  transition: background var(--ui-t), border-color var(--ui-t), color var(--ui-t);
+}
+
+.admin-modo.activo {
+  background: linear-gradient(135deg, var(--ui-verde-700), var(--ui-verde-900));
+  border-color: var(--ui-verde-900);
+}
+
+/* ---------- Tablas ---------- */
+.tabla-wrapper.tabla-estructura,
+.tabla-wrapper.tabla-administracion,
+.tabla-wrapper.tabla-afiliados-tarjetas {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.tabla-estructura tbody tr td {
+  padding: 18px 20px;
+  border-color: var(--ui-border);
+  box-shadow: var(--ui-sombra-1);
+}
+
+.tabla-estructura tbody tr td:first-child {
+  border-left-color: var(--ui-verde-700);
+  border-radius: var(--ui-r-lg) 0 0 var(--ui-r-lg);
+}
+
+.tabla-estructura tbody tr td:last-child {
+  border-radius: 0 var(--ui-r-lg) var(--ui-r-lg) 0;
+}
+
+.tabla-estructura tr:hover td {
+  background: var(--ui-surface);
+}
+.tabla-wrapper {
+  overflow-x: auto;
+}
+
+th {
+  background: var(--ui-surface-2);
+  color: var(--ui-muted);
+  font-weight: 700;
+}
+
+th,
+td {
+  border-bottom-color: var(--ui-border);
+}
+
+tr:hover td {
+  background: #f0f8f3;
+}
+
+.tabla-administracion tbody tr,
+.tabla-afiliados tbody tr {
+  border-color: var(--ui-border);
+  border-radius: var(--ui-r-lg);
+  background: var(--ui-surface);
+  box-shadow: var(--ui-sombra-1);
+}
+
+/* ---------- Badges y mensajes ---------- */
+.badge {
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.mensaje {
+  border-radius: var(--ui-r-md);
+}
+
+.vacio-eventos,
+.ayuda-campo {
+  color: var(--ui-muted);
+}
+
+.vacio-eventos {
+  padding: 28px;
+  border: 1px dashed #b7d3c0;
+  border-radius: var(--ui-r-lg);
+  background: var(--ui-surface-2);
+  text-align: center;
+}
+
+/* ---------- Modales ---------- */
+.modal-fondo {
+  background: rgba(16, 35, 26, 0.55);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  padding: 32px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-r-xl);
+  box-shadow: var(--ui-sombra-3);
+}
+
+.modal h2 {
+  color: var(--ui-verde-900);
+  font-weight: 800;
+}
+
+.modal-fondo.visible .modal {
+  animation: ui-entrada 240ms var(--ui-t) both;
+}
+
+/* ---------- Cargos y roles (administración) ---------- */
+#gestion-catalogos-roles {
+  margin-top: 32px;
+}
+
+#gestion-catalogos-roles .fila {
+  gap: 20px;
+  align-items: start;
+}
+
+#gestion-catalogos-roles form {
+  padding: 24px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-r-lg);
+  background: var(--ui-surface);
+  box-shadow: var(--ui-sombra-1);
+}
+
+#gestion-catalogos-roles h3 {
+  margin-bottom: 14px;
+  color: var(--ui-verde-900);
+  font-weight: 800;
+}
+
+#gestion-catalogos-roles .ayuda-campo {
+  margin-bottom: 16px;
+}
+
+.opcion-rol {
+  margin-bottom: 10px;
+  border-color: var(--ui-border);
+  border-radius: var(--ui-r-md);
+  background: var(--ui-surface-2);
+}
+
+@media (max-width: 640px) {
+  #gestion-catalogos-roles .fila {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Entrada de vistas ---------- */
+.vista:not([hidden]) > .panel-header,
+.vista:not([hidden]) > .filtros-afiliados,
+.vista:not([hidden]) > .tabla-wrapper,
+.vista:not([hidden]) > .form-evento {
+  animation: ui-entrada 420ms var(--ui-t) both;
+}
+
+.vista:not([hidden]) > :nth-child(2) { animation-delay: 70ms; }
+.vista:not([hidden]) > :nth-child(3) { animation-delay: 140ms; }
+
+@media (max-width: 640px) {
+  .vista > .panel-header {
+    padding: 22px 20px;
+    border-radius: var(--ui-r-lg);
+  }
+
+  .modal {
+    padding: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn:hover,
+  .evento-item:hover,
+  .documento-item:hover {
+    transform: none;
+  }
+}

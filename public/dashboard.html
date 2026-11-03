@@ -6,6 +6,9 @@
   <title>SUTENS - Sindicato Unitario de Trabajadores de la Educación de Norte de Santander</title>
   <link rel="icon" type="image/svg+xml" href="/brand/sutens-icono.svg" />
   <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/inicio.css" />
+  <link rel="stylesheet" href="/css/componentes.css" />
+  <link rel="stylesheet" href="/css/componentes-vistas.css" />
 </head>
 <body>
   <header class="topbar">
@@ -43,17 +46,34 @@
       <img id="avatar-topbar" class="avatar avatar-pequeno" alt="Foto de perfil" hidden />
       <span id="nombre-usuario"></span>
       <span id="roles-usuario"></span>
-      <a class="btn btn-secundario btn-sm" href="/" aria-label="Volver a la página principal de SUTENS">Página principal</a>
-      <button class="btn btn-secundario btn-sm" onclick="cerrarSesion()">Cerrar sesión</button>
+      <a class="btn btn-secundario btn-sm btn-principal" href="/" aria-label="Volver a la página principal de SUTENS">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+        Página principal
+      </a>
+      <button class="btn btn-secundario btn-sm btn-salir" type="button" onclick="cerrarSesion()">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        Cerrar sesión
+      </button>
     </div>
   </header>
 
   <main id="vista-inicio" class="contenido vista">
-    <section class="bienvenida">
-      <p class="sobrelinea">SINDICATO UNITARIO · NORTE DE SANTANDER</p>
-      <h1 id="titulo-bienvenida">Bienvenido</h1>
-      <p class="eslogan-institucional">“Defensa de la Educación, Unidad de los Trabajadores”</p>
-      <p id="detalle-bienvenida"></p>
+    <section class="bienvenida hero">
+      <div>
+        <p class="sobrelinea">SINDICATO UNITARIO · NORTE DE SANTANDER</p>
+        <div class="hero-identidad">
+          <span id="hero-avatar" class="hero-avatar" aria-hidden="true">S</span>
+          <div>
+            <h1 id="titulo-bienvenida">Bienvenido</h1>
+            <div id="hero-roles" class="hero-roles"></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p class="eslogan-institucional">“Defensa de la Educación, Unidad de los Trabajadores”</p>
+        <p id="detalle-bienvenida"></p>
+      </div>
+      <dl id="hero-indicadores" class="hero-indicadores"></dl>
     </section>
     <section id="estadisticas-afiliacion" class="estadisticas-afiliacion" aria-live="polite" hidden>
       <div class="estadisticas-encabezado">
@@ -74,6 +94,22 @@
       <button class="btn btn-cta btn-sm" type="button" data-abrir-calendario>Ver calendario</button>
     </section>
     <div id="opciones-inicio" class="opciones-inicio"></div>
+    <div class="inicio-paneles">
+      <section class="panel-inicio" style="--i:6" aria-labelledby="titulo-inicio-eventos">
+        <div class="panel-inicio__cabecera">
+          <h2 id="titulo-inicio-eventos" class="inicio-titulo">Próximas actividades</h2>
+          <button class="panel-inicio__enlace" type="button" data-vista="vista-calendario">Ver calendario →</button>
+        </div>
+        <ul id="lista-inicio-eventos" class="lista-inicio"></ul>
+      </section>
+      <section class="panel-inicio" style="--i:7" aria-labelledby="titulo-inicio-documentos">
+        <div class="panel-inicio__cabecera">
+          <h2 id="titulo-inicio-documentos" class="inicio-titulo">Últimos documentos</h2>
+          <button class="panel-inicio__enlace" type="button" data-vista="vista-biblioteca">Ver biblioteca →</button>
+        </div>
+        <ul id="lista-inicio-documentos" class="lista-inicio"></ul>
+      </section>
+    </div>
   </main>
 
   <main id="vista-calendario" class="contenido vista" hidden>
@@ -81,6 +117,7 @@
       <div>
         <p class="sobrelinea">AGENDA SINDICAL</p>
         <h2>Calendario de actividades</h2>
+        <p class="panel-descripcion">Consulta las próximas actividades del sindicato y confirma tu asistencia.</p>
       </div>
       <div class="panel-actions">
         <button id="btn-crear-evento" class="btn btn-primario" type="button" hidden>+ Crear actividad</button>
@@ -125,7 +162,21 @@
         <button class="btn btn-primario" type="submit">Guardar actividad</button>
       </div>
     </form>
-    <div id="lista-eventos" class="lista-eventos"></div>
+    <div class="barra-vista" aria-label="Opciones de calendario">
+      <div class="segmentado" role="group" aria-label="Filtrar por estado">
+        <button type="button" id="cal-estado-todos" data-estado-cal="todos" aria-pressed="true">Todas</button>
+        <button type="button" data-estado-cal="programado" aria-pressed="false">Programada</button>
+        <button type="button" data-estado-cal="realizado" aria-pressed="false">Realizada</button>
+      </div>
+      <div class="segmentado" role="group" aria-label="Tipo de vista">
+        <button type="button" data-vista-cal="lista" aria-pressed="true">Lista</button>
+        <button type="button" data-vista-cal="mes" aria-pressed="false">Mes</button>
+      </div>
+    </div>
+    <div id="calendario-cuerpo" class="calendario-cuerpo">
+      <section id="calendario-mes" class="mes-panel" aria-label="Vista de mes" hidden></section>
+      <div id="lista-eventos" class="lista-eventos"></div>
+    </div>
   </main>
 
   <main id="vista-cuenta" class="contenido vista" hidden>
@@ -133,56 +184,84 @@
       <div>
         <p class="sobrelinea">CUENTA PERSONAL</p>
         <h2>Mi cuenta</h2>
+        <p class="panel-descripcion">Actualiza tus datos personales y tu foto de perfil.</p>
       </div>
     </div>
     <div id="mensaje-cuenta" class="mensaje"></div>
-    <section class="cuenta-layout">
-      <div class="cuenta-foto">
-        <img id="avatar-cuenta" class="avatar avatar-grande" alt="Foto de perfil" hidden />
-        <div id="avatar-iniciales" class="avatar avatar-grande avatar-iniciales" aria-hidden="true"></div>
-        <label class="btn btn-secundario" for="foto-perfil">Seleccionar foto</label>
-        <button id="btn-guardar-foto" class="btn btn-primario" type="button" hidden>Guardar foto</button>
-        <input id="foto-perfil" name="foto" type="file" form="form-cuenta" accept="image/jpeg,image/png,image/webp" hidden />
-        <span class="ayuda-campo">JPG, PNG o WebP, máximo 4 MB</span>
+    <form id="form-cuenta" class="cuenta-grid">
+      <section class="tarjeta-cuenta tarjeta-foto" aria-labelledby="titulo-cuenta-foto">
+        <h3 id="titulo-cuenta-foto">Foto</h3>
+        <div class="cuenta-foto">
+          <div class="avatar-protagonista">
+            <img id="avatar-cuenta" class="avatar avatar-grande" alt="Foto de perfil" hidden />
+            <div id="avatar-iniciales" class="avatar avatar-grande avatar-iniciales" aria-hidden="true"></div>
+            <button type="button" class="btn-camara" data-elegir-foto aria-label="Cambiar foto de perfil" title="Cambiar foto">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L8 6H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3.5"/></svg>
+            </button>
+          </div>
+          <label class="btn btn-secundario" for="foto-perfil">Seleccionar foto</label>
+          <button id="btn-guardar-foto" class="btn btn-primario" type="button" hidden>Guardar foto</button>
+          <input id="foto-perfil" name="foto" type="file" form="form-cuenta" accept="image/jpeg,image/png,image/webp" hidden />
+          <span class="ayuda-campo">JPG, PNG o WebP, máximo 4 MB</span>
+        </div>
+      </section>
+      <section class="tarjeta-cuenta tarjeta-perfil" aria-labelledby="titulo-cuenta-perfil">
+        <h3 id="titulo-cuenta-perfil">Perfil</h3>
+        <div class="form-cuenta">
+          <div class="fila">
+            <div>
+              <label for="cuenta-nombre1">Primer nombre *</label>
+              <input id="cuenta-nombre1" name="nombre1" required maxlength="50" />
+            </div>
+            <div>
+              <label for="cuenta-nombre2">Segundo nombre</label>
+              <input id="cuenta-nombre2" name="nombre2" maxlength="50" />
+            </div>
+          </div>
+          <div class="fila">
+            <div>
+              <label for="cuenta-apellido1">Primer apellido *</label>
+              <input id="cuenta-apellido1" name="apellido1" required maxlength="50" />
+            </div>
+            <div>
+              <label for="cuenta-apellido2">Segundo apellido</label>
+              <input id="cuenta-apellido2" name="apellido2" maxlength="50" />
+            </div>
+          </div>
+          <label for="cuenta-correo">Correo *</label>
+          <input id="cuenta-correo" name="correo" type="email" required maxlength="120" />
+        </div>
+      </section>
+      <section class="tarjeta-cuenta tarjeta-seguridad" aria-labelledby="titulo-cuenta-seguridad">
+        <h3 id="titulo-cuenta-seguridad">Seguridad</h3>
+        <div class="form-cuenta">
+          <div class="fila">
+            <div>
+              <label for="cuenta-contrasena-actual">Contraseña actual</label>
+              <div class="campo-clave">
+                <input id="cuenta-contrasena-actual" name="contrasenaActual" type="password" autocomplete="current-password" />
+                <button type="button" class="btn-ver-clave" data-ver-clave="cuenta-contrasena-actual" aria-label="Mostrar contraseña" title="Mostrar contraseña" aria-pressed="false"></button>
+              </div>
+            </div>
+            <div>
+              <label for="cuenta-contrasena-nueva">Nueva contraseña</label>
+              <div class="campo-clave">
+                <input id="cuenta-contrasena-nueva" name="nuevaContrasena" type="password" minlength="8" autocomplete="new-password" aria-describedby="fortaleza-clave" />
+                <button type="button" class="btn-ver-clave" data-ver-clave="cuenta-contrasena-nueva" aria-label="Mostrar contraseña" title="Mostrar contraseña" aria-pressed="false"></button>
+              </div>
+              <div id="fortaleza-clave" class="fortaleza-clave" data-nivel="0" aria-live="polite">
+                <span class="fortaleza-clave__barra"><i></i><i></i><i></i><i></i></span>
+                <span class="fortaleza-clave__texto"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div class="acciones-cuenta">
+        <span id="aviso-cambios" class="ayuda-campo">No hay cambios por guardar.</span>
+        <button id="btn-guardar-cuenta" type="submit" class="btn btn-primario" disabled>Guardar cambios</button>
       </div>
-      <form id="form-cuenta" class="form-cuenta">
-        <div class="fila">
-          <div>
-            <label for="cuenta-nombre1">Primer nombre *</label>
-            <input id="cuenta-nombre1" name="nombre1" required maxlength="50" />
-          </div>
-          <div>
-            <label for="cuenta-nombre2">Segundo nombre</label>
-            <input id="cuenta-nombre2" name="nombre2" maxlength="50" />
-          </div>
-        </div>
-        <div class="fila">
-          <div>
-            <label for="cuenta-apellido1">Primer apellido *</label>
-            <input id="cuenta-apellido1" name="apellido1" required maxlength="50" />
-          </div>
-          <div>
-            <label for="cuenta-apellido2">Segundo apellido</label>
-            <input id="cuenta-apellido2" name="apellido2" maxlength="50" />
-          </div>
-        </div>
-        <label for="cuenta-correo">Correo *</label>
-        <input id="cuenta-correo" name="correo" type="email" required maxlength="120" />
-        <div class="fila">
-          <div>
-            <label for="cuenta-contrasena-actual">Contraseña actual</label>
-            <input id="cuenta-contrasena-actual" name="contrasenaActual" type="password" autocomplete="current-password" />
-          </div>
-          <div>
-            <label for="cuenta-contrasena-nueva">Nueva contraseña</label>
-            <input id="cuenta-contrasena-nueva" name="nuevaContrasena" type="password" minlength="8" autocomplete="new-password" />
-          </div>
-        </div>
-        <div class="acciones-cuenta">
-          <button type="submit" class="btn btn-primario">Guardar cambios</button>
-        </div>
-      </form>
-    </section>
+    </form>
   </main>
 
   <main id="vista-directorio" class="contenido vista" hidden>
@@ -190,21 +269,35 @@
       <div>
         <p class="sobrelinea">ORGANIZACIÓN</p>
         <h2>Subdirectivas, instituciones y sedes</h2>
+        <p class="panel-descripcion">Conoce cómo se organiza el sindicato en el departamento.</p>
       </div>
       <div class="panel-actions">
-        <button id="btn-crear-subdirectiva" class="btn btn-secundario" style="display: none;">Crear subdirectiva</button>
-        <button id="btn-crear-institucion" class="btn btn-secundario" style="display: none;">Crear institución educativa</button>
-        <button id="btn-crear-sede" class="btn btn-secundario" style="display: none;">Crear sede</button>
+        <details id="menu-crear-estructura" class="menu-acciones menu-crear" hidden>
+          <summary class="btn btn-primario">+ Crear <svg class="icono-menu" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+          <div class="menu-acciones__lista">
+            <button type="button" class="btn-menu" data-dispara="btn-crear-subdirectiva">Subdirectiva</button>
+            <button type="button" class="btn-menu" data-dispara="btn-crear-institucion">Institución educativa</button>
+            <button type="button" class="btn-menu" data-dispara="btn-crear-sede">Sede</button>
+          </div>
+        </details>
         <button id="btn-recargar-directorio" class="btn btn-secundario">Actualizar</button>
+        <div hidden>
+          <button id="btn-crear-subdirectiva" class="btn btn-secundario" style="display: none;">Crear subdirectiva</button>
+          <button id="btn-crear-institucion" class="btn btn-secundario" style="display: none;">Crear institución educativa</button>
+          <button id="btn-crear-sede" class="btn btn-secundario" style="display: none;">Crear sede</button>
+        </div>
       </div>
     </div>
     <div id="mensaje-directorio" class="mensaje"></div>
-    <div class="tabla-wrapper tabla-estructura">
-      <table>
-        <thead><tr><th>Subdirectiva</th><th>Instituciones educativas y sedes</th></tr></thead>
-        <tbody id="cuerpo-directorio"><tr><td colspan="2">Selecciona esta vista para consultar la estructura.</td></tr></tbody>
-      </table>
+    <button id="btn-limpiar-estructura" type="button" hidden>Limpiar búsqueda</button>
+    <div class="barra-vista barra-estructura">
+      <input id="filtro-estructura-q" type="search" placeholder="Buscar subdirectiva, institución o sede" aria-label="Buscar en la estructura" />
+      <div class="segmentado" role="group" aria-label="Expandir o contraer">
+        <button type="button" id="btn-expandir-estructura" aria-pressed="false">Expandir todo</button>
+        <button type="button" id="btn-contraer-estructura" aria-pressed="false">Contraer todo</button>
+      </div>
     </div>
+    <div id="cuerpo-directorio" class="arbol-estructura"><p class="ayuda-campo">Selecciona esta vista para consultar la estructura.</p></div>
   </main>
 
   <main id="vista-biblioteca" class="contenido vista" hidden>
@@ -212,6 +305,7 @@
       <div>
         <p class="sobrelinea">DOCUMENTACIÓN SINDICAL</p>
         <h2>Biblioteca sindical</h2>
+        <p class="panel-descripcion">Estatutos, circulares y documentos oficiales del sindicato.</p>
       </div>
       <div class="panel-actions">
         <button id="btn-subir-documento" class="btn btn-primario" type="button" hidden>+ Subir documento</button>
@@ -219,11 +313,17 @@
       </div>
     </div>
     <div id="mensaje-biblioteca" class="mensaje"></div>
+    <button id="btn-limpiar-biblioteca" type="button" hidden>Limpiar filtros</button>
     <div class="filtros-afiliados filtros-biblioteca">
       <input id="filtro-biblioteca-q" type="search" placeholder="Buscar por título o detalle" aria-label="Buscar documentos" />
-      <select id="filtro-biblioteca-categoria" aria-label="Filtrar por categoría">
+      <select id="filtro-biblioteca-categoria" aria-label="Filtrar por categoría" hidden>
         <option value="">Todas las categorías</option>
       </select>
+      <div class="segmentado" role="group" aria-label="Tipo de vista">
+        <button type="button" data-modo-lista="lista" data-destino="lista-biblioteca" aria-pressed="true">Lista</button>
+        <button type="button" data-modo-lista="grid" data-destino="lista-biblioteca" aria-pressed="false">Cuadrícula</button>
+      </div>
+      <div id="chips-biblioteca-categoria" class="chips-opciones" role="group" aria-label="Categorías"></div>
     </div>
     <form id="form-biblioteca" class="form-evento" hidden>
       <h3 id="titulo-form-biblioteca">Agregar documento sindical</h3>
@@ -267,6 +367,7 @@
       <div>
         <p class="sobrelinea">MATERIALES PARA LA ENSEÑANZA</p>
         <h2>Biblioteca educativa</h2>
+        <p class="panel-descripcion">Guías y metodologías de apoyo compartidas por docentes.</p>
       </div>
       <div class="panel-actions">
         <button id="btn-subir-material-educativo" class="btn btn-primario" type="button">+ Compartir material</button>
@@ -303,14 +404,20 @@
         <button class="btn btn-primario" type="submit">Compartir material</button>
       </div>
     </form>
+    <button id="btn-limpiar-educativa" type="button" hidden>Limpiar filtros</button>
     <div class="filtros-afiliados filtros-biblioteca">
       <input id="filtro-educativa-q" type="search" placeholder="Buscar por título o descripción" aria-label="Buscar material educativo" />
-      <select id="filtro-educativa-materia" aria-label="Filtrar por materia">
-        <option value="">Todas las materias</option>
-      </select>
       <select id="filtro-educativa-grado" aria-label="Filtrar por grado">
         <option value="">Todos los grados</option>
       </select>
+      <div class="segmentado" role="group" aria-label="Tipo de vista">
+        <button type="button" data-modo-lista="lista" data-destino="lista-biblioteca-educativa" aria-pressed="true">Lista</button>
+        <button type="button" data-modo-lista="grid" data-destino="lista-biblioteca-educativa" aria-pressed="false">Cuadrícula</button>
+      </div>
+      <select id="filtro-educativa-materia" aria-label="Filtrar por materia" hidden>
+        <option value="">Todas las materias</option>
+      </select>
+      <div id="chips-educativa-materia" class="chips-opciones" role="group" aria-label="Materias"></div>
     </div>
     <div id="lista-biblioteca-educativa" class="biblioteca-educativa-grupos"></div>
   </main>
@@ -320,6 +427,7 @@
       <div>
         <p class="sobrelinea">TU SUBDIRECTIVA</p>
         <h2 id="titulo-afiliados">Afiliados</h2>
+        <p class="panel-descripcion">Consulta y filtra el padrón de afiliados.</p>
       </div>
       <button id="btn-recargar-afiliados" class="btn btn-secundario">Actualizar</button>
     </div>
@@ -329,9 +437,12 @@
       <select id="filtro-local-cargo" aria-label="Filtrar por cargo sindical"><option value="">Todos los cargos</option></select>
       <select id="filtro-local-rol" aria-label="Filtrar por rol educativo"><option value="">Todos los roles educativos</option></select>
       <select id="filtro-local-subdirectiva" aria-label="Filtrar por subdirectiva"><option value="">Todas las subdirectivas</option></select>
-      <button id="btn-buscar-local" class="btn btn-secundario" type="button">Buscar</button>
-      <button id="btn-limpiar-local" class="btn btn-secundario" type="button">Limpiar</button>
+      <div class="filtros-botones">
+        <button id="btn-buscar-local" class="btn btn-primario" type="button">Buscar</button>
+        <button id="btn-limpiar-local" class="btn btn-enlace" type="button">Limpiar</button>
+      </div>
     </div>
+    <div id="chips-local" class="chips-filtros" aria-label="Filtros activos" hidden></div>
     <div id="acciones-locales" class="seleccion-afiliados" hidden>
       <span id="contador-local">0 seleccionados</span>
       <button class="btn btn-secundario btn-sm" type="button" data-accion-seleccion="copiar">Copiar correos</button>
@@ -341,10 +452,11 @@
     </div>
     <div class="tabla-wrapper tabla-afiliados">
       <table>
-        <thead><tr><th><input class="seleccionar-todos" data-scope="local" type="checkbox" aria-label="Seleccionar afiliados visibles" /></th><th>Nombre</th><th>Cédula</th><th>Correo</th><th>Cargo sindical</th><th>Institución educativa</th><th>Sede</th><th>Rol en sede</th><th>Estado sindical</th></tr></thead>
-        <tbody id="cuerpo-afiliados"><tr><td colspan="9">Cargando afiliados...</td></tr></tbody>
+        <thead><tr><th><input class="seleccionar-todos" data-scope="local" type="checkbox" aria-label="Seleccionar afiliados visibles" /></th>        <th>Nombre</th><th>Cargo sindical</th><th>Institución educativa</th><th>Sede</th><th>Rol en sede</th><th>Estado sindical</th></tr></thead>
+                <tbody id="cuerpo-afiliados"><tr><td colspan="7">Cargando afiliados...</td></tr></tbody>
       </table>
     </div>
+    <div id="paginacion-local" class="paginacion"></div>
   </main>
 
   <main id="vista-administracion" class="contenido vista" hidden>
@@ -352,6 +464,7 @@
       <div>
         <p class="sobrelinea">GESTIÓN</p>
         <h2>Afiliados y solicitudes</h2>
+        <p class="panel-descripcion">Gestiona solicitudes, roles y asignaciones de los afiliados.</p>
       </div>
       <div class="panel-actions">
         <button id="btn-registrar" class="btn btn-primario" style="width: auto; display: none;">+ Registrar usuario</button>
@@ -379,8 +492,10 @@
       <select id="filtro-global-sindical" aria-label="Filtrar por estado sindical">
         <option value="">Todos los estados sindicales</option><option value="activo">Activo</option><option value="inactivo">Inactivo</option>
       </select>
-      <button id="btn-buscar-global" class="btn btn-secundario" type="button">Buscar</button>
-      <button id="btn-limpiar-global" class="btn btn-secundario" type="button">Limpiar</button>
+      <div class="filtros-botones">
+        <button id="btn-buscar-global" class="btn btn-primario" type="button">Buscar</button>
+        <button id="btn-limpiar-global" class="btn btn-enlace" type="button">Limpiar</button>
+      </div>
     </div>
     <div id="acciones-globales" class="seleccion-afiliados" hidden>
       <span id="contador-global">0 seleccionados</span>
@@ -421,6 +536,7 @@
         <div>
           <p class="sobrelinea">CONFIGURACIÓN</p>
           <h2>Opciones de cargos y roles</h2>
+          <p class="panel-descripcion">Define los cargos y roles laborales disponibles.</p>
         </div>
       </div>
       <p class="ayuda-campo">Los cargos que agregues estarán disponibles para asignarlos; no conceden permisos de acceso al sistema automáticamente.</p>
@@ -641,6 +757,9 @@
   </div>
 
   <script src="/js/api.js"></script>
+  <script src="/js/inicio-ui.js"></script>
+  <script src="/js/ui-componentes.js"></script>
+  <script src="/js/calendario-ui.js"></script>
   <script src="/js/dashboard.js"></script>
   <script src="/js/chatbot.js"></script>
 </body>

@@ -38,6 +38,9 @@ function badgeEstado(estado) {
     aprobado: 'verde',
     rechazado: 'rojo',
     retirado: 'rojo',
+    activo: 'verde',
+    inactivo: 'gris',
+    suspendido: 'amarillo',
   };
   return `<span class="badge ${map[estado] || 'azul'}">${escapeHTML(estado)}</span>`;
 }
@@ -185,6 +188,7 @@ async function cargarPerfil() {
     document.getElementById('cuenta-apellido2').value = perfil.apellido2 || '';
     document.getElementById('cuenta-correo').value = perfil.correo || '';
     document.getElementById('btn-guardar-foto').hidden = true;
+    actualizarEstadoCuenta();
     document.getElementById('avatar-iniciales').textContent =
       [perfil.nombre1, perfil.apellido1].filter(Boolean).map((parte) => parte[0]).join('').toLocaleUpperCase('es');
     const avatares = [document.getElementById('avatar-topbar'), document.getElementById('avatar-cuenta')];
@@ -236,6 +240,7 @@ async function cargarPerfil() {
       document.getElementById('btn-crear-subdirectiva').style.display = 'inline-block';
       document.getElementById('btn-crear-institucion').style.display = 'inline-block';
       document.getElementById('btn-crear-sede').style.display = 'inline-block';
+      document.getElementById('menu-crear-estructura').hidden = false;
     }
     document.getElementById('btn-crear-evento').hidden = !puedeCrearEvento;
     document.getElementById('campo-evento-subdirectiva').hidden = !(esAdmin || esDirectivaPrincipal);
@@ -246,6 +251,8 @@ async function cargarPerfil() {
     document.getElementById('gestion-catalogos-roles').hidden = !esAdmin;
     if (puedeVerAfiliados) document.getElementById('nav-afiliados').hidden = false;
     renderizarOpcionesInicio();
+    InicioUI.pintarHero(perfil, [perfil.nombre1, perfil.apellido1].filter(Boolean).join(' '));
+    InicioUI.cargarActividadesYDocumentos();
     if (perfil.estado === 'aprobado') await cargarEstadisticasAfiliacion();
   } catch (err) {
     // Token inválido o expirado
@@ -277,6 +284,7 @@ async function cargarEstadisticasAfiliacion() {
     const valorTotal = document.createElement('strong');
     valorTotal.textContent = Number(estadisticas.total_afiliados).toLocaleString('es-CO');
     tarjetaTotal.append(etiquetaTotal, valorTotal);
+    InicioUI.setIndicador('indicador-afiliados', estadisticas.total_afiliados);
     contenido.append(tarjetaTotal);
 
     if (estadisticas.alcance !== 'departamental') return;
@@ -365,13 +373,9 @@ function renderizarOpcionesInicio() {
     opciones.push({ vista: 'vista-administracion', titulo: 'Administración', detalle: 'Gestión sindical' });
   }
 
-  document.getElementById('opciones-inicio').innerHTML = opciones.map((opcion) => `
-    <button class="opcion-inicio" data-vista="${opcion.vista}">
-      <span class="sobrelinea">SUTENS</span>
-      <strong>${escapeHTML(opcion.titulo)}</strong>
-      <span>${escapeHTML(opcion.detalle)}</span>
-    </button>
-  `).join('');
+  document.getElementById('opciones-inicio').dataset.total = String(opciones.length);
+  document.getElementById('opciones-inicio').innerHTML = opciones
+    .map((opcion, indice) => InicioUI.featureCard(opcion, indice)).join('');
   document.querySelectorAll('#opciones-inicio [data-vista]').forEach((boton) => {
     boton.addEventListener('click', () => mostrarVista(boton.dataset.vista));
   });
@@ -406,6 +410,7 @@ async function cargarEventos() {
   const lista = document.getElementById('lista-eventos');
   const mensaje = document.getElementById('mensaje-calendario');
   mensaje.className = 'mensaje';
+  lista.innerHTML = UI.skeletonTarjetas(3);
   try {
     eventosActuales = await apiFetch('/api/calendario/eventos');
     const siguiente = eventosActuales.find((evento) =>
@@ -420,11 +425,38 @@ async function cargarEventos() {
         `${new Date(siguiente.fecha_inicio).toLocaleString('es-CO')} · ${siguiente.subdirectiva || 'Directiva Departamental'}`;
     }
 
+    pintarEventos();
+  } catch (err) {
+    lista.innerHTML = '';
+    mensaje.textContent = err.message;
+    mensaje.className = 'mensaje error';
+    document.getElementById('recordatorio-evento').hidden = true;
+  }
+}
+
+function pintarEventos() {
+  const lista = document.getElementById('lista-eventos');
+  const mensaje = document.getElementById('mensaje-calendario');
+  try {
+    CalendarioUI.resumir(eventosActuales);
     if (eventosActuales.length === 0) {
-      lista.innerHTML = '<p class="vacio-eventos">No hay actividades programadas para tu alcance.</p>';
+      lista.innerHTML = UI.estadoVacio({
+        icono: 'calendario',
+        mensaje: 'No hay actividades programadas para tu alcance.',
+        accion: document.getElementById('btn-crear-evento').hidden ? null : { id: 'btn-crear-evento', texto: '+ Crear actividad' },
+      });
       return;
     }
-    lista.innerHTML = eventosActuales.map((evento) => {
+    const visibles = CalendarioUI.filtrar(eventosActuales);
+    if (visibles.length === 0) {
+      lista.innerHTML = UI.estadoVacio({
+        icono: 'calendario',
+        mensaje: 'No hay actividades con este filtro.',
+        accion: { id: 'cal-estado-todos', texto: 'Ver todas' },
+      });
+      return;
+    }
+    lista.innerHTML = visibles.map((evento, indice) => {
       const fechaInicio = new Date(evento.fecha_inicio);
       const fechaFin = evento.fecha_fin ? new Date(evento.fecha_fin) : null;
       const inicioPasado = fechaInicio <= new Date();
@@ -441,10 +473,11 @@ async function cargarEventos() {
       };
       const [claseEstado, textoEstado] = etiquetasEstado[evento.estado] || etiquetasEstado.programado;
       return `
-        <article id="evento-${Number(evento.id_evento)}" class="evento-item" tabindex="-1">
+        <article id="evento-${Number(evento.id_evento)}" class="evento-item estado-${escapeHTML(evento.estado || 'programado')}" tabindex="-1" style="--i:${Math.min(indice, 8)}">
           <div class="evento-fecha">
             <span>${escapeHTML(fechaInicio.toLocaleDateString('es-CO', { weekday: 'short' }))}</span>
-            <strong>${escapeHTML(fechaInicio.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' }))}</strong>
+            <strong>${escapeHTML(fechaInicio.toLocaleDateString('es-CO', { day: '2-digit' }))}</strong>
+            <span class="evento-mes">${escapeHTML(fechaInicio.toLocaleDateString('es-CO', { month: 'short' }).replace('.', ''))}</span>
             <time datetime="${escapeHTML(fechaInicio.toISOString())}">${escapeHTML(fechaInicio.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }))}</time>
           </div>
           <div class="evento-contenido">
@@ -457,21 +490,37 @@ async function cargarEventos() {
             <span class="evento-metadata">${escapeHTML(evento.subdirectiva || 'Directiva Departamental')}${evento.lugar ? ` · ${escapeHTML(evento.lugar)}` : ''}${fechaFin ? ` · Hasta ${escapeHTML(fechaFin.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }))}` : ''}</span>
             ${evento.motivo_cancelacion ? `<p class="motivo-cancelacion">Motivo de cancelación: ${escapeHTML(evento.motivo_cancelacion)}</p>` : ''}
             <div class="evento-acciones">
-              <span class="evento-asistencia">${Number(evento.asistentes_confirmados) || 0} asistencia${Number(evento.asistentes_confirmados) === 1 ? '' : 's'} confirmada${Number(evento.asistentes_confirmados) === 1 ? '' : 's'}</span>
+              <div class="evento-confirmados">
+                ${UI.avatares((evento.asistentes || []).map((asistente) => asistente.nombre), Number(evento.asistentes_confirmados) || 0)}
+                <span class="evento-asistencia">${Number(evento.asistentes_confirmados) || 0} asistencia${Number(evento.asistentes_confirmados) === 1 ? '' : 's'} confirmada${Number(evento.asistentes_confirmados) === 1 ? '' : 's'}</span>
+              </div>
+              <div class="evento-botones">
+                ${evento.estado === 'realizado' && evento.mi_asistencia ? '<span class="badge verde">Asistencia confirmada</span>' : ''}
+                ${puedeConfirmar ? `<button class="btn ${evento.mi_asistencia ? 'btn-secundario' : 'btn-primario'} btn-sm btn-asistencia" type="button" data-id-evento="${Number(evento.id_evento)}" data-confirmada="${!evento.mi_asistencia}">${evento.mi_asistencia ? 'Cancelar asistencia' : 'Confirmar asistencia'}</button>` : ''}
+                ${puedeCompletar ? `<button class="btn btn-primario btn-sm btn-evento-realizado" type="button" data-id-evento="${Number(evento.id_evento)}">Marcar como realizada</button>` : ''}
+                ${puedeMarcarEventoRealizado(evento) && Number(evento.asistentes_confirmados) > 0 ? `
+                  <details class="menu-acciones">
+                    <summary class="btn btn-secundario btn-sm">Descargar ${UI.svg(UI.iconos.abajo, 14)}</summary>
+                    <div class="menu-acciones__lista">
+                      <button class="btn-menu btn-exportar-asistentes" type="button" data-id-evento="${Number(evento.id_evento)}" data-formato="excel">Descargar Excel</button>
+                      <button class="btn-menu btn-exportar-asistentes" type="button" data-id-evento="${Number(evento.id_evento)}" data-formato="pdf">Descargar PDF</button>
+                    </div>
+                  </details>` : ''}
+                ${puedeCancelar || puedeEliminar ? `
+                  <details class="menu-acciones menu-mas">
+                    <summary class="btn-icono" aria-label="Más acciones" title="Más acciones">${UI.svg(UI.iconos.mas, 18)}</summary>
+                    <div class="menu-acciones__lista">
+                      ${puedeCancelar ? `<button class="btn-menu btn-evento-cancelar" type="button" data-id-evento="${Number(evento.id_evento)}">Cancelar actividad</button>` : ''}
+                      ${puedeEliminar ? `<button class="btn-menu btn-menu--peligro btn-evento-eliminar" type="button" data-id-evento="${Number(evento.id_evento)}">Eliminar</button>` : ''}
+                    </div>
+                  </details>` : ''}
+              </div>
               <details class="evento-asistentes">
                 <summary>Ver quiénes confirmaron (${Number(evento.asistentes_confirmados) || 0})</summary>
                 ${evento.asistentes?.length
                   ? `<ul>${evento.asistentes.map((asistente) => `<li>${escapeHTML(asistente.nombre)}</li>`).join('')}</ul>`
                   : '<p>Aún no hay confirmaciones.</p>'}
               </details>
-              ${puedeMarcarEventoRealizado(evento) && Number(evento.asistentes_confirmados) > 0 ? `
-                <button class="btn btn-secundario btn-sm btn-exportar-asistentes" type="button" data-id-evento="${Number(evento.id_evento)}" data-formato="excel">Descargar Excel</button>
-                <button class="btn btn-secundario btn-sm btn-exportar-asistentes" type="button" data-id-evento="${Number(evento.id_evento)}" data-formato="pdf">Descargar PDF</button>` : ''}
-              ${puedeConfirmar ? `<button class="btn btn-secundario btn-sm btn-asistencia" type="button" data-id-evento="${Number(evento.id_evento)}" data-confirmada="${!evento.mi_asistencia}">${evento.mi_asistencia ? 'Cancelar asistencia' : 'Confirmar asistencia'}</button>` : ''}
-              ${puedeCompletar ? `<button class="btn btn-verde btn-sm btn-evento-realizado" type="button" data-id-evento="${Number(evento.id_evento)}">Marcar como realizada</button>` : ''}
-              ${puedeCancelar ? `<button class="btn btn-rojo btn-sm btn-evento-cancelar" type="button" data-id-evento="${Number(evento.id_evento)}">Cancelar actividad</button>` : ''}
-              ${puedeEliminar ? `<button class="btn btn-rojo btn-sm btn-evento-eliminar" type="button" data-id-evento="${Number(evento.id_evento)}">Eliminar</button>` : ''}
-              ${evento.estado === 'realizado' && evento.mi_asistencia ? '<span class="badge verde">Asistencia confirmada</span>' : ''}
             </div>
           </div>
         </article>
@@ -507,7 +556,11 @@ async function abrirEventoRecordado() {
 
 async function abrirEvento(idEvento) {
   await mostrarVista('vista-calendario');
-  const tarjeta = document.getElementById(`evento-${Number(idEvento)}`);
+  let tarjeta = document.getElementById(`evento-${Number(idEvento)}`);
+  if (!tarjeta) {
+    CalendarioUI.mostrarTodo();
+    tarjeta = document.getElementById(`evento-${Number(idEvento)}`);
+  }
   if (!tarjeta) return;
 
   tarjeta.classList.remove('evento-destacado');
@@ -686,6 +739,7 @@ async function cargarCategoriasBiblioteca() {
   ).join('');
   document.getElementById('filtro-biblioteca-categoria').innerHTML =
     '<option value="">Todas las categorías</option>' + opciones;
+  UI.chipsDesdeSelect('filtro-biblioteca-categoria', 'chips-biblioteca-categoria');
 }
 
 async function descargarDocumento(idDocumento, titulo) {
@@ -709,9 +763,16 @@ async function cargarBiblioteca() {
   const lista = document.getElementById('lista-biblioteca');
   const mensaje = document.getElementById('mensaje-biblioteca');
   mensaje.className = 'mensaje';
+  if (!lista.children.length) lista.innerHTML = UI.skeletonTarjetas(3);
   try {
     const documentos = await apiFetch('/api/biblioteca');
     documentosBibliotecaActuales = documentos;
+    UI.setResumen('vista-biblioteca', [
+      { valor: documentos.length, etiqueta: 'Documentos' },
+      { valor: new Set(documentos.map((documento) => documento.categoria)).size, etiqueta: 'Categorías' },
+      { valor: documentos.filter((documento) => documento.es_publico).length, etiqueta: 'En Comunicaciones' },
+    ]);
+    UI.chipsDesdeSelect('filtro-biblioteca-categoria', 'chips-biblioteca-categoria');
     const consulta = document.getElementById('filtro-biblioteca-q').value.trim().toLocaleLowerCase('es');
     const categoria = document.getElementById('filtro-biblioteca-categoria').value;
     const visibles = documentos.filter((documento) => {
@@ -720,16 +781,20 @@ async function cargarBiblioteca() {
       return coincideCategoria && (!consulta || texto.includes(consulta));
     });
     if (visibles.length === 0) {
-      lista.innerHTML = '<p class="vacio-eventos">No hay documentos que coincidan con la búsqueda.</p>';
+      lista.innerHTML = UI.estadoVacio({
+        icono: 'libro',
+        mensaje: 'No hay documentos que coincidan con la búsqueda.',
+        accion: consulta || categoria ? { id: 'btn-limpiar-biblioteca', texto: 'Limpiar filtros' } : null,
+      });
       return;
     }
-    lista.innerHTML = visibles.map((documento) => {
+    lista.innerHTML = visibles.map((documento, indice) => {
       const extension = documento.archivo_url
         ? `.${documento.archivo_url.split('.').pop().toLocaleLowerCase('en')}`
         : '';
       return `
-        <article class="documento-item">
-          <div class="documento-icono" aria-hidden="true">${extension ? extension.slice(1).toLocaleUpperCase('es') : 'DOC'}</div>
+        <article class="documento-item" style="--i:${Math.min(indice, 8)}">
+          ${UI.iconoArchivo(extension)}
           <div class="documento-contenido">
             <div class="documento-titulo">
               <h3>${escapeHTML(documento.titulo)}</h3>
@@ -737,28 +802,35 @@ async function cargarBiblioteca() {
             </div>
             <p>${escapeHTML(documento.descripcion || 'Sin descripción adicional')}</p>
             <span class="evento-metadata">${escapeHTML(documento.subdirectiva || 'Sindicato')}
-              · ${escapeHTML(new Date(documento.fecha_publicacion).toLocaleString('es-CO'))}
+              · ${escapeHTML(new Date(documento.fecha_publicacion).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }))}
               ${documento.cargado_por ? `· Cargado por ${escapeHTML(documento.cargado_por)}` : ''}</span>
           </div>
           <div class="documento-acciones">
-            ${extension ? `<button class="btn btn-secundario btn-sm btn-descargar-documento" type="button"
-              data-id-documento="${Number(documento.id_documento)}"
-              data-titulo="${escapeHTML(documento.titulo)}" data-extension="${escapeHTML(extension)}">Descargar</button>` : '<span class="ayuda-campo">Sin archivo adjunto</span>'}
             ${documento.puede_publicar ? `
-              <label class="control-publicacion control-publicacion-lista">
-                <input class="toggle-publicacion-documento" type="checkbox"
+              <label class="toggle">
+                <input class="toggle-publicacion-documento" type="checkbox" role="switch"
                   data-id-documento="${Number(documento.id_documento)}" ${documento.es_publico ? 'checked' : ''} />
-                <span>${documento.es_publico ? 'Visible en Comunicaciones' : 'Oculta en Comunicaciones'}</span>
+                <span class="toggle__pista" aria-hidden="true"></span>
+                <span class="toggle__texto">${documento.es_publico ? 'Visible en Comunicaciones' : 'Oculta en Comunicaciones'}</span>
               </label>
             ` : ''}
-            ${documento.puede_editar ? `
-              <button class="btn btn-secundario btn-sm btn-editar-documento" type="button" data-id-documento="${Number(documento.id_documento)}">Editar</button>
-              <button class="btn btn-rojo btn-sm btn-eliminar-documento" type="button" data-id-documento="${Number(documento.id_documento)}">Eliminar</button>
-            ` : ''}
+            <div class="documento-botones">
+              ${extension === '.pdf' ? `<button class="btn-icono btn-previa-documento" type="button" data-id-documento="${Number(documento.id_documento)}" data-titulo="${escapeHTML(documento.titulo)}" aria-label="Vista previa de ${escapeHTML(documento.titulo)}" title="Vista previa">${UI.svg(UI.iconos.ojo, 18)}</button>` : ''}
+              ${documento.puede_editar ? `
+                <button class="btn btn-secundario btn-sm btn-editar-documento" type="button" data-id-documento="${Number(documento.id_documento)}">Editar</button>
+                <button class="btn-icono btn-eliminar-documento peligro-suave" type="button" data-id-documento="${Number(documento.id_documento)}" aria-label="Eliminar ${escapeHTML(documento.titulo)}" title="Eliminar">${UI.svg(UI.iconos.papelera, 18)}</button>
+              ` : ''}
+              ${extension ? `<button class="btn btn-primario btn-sm btn-descargar-documento" type="button"
+                data-id-documento="${Number(documento.id_documento)}"
+                data-titulo="${escapeHTML(documento.titulo)}" data-extension="${escapeHTML(extension)}">${UI.svg(UI.iconos.descargar, 16)} Descargar</button>` : '<span class="ayuda-campo">Sin archivo adjunto</span>'}
+            </div>
           </div>
         </article>
       `;
     }).join('');
+    lista.querySelectorAll('.btn-previa-documento').forEach((boton) => {
+      boton.addEventListener('click', () => UI.vistaPrevia(`/api/biblioteca/${boton.dataset.idDocumento}/archivo`, boton.dataset.titulo));
+    });
     lista.querySelectorAll('.btn-descargar-documento').forEach((boton) => {
       boton.addEventListener('click', async () => {
         boton.disabled = true;
@@ -831,13 +903,14 @@ async function descargarMaterialEducativo(idDocumento, titulo) {
   URL.revokeObjectURL(url);
 }
 
-function crearTarjetaMaterialEducativo(documento) {
+function crearTarjetaMaterialEducativo(documento, indice = 0) {
   const extension = documento.archivo_url
     ? `.${documento.archivo_url.split('.').pop().toLocaleLowerCase('en')}`
     : '';
+  const id = Number(documento.id_documento);
   return `
-    <article class="documento-item material-educativo-item">
-      <div class="documento-icono" aria-hidden="true">${escapeHTML(extension.slice(1).toLocaleUpperCase('es') || 'DOC')}</div>
+    <article class="documento-item material-educativo-item" style="--i:${Math.min(indice, 8)}">
+      ${UI.iconoArchivo(extension)}
       <div class="documento-contenido">
         <div class="documento-titulo">
           <h4>${escapeHTML(documento.titulo)}</h4>
@@ -848,15 +921,18 @@ function crearTarjetaMaterialEducativo(documento) {
         <p>${escapeHTML(documento.descripcion || 'Sin descripción adicional')}</p>
         <span class="evento-metadata">
           ${documento.cargado_por ? `Compartido por ${escapeHTML(documento.cargado_por)} · ` : ''}
-          ${escapeHTML(new Date(documento.fecha_publicacion).toLocaleDateString('es-CO'))}
+          ${escapeHTML(new Date(documento.fecha_publicacion).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }))}
         </span>
       </div>
       <div class="documento-acciones">
-        ${extension ? `<button class="btn btn-secundario btn-sm btn-descargar-material" type="button"
-          data-id-documento="${Number(documento.id_documento)}"
-          data-titulo="${escapeHTML(documento.titulo)}" data-extension="${escapeHTML(extension)}">Descargar</button>` : ''}
-        ${documento.puede_eliminar ? `<button class="btn btn-rojo btn-sm btn-eliminar-material"
-          type="button" data-id-documento="${Number(documento.id_documento)}">Eliminar</button>` : ''}
+        <div class="documento-botones">
+          ${extension === '.pdf' ? `<button class="btn-icono btn-previa-material" type="button" data-id-documento="${id}" data-titulo="${escapeHTML(documento.titulo)}" aria-label="Vista previa de ${escapeHTML(documento.titulo)}" title="Vista previa">${UI.svg(UI.iconos.ojo, 18)}</button>` : ''}
+          ${documento.puede_eliminar ? `<button class="btn-icono btn-eliminar-material peligro-suave"
+            type="button" data-id-documento="${id}" aria-label="Eliminar ${escapeHTML(documento.titulo)}" title="Eliminar">${UI.svg(UI.iconos.papelera, 18)}</button>` : ''}
+          ${extension ? `<button class="btn btn-primario btn-sm btn-descargar-material" type="button"
+            data-id-documento="${id}"
+            data-titulo="${escapeHTML(documento.titulo)}" data-extension="${escapeHTML(extension)}">${UI.svg(UI.iconos.descargar, 16)} Descargar</button>` : ''}
+        </div>
       </div>
     </article>
   `;
@@ -866,10 +942,17 @@ let documentosEducativos = [];
 
 async function cargarBibliotecaEducativa() {
   const mensaje = document.getElementById('mensaje-biblioteca-educativa');
+  const contenedor = document.getElementById('lista-biblioteca-educativa');
   mensaje.className = 'mensaje';
+  if (!contenedor.children.length) contenedor.innerHTML = UI.skeletonTarjetas(3);
   try {
     await cargarMateriasEducativas();
     documentosEducativos = await apiFetch('/api/biblioteca/educativa');
+    UI.setResumen('vista-biblioteca-educativa', [
+      { valor: documentosEducativos.length, etiqueta: 'Materiales' },
+      { valor: documentosEducativos.filter((doc) => doc.tipo_recurso === 'guia').length, etiqueta: 'Guías' },
+      { valor: documentosEducativos.filter((doc) => doc.tipo_recurso !== 'guia').length, etiqueta: 'Metodologías' },
+    ]);
     actualizarFiltrosEducativos();
   } catch (error) {
     document.getElementById('lista-biblioteca-educativa').replaceChildren();
@@ -898,6 +981,7 @@ function actualizarFiltrosEducativos() {
     + grados.map((grado) => `<option value="${escapeHTML(grado)}">${escapeHTML(grado)}</option>`).join('');
   selectMateria.value = materiaActual;
   selectGrado.value = grados.includes(gradoActual) ? gradoActual : '';
+  UI.chipsDesdeSelect('filtro-educativa-materia', 'chips-educativa-materia');
 }
 
 function renderizarBibliotecaEducativa() {
@@ -926,12 +1010,16 @@ function renderizarBibliotecaEducativa() {
     const metodologias = documentos.filter((documento) => documento.tipo_recurso === 'metodologia_apoyo');
 
     if (guias.length === 0 && metodologias.length === 0) {
-      const vacio = document.createElement('p');
-      vacio.className = 'vacio-eventos';
-      vacio.textContent = filtrando
-        ? 'No hay materiales que coincidan con la búsqueda.'
-        : 'Todavía no hay materiales educativos. Comparte una guía o una metodología de apoyo.';
-      lista.append(vacio);
+      const subir = document.getElementById('btn-subir-material-educativo');
+      lista.innerHTML = UI.estadoVacio({
+        icono: 'libro',
+        mensaje: filtrando
+          ? 'No hay materiales que coincidan con la búsqueda.'
+          : 'Todavía no hay materiales educativos. Comparte una guía o una metodología de apoyo.',
+        accion: filtrando
+          ? { id: 'btn-limpiar-educativa', texto: 'Limpiar filtros' }
+          : (subir && !subir.hidden ? { id: 'btn-subir-material-educativo', texto: 'Compartir material' } : null),
+      });
       return;
     }
 
@@ -976,6 +1064,9 @@ function renderizarBibliotecaEducativa() {
       lista.append(seccionMetodologias);
     }
 
+    lista.querySelectorAll('.btn-previa-material').forEach((boton) => {
+      boton.addEventListener('click', () => UI.vistaPrevia(`/api/biblioteca/educativa/${boton.dataset.idDocumento}/archivo`, boton.dataset.titulo));
+    });
     lista.querySelectorAll('.btn-descargar-material').forEach((boton) => {
       boton.addEventListener('click', async () => {
         boton.disabled = true;
@@ -1109,40 +1200,99 @@ function botonEliminarEstructura(tipo, id, nombre) {
   return `<button class="boton-icono-editar boton-icono-eliminar" type="button" data-eliminar="${tipo}" data-id="${escapeHTML(id)}" data-nombre="${escapeHTML(nombre)}" aria-label="Eliminar ${escapeHTML(nombre)}" title="Eliminar ${etiquetasEstructura[tipo]}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5"/><path d="M14 11v5"/></svg></button>`;
 }
 
+let estructuraActual = [];
+let afiliadosPorSubdirectiva = {};
+const estructuraAbiertas = new Set();
+
+const esInstitucionPorClasificar = (nombre) => /por clasificar/i.test(nombre || '');
+
+function pintarEstructura() {
+  const contenedor = document.getElementById('cuerpo-directorio');
+  const consulta = document.getElementById('filtro-estructura-q').value.trim().toLocaleLowerCase('es');
+  const coincide = (texto) => String(texto || '').toLocaleLowerCase('es').includes(consulta);
+  const filtradas = estructuraActual.map((sub) => {
+    if (!consulta || coincide(sub.nombre)) return { sub, instituciones: sub.instituciones };
+    const instituciones = sub.instituciones
+      .map((inst) => (coincide(inst.nombre) ? inst : { ...inst, sedes: inst.sedes.filter((sede) => coincide(sede.nombre)) }))
+      .filter((inst) => coincide(inst.nombre) || inst.sedes.length);
+    return instituciones.length ? { sub, instituciones } : null;
+  }).filter(Boolean);
+  if (!filtradas.length) {
+    contenedor.innerHTML = UI.estadoVacio({
+      icono: 'usuarios',
+      mensaje: consulta ? 'No hay resultados para la búsqueda.' : 'Aún no hay subdirectivas registradas.',
+      accion: consulta ? { id: 'btn-limpiar-estructura', texto: 'Limpiar búsqueda' } : null,
+    });
+    return;
+  }
+  const gestiona = puedeGestionarAfiliados;
+  contenedor.innerHTML = filtradas.map(({ sub, instituciones }, indice) => {
+    const sedesTotal = instituciones.reduce((suma, inst) => suma + inst.sedes.length, 0);
+    const sinClasificar = instituciones.filter((inst) => esInstitucionPorClasificar(inst.nombre)).length;
+    const abierto = Boolean(consulta) || estructuraAbiertas.has(String(sub.id_subdirectiva));
+    const afiliados = afiliadosPorSubdirectiva[sub.nombre];
+    return `
+      <section class="nodo-estructura" style="--i:${Math.min(indice, 8)}">
+        <header class="nodo-estructura__cab">
+          <button type="button" class="nodo-estructura__toggle" data-toggle-nodo="${escapeHTML(sub.id_subdirectiva)}" aria-expanded="${abierto}">
+            <span class="nodo-estructura__flecha" aria-hidden="true">${UI.svg(UI.iconos.derecha, 18)}</span>
+            <span class="nodo-estructura__nombre">${escapeHTML(sub.nombre)}</span>
+            ${sub.es_principal ? '<span class="badge azul">Principal</span>' : ''}
+            ${sinClasificar ? `<span class="badge amarillo">${sinClasificar} por clasificar</span>` : ''}
+          </button>
+          <div class="nodo-estructura__contadores">
+            <span><strong>${instituciones.length}</strong> instituciones</span>
+            <span><strong>${sedesTotal}</strong> sedes</span>
+            ${afiliados !== undefined ? `<span><strong>${Number(afiliados)}</strong> afiliados</span>` : ''}
+          </div>
+          ${gestiona ? `<div class="acciones-hover">
+            <button class="boton-agregar-estructura" type="button" data-crear="institucion" data-id="${escapeHTML(sub.id_subdirectiva)}">+ Institución</button>
+            ${botonEditarEstructura('subdirectiva', sub.id_subdirectiva, sub.nombre)}${sub.es_principal ? '' : botonEliminarEstructura('subdirectiva', sub.id_subdirectiva, sub.nombre)}
+          </div>` : ''}
+        </header>
+        <div class="nodo-estructura__cuerpo" ${abierto ? '' : 'hidden'}>
+          ${instituciones.length ? instituciones.map((inst) => `
+            <div class="institucion-directorio${esInstitucionPorClasificar(inst.nombre) ? ' por-clasificar' : ''}">
+              <div class="nombre-institucion-directorio">
+                <strong>${escapeHTML(inst.nombre)}</strong>
+                ${esInstitucionPorClasificar(inst.nombre) ? '<span class="badge amarillo">Por clasificar</span>' : ''}
+                <span class="ayuda-campo">${inst.sedes.length} ${inst.sedes.length === 1 ? 'sede' : 'sedes'}</span>
+                ${gestiona ? `<div class="acciones-hover">
+                  ${esInstitucionPorClasificar(inst.nombre) ? `<button class="btn btn-secundario btn-sm" type="button" data-renombrar="institucion" data-id="${escapeHTML(inst.id_institucion)}" data-nombre="${escapeHTML(inst.nombre)}">Clasificar</button>` : ''}
+                  <button class="boton-agregar-estructura" type="button" data-crear="sede" data-id="${escapeHTML(inst.id_institucion)}">+ Sede</button>
+                  ${botonEditarEstructura('institucion', inst.id_institucion, inst.nombre)}${botonEliminarEstructura('institucion', inst.id_institucion, inst.nombre)}
+                </div>` : ''}
+              </div>
+              <div class="sedes-directorio">${inst.sedes.length
+                ? inst.sedes.map((sede) => `<span class="sede-directorio"><span class="sede-etiqueta">${escapeHTML(sede.nombre)}</span>${gestiona ? `<span class="acciones-hover">${botonEditarEstructura('sede', sede.id_sede, sede.nombre)}${botonEliminarEstructura('sede', sede.id_sede, sede.nombre)}</span>` : ''}</span>`).join('')
+                : '<span class="ayuda-campo">Sin sedes registradas</span>'}</div>
+            </div>`).join('') : '<p class="ayuda-campo">Sin instituciones educativas registradas</p>'}
+        </div>
+      </section>`;
+  }).join('');
+}
+
 async function cargarDirectorio() {
   const tbody = document.getElementById('cuerpo-directorio');
   const mensaje = document.getElementById('mensaje-directorio');
   mensaje.className = 'mensaje';
+  if (!estructuraActual.length) tbody.innerHTML = UI.skeletonTarjetas(3);
   try {
     const subdirectivas = await apiFetch('/api/subdirectivas');
-    if (subdirectivas.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="2">Aún no hay subdirectivas registradas.</td></tr>';
-      return;
+    estructuraActual = subdirectivas;
+    try {
+      const estadisticas = await apiFetch('/api/membresia/estadisticas');
+      afiliadosPorSubdirectiva = Object.fromEntries((estadisticas.por_subdirectiva || []).map((fila) => [fila.nombre, fila.total]));
+    } catch (err) {
+      afiliadosPorSubdirectiva = {};
     }
-    tbody.innerHTML = subdirectivas.map((subdirectiva) => `
-      <tr>
-        <td>
-          <div class="nombre-subdirectiva-directorio">
-            <strong>${escapeHTML(subdirectiva.nombre)}</strong>
-            ${subdirectiva.es_principal ? '<span class="badge azul">Principal</span>' : ''}
-            ${puedeGestionarAfiliados ? `${botonEditarEstructura('subdirectiva', subdirectiva.id_subdirectiva, subdirectiva.nombre)}${subdirectiva.es_principal ? '' : botonEliminarEstructura('subdirectiva', subdirectiva.id_subdirectiva, subdirectiva.nombre)}<button class="boton-agregar-estructura" type="button" data-crear="institucion" data-id="${escapeHTML(subdirectiva.id_subdirectiva)}">+ Institución</button>` : ''}
-          </div>
-        </td>
-        <td>${subdirectiva.instituciones.length
-          ? subdirectiva.instituciones.map((institucion) => `
-            <section class="institucion-directorio">
-              <div class="nombre-institucion-directorio">
-                <strong>${escapeHTML(institucion.nombre)}</strong>
-                ${puedeGestionarAfiliados ? `${botonEditarEstructura('institucion', institucion.id_institucion, institucion.nombre)}${botonEliminarEstructura('institucion', institucion.id_institucion, institucion.nombre)}<button class="boton-agregar-estructura" type="button" data-crear="sede" data-id="${escapeHTML(institucion.id_institucion)}">+ Sede</button>` : ''}
-              </div>
-              <div class="sedes-directorio">${institucion.sedes.length
-                ? institucion.sedes.map((sede) => `<span class="sede-directorio"><span class="sede-etiqueta">${escapeHTML(sede.nombre)}</span>${puedeGestionarAfiliados ? `${botonEditarEstructura('sede', sede.id_sede, sede.nombre)}${botonEliminarEstructura('sede', sede.id_sede, sede.nombre)}` : ''}</span>`).join('')
-                : '<span class="ayuda-campo">Sin sedes registradas</span>'}</div>
-            </section>
-          `).join('')
-          : 'Sin instituciones educativas registradas'}</td>
-      </tr>
-    `).join('');
+    const sedes = subdirectivas.reduce((suma, sub) => suma + sub.instituciones.reduce((s, inst) => s + inst.sedes.length, 0), 0);
+    UI.setResumen('vista-directorio', [
+      { valor: subdirectivas.length, etiqueta: 'Subdirectivas' },
+      { valor: subdirectivas.reduce((suma, sub) => suma + sub.instituciones.length, 0), etiqueta: 'Instituciones' },
+      { valor: sedes, etiqueta: 'Sedes' },
+    ]);
+    pintarEstructura();
   } catch (err) {
     mensaje.textContent = err.message;
     mensaje.className = 'mensaje error';
@@ -1157,20 +1307,35 @@ async function cargarAfiliadosVisibles() {
     ? 'Afiliados del sindicato'
     : `Afiliados de ${perfilActual?.subdirectiva || 'mi subdirectiva'}`;
   mensaje.className = 'mensaje';
+  tbody.innerHTML = UI.skeletonFilas(7, 5);
   try {
     const queryString = parametrosFiltros('local').toString();
     const afiliados = await apiFetch(`/api/membresia/afiliados?${queryString}`);
     afiliadosVisiblesActuales = afiliados;
+    UI.setResumen('vista-afiliados', [
+      { valor: afiliados.length, etiqueta: 'Afiliados' },
+      { valor: afiliados.filter((a) => a.estado_sindical === 'activo').length, etiqueta: 'Activos' },
+      { valor: new Set(afiliados.map((a) => a.institucion).filter(Boolean)).size, etiqueta: 'Instituciones' },
+    ]);
     if (afiliados.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="9">No hay afiliados que coincidan con los filtros.</td></tr>';
+      tbody.innerHTML = `<tr class="fila-vacia"><td colspan="7">${UI.estadoVacio({
+        icono: 'usuarios',
+        mensaje: 'No hay afiliados que coincidan con los filtros.',
+        accion: { id: 'btn-limpiar-local', texto: 'Limpiar' },
+      })}</td></tr>`;
       return;
     }
     tbody.innerHTML = afiliados.map((afiliado) => `
       <tr>
         <td data-label="Seleccionar">${renderizarCasilla(afiliado, 'local')}</td>
-        <td data-label="Nombre">${escapeHTML(nombreCompleto(afiliado))}</td>
-        <td data-label="Cédula">${escapeHTML(afiliado.cedula)}</td>
-        <td data-label="Correo">${escapeHTML(afiliado.correo || '—')}</td>
+        <td data-label="Nombre" class="celda-persona">
+          ${UI.avatar(nombreCompleto(afiliado))}
+          <div class="persona-texto">
+            <strong>${escapeHTML(nombreCompleto(afiliado))}</strong>
+            <span>C.C. ${escapeHTML(afiliado.cedula)}</span>
+            <span>${escapeHTML(afiliado.correo || '—')}</span>
+          </div>
+        </td>
         <td data-label="Cargo sindical">${escapeHTML(afiliado.cargo_sindical || 'Sin cargo local')}</td>
         <td data-label="Institución educativa">${escapeHTML(afiliado.institucion || '—')}</td>
         <td data-label="Sede">${escapeHTML(afiliado.sede || '—')}</td>
@@ -1198,12 +1363,22 @@ async function cargarUsuarios() {
   }
 
   try {
+    tbody.innerHTML = `<tr class="fila-vacia"><td colspan="14">${UI.skeletonTarjetas(2)}</td></tr>`;
     const queryString = parametrosFiltros('global').toString();
     const usuarios = await apiFetch(`/api/afiliados?${queryString}`);
     usuariosActuales = usuarios;
+    UI.setResumen('vista-administracion', [
+      { valor: usuarios.length, etiqueta: 'Resultados' },
+      { valor: usuarios.filter((a) => a.estado === 'pendiente').length, etiqueta: 'Pendientes' },
+      { valor: usuarios.filter((a) => a.estado === 'aprobado').length, etiqueta: 'Aprobados' },
+    ]);
 
     if (usuarios.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="14" style="text-align:center; color:#6b7280;">No hay afiliados que coincidan con los filtros.</td></tr>';
+      tbody.innerHTML = `<tr class="fila-vacia"><td colspan="14">${UI.estadoVacio({
+        icono: 'usuarios',
+        mensaje: 'No hay afiliados que coincidan con los filtros.',
+        accion: { id: 'btn-limpiar-global', texto: 'Limpiar' },
+      })}</td></tr>`;
       return;
     }
 
@@ -1214,15 +1389,15 @@ async function cargarUsuarios() {
          ${a.estado === 'aprobado' ? `<button class="btn btn-secundario btn-sm" onclick="abrirModalAsignacion(${Number(a.id_afiliado)})">Asignación</button>` : ''}
          ${esAdmin && a.usuario ? `<button class="btn btn-secundario btn-sm" onclick="abrirModalRoles(${Number(a.id_afiliado)})">Actualizar roles</button>` : ''}
          ${esAdmin && a.usuario && String(a.id_afiliado) !== String(perfilActual?.id_afiliado) ? `<button class="btn btn-secundario btn-sm" onclick="restablecerContrasenaTemporal(${Number(a.id_afiliado)})">Restablecer contraseña</button>` : ''}
-         ${esAdmin && String(a.id_afiliado) !== String(perfilActual?.id_afiliado) ? `<button class="btn btn-rojo btn-sm" onclick="eliminarAfiliado(${Number(a.id_afiliado)})">Eliminar</button>` : ''}
-         ${puedeAprobar && a.estado === 'pendiente' ? `<button class="btn btn-verde btn-sm" onclick="cambiarEstado(${Number(a.id_afiliado)}, 'aprobado')">Aprobar</button>
-             <button class="btn btn-rojo btn-sm" onclick="cambiarEstado(${Number(a.id_afiliado)}, 'rechazado')">Rechazar</button>` : ''}
+         ${esAdmin && String(a.id_afiliado) !== String(perfilActual?.id_afiliado) ? `<button class="btn-icono peligro-suave" type="button" onclick="eliminarAfiliado(${Number(a.id_afiliado)})" aria-label="Eliminar a ${escapeHTML(nombreCompleto(a))}" title="Eliminar">${UI.svg(UI.iconos.papelera, 18)}</button>` : ''}
+         ${puedeAprobar && a.estado === 'pendiente' ? `<button class="btn btn-rojo btn-sm" onclick="cambiarEstado(${Number(a.id_afiliado)}, 'rechazado')">Rechazar</button>
+             <button class="btn btn-primario btn-sm" onclick="cambiarEstado(${Number(a.id_afiliado)}, 'aprobado')">Aprobar</button>` : ''}
            </div>`
         : '—';
 
       return `<tr>
         <td data-label="Seleccionar">${renderizarCasilla(a, 'global')}</td>
-        <td data-label="Nombre">${escapeHTML(nombreCompleto(a))}</td>
+        <td data-label="Nombre"><div class="celda-persona">${UI.avatar(nombreCompleto(a))}<strong>${escapeHTML(nombreCompleto(a))}</strong></div></td>
         <td data-label="Cédula">${escapeHTML(a.cedula)}</td>
         <td data-label="Correo">${escapeHTML(a.correo || '—')}</td>
         <td data-label="Usuario">${escapeHTML(a.usuario || '—')}</td>
@@ -1577,7 +1752,19 @@ document.getElementById('filtro-biblioteca-q').addEventListener('input', cargarB
 ['filtro-educativa-q', 'filtro-educativa-materia', 'filtro-educativa-grado'].forEach((id) => {
   document.getElementById(id).addEventListener(id.endsWith('-q') ? 'input' : 'change', renderizarBibliotecaEducativa);
 });
+document.getElementById('btn-limpiar-educativa').addEventListener('click', () => {
+  document.getElementById('filtro-educativa-q').value = '';
+  document.getElementById('filtro-educativa-materia').value = '';
+  document.getElementById('filtro-educativa-grado').value = '';
+  UI.chipsDesdeSelect('filtro-educativa-materia', 'chips-educativa-materia');
+  renderizarBibliotecaEducativa();
+});
 document.getElementById('filtro-biblioteca-categoria').addEventListener('change', cargarBiblioteca);
+document.getElementById('btn-limpiar-biblioteca').addEventListener('click', () => {
+  document.getElementById('filtro-biblioteca-q').value = '';
+  document.getElementById('filtro-biblioteca-categoria').value = '';
+  cargarBiblioteca();
+});
 document.getElementById('btn-recargar-material-educativo').addEventListener('click', cargarBibliotecaEducativa);
 document.getElementById('btn-subir-material-educativo').addEventListener('click', async () => {
   const formulario = document.getElementById('form-material-educativo');
@@ -1822,6 +2009,34 @@ async function eliminarEstructura(tipo, id, nombre) {
 }
 
 document.getElementById('cuerpo-directorio').addEventListener('click', (event) => {
+  const alternar = event.target.closest('[data-toggle-nodo]');
+  if (!alternar) return;
+  const id = alternar.dataset.toggleNodo;
+  const abierto = alternar.getAttribute('aria-expanded') !== 'true';
+  if (abierto) estructuraAbiertas.add(id); else estructuraAbiertas.delete(id);
+  alternar.setAttribute('aria-expanded', String(abierto));
+  alternar.closest('.nodo-estructura').querySelector('.nodo-estructura__cuerpo').hidden = !abierto;
+});
+
+document.getElementById('filtro-estructura-q').addEventListener('input', pintarEstructura);
+document.getElementById('btn-expandir-estructura').addEventListener('click', () => {
+  estructuraActual.forEach((sub) => estructuraAbiertas.add(String(sub.id_subdirectiva)));
+  pintarEstructura();
+});
+document.getElementById('btn-contraer-estructura').addEventListener('click', () => {
+  estructuraAbiertas.clear();
+  pintarEstructura();
+});
+document.getElementById('menu-crear-estructura').addEventListener('click', (event) => {
+  const opcion = event.target.closest('[data-dispara]');
+  if (opcion) document.getElementById(opcion.dataset.dispara).click();
+});
+document.getElementById('btn-limpiar-estructura').addEventListener('click', () => {
+  document.getElementById('filtro-estructura-q').value = '';
+  pintarEstructura();
+});
+
+document.getElementById('cuerpo-directorio').addEventListener('click', (event) => {
   if (!puedeGestionarAfiliados) return;
   const boton = event.target.closest('[data-renombrar], [data-eliminar], [data-crear]');
   if (!boton) return;
@@ -2016,7 +2231,49 @@ document.getElementById('form-crear-evento').addEventListener('submit', async (e
     mensaje.className = 'mensaje error';
   }
 });
+const camposCuenta = ['nombre1', 'nombre2', 'apellido1', 'apellido2', 'correo'];
+
+// El botón "Guardar cambios" solo se habilita si algún campo difiere del perfil cargado
+function actualizarEstadoCuenta() {
+  const valor = (id) => document.getElementById(id).value;
+  const hayCambios = Boolean(perfilActual) && (
+    camposCuenta.some((campo) => valor(`cuenta-${campo}`) !== (perfilActual[campo] || ''))
+    || valor('cuenta-contrasena-actual') !== ''
+    || valor('cuenta-contrasena-nueva') !== ''
+    || document.getElementById('foto-perfil').files.length > 0
+  );
+  document.getElementById('btn-guardar-cuenta').disabled = !hayCambios;
+  document.getElementById('aviso-cambios').textContent = hayCambios ? 'Tienes cambios sin guardar.' : 'No hay cambios por guardar.';
+  const { nivel, texto } = evaluarFortaleza(valor('cuenta-contrasena-nueva'));
+  const indicador = document.getElementById('fortaleza-clave');
+  indicador.dataset.nivel = String(nivel);
+  indicador.querySelector('.fortaleza-clave__texto').textContent = texto;
+}
+
+function evaluarFortaleza(clave) {
+  if (!clave) return { nivel: 0, texto: '' };
+  const puntos = [clave.length >= 8, /[a-z]/.test(clave) && /[A-Z]/.test(clave), /\d/.test(clave), /[^A-Za-z0-9]/.test(clave)]
+    .filter(Boolean).length;
+  return { nivel: Math.max(1, puntos), texto: ['', 'Débil', 'Regular', 'Buena', 'Fuerte'][Math.max(1, puntos)] };
+}
+
+document.getElementById('form-cuenta').addEventListener('input', actualizarEstadoCuenta);
+document.getElementById('form-cuenta').addEventListener('click', (event) => {
+  const ver = event.target.closest('[data-ver-clave]');
+  if (ver) {
+    const campo = document.getElementById(ver.dataset.verClave);
+    const mostrar = campo.type === 'password';
+    campo.type = mostrar ? 'text' : 'password';
+    ver.setAttribute('aria-pressed', String(mostrar));
+    ver.setAttribute('aria-label', mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña');
+    ver.title = mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña';
+    ver.classList.toggle('visible', mostrar);
+  }
+  if (event.target.closest('[data-elegir-foto]')) document.getElementById('foto-perfil').click();
+});
+
 document.getElementById('foto-perfil').addEventListener('change', (event) => {
+  actualizarEstadoCuenta();
   const archivo = event.target.files[0];
   if (!archivo) return;
   const urlTemporal = URL.createObjectURL(archivo);
@@ -2043,6 +2300,7 @@ document.getElementById('form-cuenta').addEventListener('submit', async (event) 
     });
     mensaje.textContent = respuesta.mensaje;
     mensaje.className = 'mensaje exito';
+    UI.toast(respuesta.mensaje);
     document.getElementById('cuenta-contrasena-actual').value = '';
     document.getElementById('cuenta-contrasena-nueva').value = '';
     document.getElementById('foto-perfil').value = '';
@@ -2051,7 +2309,7 @@ document.getElementById('form-cuenta').addEventListener('submit', async (event) 
     mensaje.textContent = err.message;
     mensaje.className = 'mensaje error';
   } finally {
-    boton.disabled = false;
+    actualizarEstadoCuenta();
   }
 });
 

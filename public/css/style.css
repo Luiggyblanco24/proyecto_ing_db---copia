@@ -1,16 +1,50 @@
+/* Plus Jakarta Sans alojada localmente */
+@font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/PlusJakartaSans-400.ttf') format('truetype'); }
+@font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/PlusJakartaSans-500.ttf') format('truetype'); }
+@font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/PlusJakartaSans-600.ttf') format('truetype'); }
+@font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/PlusJakartaSans-700.ttf') format('truetype'); }
+@font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 800; font-display: swap; src: url('/fonts/PlusJakartaSans-800.ttf') format('truetype'); }
+
+/* Tokens centrales del sistema visual (única fuente de verdad) */
 :root {
-  --verde-institucional: #1b7a38;
+  color-scheme: light;
+
+  --ui-bg: #f6faf7;
+  --ui-surface: #fff;
+  --ui-surface-2: #f1f7f3;
+  --ui-text: #10231a;
+  --ui-muted: #4b5f54;
+  --ui-border: #dbe7df;
+  --ui-glass: rgba(255, 255, 255, 0.78);
+  --ui-verde-900: #14532d;
+  --ui-verde-700: #15803d;
+  --ui-verde-600: #16a34a;
+  --ui-foco: #16a34a;
+
+  --ui-r-sm: 10px;
+  --ui-r-md: 12px;
+  --ui-r-lg: 18px;
+  --ui-r-xl: 22px;
+
+  --ui-sombra-1: 0 1px 2px rgba(16, 35, 26, 0.05), 0 2px 8px rgba(16, 35, 26, 0.04);
+  --ui-sombra-2: 0 4px 12px rgba(16, 35, 26, 0.06), 0 12px 28px rgba(16, 35, 26, 0.08);
+  --ui-sombra-3: 0 8px 20px rgba(16, 35, 26, 0.1), 0 24px 48px rgba(16, 35, 26, 0.16);
+
+  --ui-t: 200ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ui-fuente: 'Plus Jakarta Sans', Inter, 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  --verde-institucional: #15803d;
   --verde-regional: #2e7d32;
-  --verde-oscuro: #14602b;
+  --verde-oscuro: #14532d;
   --amarillo: #f59e0b;
-  --ambar-oscuro: #d97706;
+  --ambar-oscuro: #b45309;
   --azul-informativo: #1d4ed8;
   --rojo: #dc2626;
-  --crema: #fff;
-  --carbón: #1e293b;
-  --gris-texto: #475569;
-  --borde: #e5e1d6;
-  --verde-suave: #eaf5ec;
+  --crema: var(--ui-bg);
+  --carbón: var(--ui-text);
+  --gris-texto: var(--ui-muted);
+  --borde: var(--ui-border);
+  --verde-suave: #e8f5ec;
 }
 
 * {
@@ -20,9 +54,9 @@
 }
 
 body {
-  font-family: 'Open Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background: var(--crema);
-  color: var(--carbón);
+  font-family: var(--ui-fuente);
+  background: var(--ui-bg);
+  color: var(--ui-text);
   min-height: 100vh;
 }
 
@@ -182,6 +216,7 @@ input:focus, select:focus {
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
   transition: background 0.15s;
   text-decoration: none;
