@@ -30,8 +30,9 @@ app.use(cors({
 app.use(express.json());
 
 // La landing de Astro es la entrada pública; login y panel permanecen en public.
-app.use(express.static(directorioLanding));
+// public va primero: dist contiene una copia de public que quedaría desactualizada.
 app.use(express.static(path.join(raizProyecto, 'public')));
+app.use(express.static(directorioLanding));
 
 // Rutas de la API
 app.use('/api', routes);
