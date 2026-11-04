@@ -17,11 +17,89 @@
   </div>
 </div>
 
+<dialog
+  id="galeria-confirmar"
+  class="m-auto w-[min(480px,calc(100vw-2rem))] rounded-2xl border border-[#e5e1d6] bg-white p-0 text-[#1e293b] shadow-2xl backdrop:bg-black/55 backdrop:backdrop-blur-sm"
+  aria-labelledby="galeria-confirmar-titulo"
+  aria-describedby="galeria-confirmar-mensaje"
+>
+  <div class="p-6">
+    <div class="flex items-start gap-3">
+      <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-red-100 text-[#b91c1c]" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.7 18-8-14a2 2 0 0 0-3.4 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3z"/><path d="M12 9v4M12 17h.01"/></svg>
+      </span>
+      <div class="min-w-0">
+        <h2 id="galeria-confirmar-titulo" class="text-lg font-bold text-[#991b1b]">Eliminar imagen</h2>
+        <p id="galeria-confirmar-mensaje" class="mt-2 text-sm leading-relaxed text-[#475569]"></p>
+      </div>
+    </div>
+    <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+      <button id="galeria-confirmar-cancelar" type="button" class="min-h-11 rounded-lg border border-[#bbd9c6] bg-white px-4 py-2 font-semibold text-[#14532d] hover:bg-[#e8f5ec]">Cancelar</button>
+      <button id="galeria-confirmar-eliminar" type="button" class="min-h-11 rounded-lg bg-[#b91c1c] px-4 py-2 font-semibold text-white hover:bg-[#991b1b]">Eliminar imagen</button>
+    </div>
+  </div>
+</dialog>
+
 <script>
   const fotosGaleria = document.getElementById('galeria-fotos');
   const mensajeGaleria = document.getElementById('galeria-mensaje');
   const formularioNuevaFoto = document.getElementById('galeria-nueva');
+  const dialogoGaleria = document.getElementById('galeria-confirmar');
+  const tituloConfirmacionGaleria = document.getElementById('galeria-confirmar-titulo');
+  const mensajeConfirmacionGaleria = document.getElementById('galeria-confirmar-mensaje');
+  const btnCancelarGaleria = document.getElementById('galeria-confirmar-cancelar');
+  const btnEliminarGaleria = document.getElementById('galeria-confirmar-eliminar');
+  let resolverConfirmacionGaleria = null;
+  let focoConfirmacionGaleria = null;
+  let quitarClicFueraGaleria = null;
   let tokenGaleria = null;
+
+  function confirmarGaleria(titulo, mensaje) {
+    if (!dialogoGaleria || dialogoGaleria.open) return Promise.resolve(false);
+    focoConfirmacionGaleria = document.activeElement;
+    tituloConfirmacionGaleria.textContent = titulo;
+    mensajeConfirmacionGaleria.textContent = mensaje;
+    dialogoGaleria.showModal();
+    btnCancelarGaleria.focus();
+    setTimeout(() => {
+      if (!dialogoGaleria.open) return;
+      const alClicFuera = (evento) => {
+        const rect = dialogoGaleria.getBoundingClientRect();
+        const fuera = evento.clientX < rect.left || evento.clientX > rect.right
+          || evento.clientY < rect.top || evento.clientY > rect.bottom;
+        if (!fuera) return;
+        evento.preventDefault();
+        evento.stopPropagation();
+        cerrarConfirmacionGaleria(false);
+      };
+      document.addEventListener('click', alClicFuera, true);
+      quitarClicFueraGaleria = () => document.removeEventListener('click', alClicFuera, true);
+    }, 0);
+    return new Promise((resolve) => {
+      resolverConfirmacionGaleria = resolve;
+    });
+  }
+
+  function cerrarConfirmacionGaleria(valor) {
+    if (!dialogoGaleria?.open) return;
+    quitarClicFueraGaleria?.();
+    quitarClicFueraGaleria = null;
+    dialogoGaleria.close();
+    if (focoConfirmacionGaleria instanceof HTMLElement && focoConfirmacionGaleria.isConnected) {
+      focoConfirmacionGaleria.focus({ preventScroll: true });
+    }
+    focoConfirmacionGaleria = null;
+    const resolver = resolverConfirmacionGaleria;
+    resolverConfirmacionGaleria = null;
+    resolver?.(valor);
+  }
+
+  btnCancelarGaleria?.addEventListener('click', () => cerrarConfirmacionGaleria(false));
+  btnEliminarGaleria?.addEventListener('click', () => cerrarConfirmacionGaleria(true));
+  dialogoGaleria?.addEventListener('cancel', (evento) => {
+    evento.preventDefault();
+    cerrarConfirmacionGaleria(false);
+  });
 
   function mostrarMensajeGaleria(texto, error = false) {
     mensajeGaleria.textContent = texto;
@@ -95,7 +173,8 @@
       eliminar.className = 'rounded-lg border border-[#b91c1c] px-4 py-2 font-semibold text-[#991b1b] hover:bg-red-50';
       eliminar.textContent = 'Eliminar';
       eliminar.addEventListener('click', async () => {
-        if (!confirm('¿Quieres eliminar esta imagen de la galería?')) return;
+        const confirmado = await confirmarGaleria('Eliminar imagen', '¿Quieres eliminar esta imagen de la galería?');
+        if (!confirmado) return;
         try {
           await solicitudGaleria(`/api/public/galeria/${foto.id_foto}`, { method: 'DELETE' });
           await cargarGaleria();

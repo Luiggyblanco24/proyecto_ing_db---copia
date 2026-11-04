@@ -1,0 +1,150 @@
+---
+import Icono from './Icono.astro';
+---
+
+<section id="comunicaciones" class="bg-cream px-4 py-20 sm:px-6 sm:py-24">
+  <div class="mx-auto max-w-6xl">
+    <div class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+      <header class="max-w-3xl reveal">
+        <p class="eyebrow text-brand-700">Comunicaciones</p>
+        <h2 class="display mt-3 text-3xl text-ink sm:text-4xl lg:text-5xl">
+          Información útil para la comunidad educativa
+        </h2>
+        <p class="mt-5 text-lg leading-relaxed text-muted">
+          Resoluciones, circulares, actas y documentos oficiales de la biblioteca sindical. Consulta las publicaciones más recientes de SUTENS.
+        </p>
+      </header>
+
+      <a href="/Comunicaciones/" class="btn btn-outline reveal shrink-0">
+        Ver todas las publicaciones
+        <Icono name="arrow-right" class="h-4 w-4" />
+      </a>
+    </div>
+
+    <div id="documentos-grid" class="mt-12 grid gap-4 md:grid-cols-3" aria-busy="true">
+      {Array.from({ length: 3 }).map(() => (
+        <div class="skeleton-documento overflow-hidden rounded-[1.5rem] border border-line bg-white" aria-hidden="true">
+          <div class="h-14 animate-pulse border-b border-line bg-verde-suave motion-reduce:animate-none"></div>
+          <div class="grid gap-3 p-5">
+            <span class="h-2.5 w-1/3 animate-pulse rounded bg-line motion-reduce:animate-none"></span>
+            <span class="h-4 w-4/5 animate-pulse rounded bg-line motion-reduce:animate-none"></span>
+            <span class="h-3 w-full animate-pulse rounded bg-line motion-reduce:animate-none"></span>
+            <span class="h-3 w-2/3 animate-pulse rounded bg-line motion-reduce:animate-none"></span>
+          </div>
+        </div>
+      ))}
+    </div>
+    <p id="documentos-estado" class="mt-4 hidden rounded-2xl border border-line bg-white p-4 text-sm leading-relaxed text-muted"></p>
+
+    <noscript>
+      <style>
+        .skeleton-documento {
+          display: none;
+        }
+      </style>
+      <p class="mt-4 rounded-2xl border border-line bg-white p-4 text-sm text-muted">
+        Activa JavaScript para ver los documentos, o consulta la página de <a class="font-bold text-brand-700 underline" href="/Comunicaciones/">Comunicaciones</a>.
+      </p>
+    </noscript>
+  </div>
+
+  <template id="tpl-documento">
+    <article class="group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-line bg-white shadow-[var(--ui-sombra-1)] transition duration-300 hover:-translate-y-1 hover:border-brand-600/40 hover:shadow-[var(--ui-sombra-3)] motion-reduce:hover:translate-y-0">
+      <div class="flex items-center justify-between gap-3 border-b border-line bg-cream/70 px-5 py-4">
+        <span class="inline-flex min-w-0 items-center gap-2 text-xs font-extrabold uppercase tracking-[0.12em] text-brand-700">
+          <Icono name="file" class="h-4 w-4 shrink-0" />
+          <span data-tipo class="truncate"></span>
+        </span>
+        <span data-extension class="shrink-0 rounded-full bg-white px-2.5 py-1 text-[0.68rem] font-extrabold uppercase tracking-wider text-brand-700 ring-1 ring-line"></span>
+      </div>
+      <div class="flex flex-1 flex-col p-5">
+        <time data-fecha class="text-xs font-bold text-muted"></time>
+        <h3 data-titulo class="mt-2 text-lg font-extrabold leading-snug text-ink"></h3>
+        <p data-descripcion class="mt-2 line-clamp-3 text-sm leading-relaxed text-muted"></p>
+        <a data-descarga href="#" class="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-extrabold text-brand-700 hover:underline">
+          Descargar documento
+          <Icono name="download" class="h-4 w-4" />
+        </a>
+      </div>
+    </article>
+  </template>
+</section>
+
+<script>
+  import { getDocumentosPublicos, formatearFecha } from '../../lib/public-api.js';
+
+  function mostrarEstado(mensaje, enlace) {
+    const estado = document.getElementById('documentos-estado');
+    if (!estado) return;
+    estado.textContent = '';
+    estado.append(document.createTextNode(`${mensaje} `));
+    if (enlace) {
+      const ancla = document.createElement('a');
+      ancla.href = enlace.href;
+      ancla.className = 'font-extrabold text-brand-700 underline';
+      ancla.textContent = enlace.texto;
+      estado.append(ancla);
+    }
+    estado.hidden = false;
+  }
+
+  async function cargarDocumentos() {
+    const contenedor = document.getElementById('documentos-grid');
+    const plantilla = document.getElementById('tpl-documento');
+    if (!contenedor || !plantilla) return;
+
+    const documentos = await getDocumentosPublicos().catch(() => []);
+    const lista = Array.isArray(documentos)
+      ? documentos.filter((documento) => /^\d+$/.test(String(documento.id_documento))).slice(0, 3)
+      : [];
+
+    contenedor.querySelectorAll('.skeleton-documento').forEach((nodo) => nodo.remove());
+    contenedor.removeAttribute('aria-busy');
+
+    if (lista.length === 0) {
+      mostrarEstado('Todavía no hay documentos públicos disponibles. Visita', {
+        href: '/Comunicaciones/',
+        texto: 'Comunicaciones para más información.',
+      });
+      return;
+    }
+
+    lista.forEach((documento) => {
+      const tarjeta = plantilla.content.firstElementChild.cloneNode(true);
+      const titulo = String(documento.titulo || '').trim() || 'Documento de SUTENS';
+      const tipo = String(documento.tipo_documento || '').trim();
+      const extension = String(documento.extension || '').trim().toUpperCase();
+      const descripcion = String(documento.descripcion || '').trim();
+
+      tarjeta.querySelector('[data-tipo]').textContent = tipo ? `Documento ${tipo.toLowerCase()}` : 'Documento sindical';
+      tarjeta.querySelector('[data-extension]').textContent = extension || 'Archivo';
+      tarjeta.querySelector('[data-titulo]').textContent = titulo;
+      tarjeta.querySelector('[data-descripcion]').textContent = descripcion || 'Consulta y descarga este documento oficial de SUTENS.';
+
+      const fecha = tarjeta.querySelector('[data-fecha]');
+      const fechaTexto = formatearFecha(documento.fecha_publicacion);
+      if (fechaTexto) {
+        fecha.dateTime = documento.fecha_publicacion;
+        fecha.textContent = fechaTexto;
+      } else {
+        fecha.remove();
+      }
+
+      const descarga = tarjeta.querySelector('[data-descarga]');
+      descarga.href = `/api/public/documentos/${encodeURIComponent(String(documento.id_documento))}/descargar`;
+      descarga.setAttribute('aria-label', `Descargar documento: ${titulo}`);
+
+      contenedor.append(tarjeta);
+    });
+  }
+
+  cargarDocumentos().catch(() => {
+    const contenedor = document.getElementById('documentos-grid');
+    contenedor?.removeAttribute('aria-busy');
+    contenedor?.querySelectorAll('.skeleton-documento').forEach((nodo) => nodo.remove());
+    mostrarEstado('No pudimos cargar los documentos en este momento. Consulta las', {
+      href: '/Comunicaciones/',
+      texto: 'comunicaciones de SUTENS.',
+    });
+  });
+</script>

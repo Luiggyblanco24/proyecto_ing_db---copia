@@ -1,0 +1,79 @@
+---
+import Icono from './Icono.astro';
+
+const pasos = [
+  {
+    titulo: 'Elige cómo afiliarte',
+    texto: 'Regístrate en línea o descarga el formulario de afiliación en PDF.',
+  },
+  {
+    titulo: 'Completa tus datos',
+    texto: 'Diligencia la información y autoriza el tratamiento de tus datos personales.',
+  },
+  {
+    titulo: 'Únete a tu subdirectiva',
+    texto: 'Tu afiliación se asigna a la subdirectiva que te corresponde.',
+  },
+];
+---
+
+<section id="afiliacion" class="bg-cream px-4 pb-20 sm:px-6 sm:pb-24">
+  <div class="mx-auto max-w-6xl">
+    <div class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-900 via-[#0f3d1e] to-brand-700 p-6 text-white shadow-[var(--ui-sombra-3)] sm:p-10 lg:p-12">
+      <div class="hero-pattern opacity-30" aria-hidden="true"></div>
+      <div class="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full border border-white/10" aria-hidden="true"></div>
+
+      <div class="relative grid gap-10 lg:grid-cols-[1fr_0.92fr] lg:items-center">
+        <div class="reveal">
+          <p class="eyebrow text-amber-300">Afiliación</p>
+          <h2 class="display mt-3 text-3xl sm:text-4xl lg:text-5xl">
+            Haz parte de SUTENS
+          </h2>
+          <p class="mt-5 max-w-xl text-lg leading-relaxed text-white/75">
+            Afiliarte es sumar tu voz a la defensa de la educación pública y contar con el respaldo de una organización que conoce el territorio.
+          </p>
+
+          <div class="mt-7 flex flex-wrap gap-3">
+            <a href="/register.html" class="btn btn-accent">
+              Afíliate en línea
+              <Icono name="arrow-right" class="h-4 w-4" />
+            </a>
+            <a href="/Formatodeafiliacionsutens.pdf" download class="btn btn-outline-light">
+              <Icono name="download" class="h-4 w-4" />
+              Descargar formulario
+            </a>
+          </div>
+
+          <p class="mt-4 text-xs font-semibold text-white/60">
+            La afiliación se asigna a la subdirectiva que te corresponde según tu municipio.
+          </p>
+        </div>
+
+        <div class="grid gap-3 reveal" style="--reveal-delay: 120ms">
+          {pasos.map((paso, indice) => (
+            <div class="flex items-start gap-4 rounded-2xl border border-white/15 bg-white/[0.07] p-4 backdrop-blur-sm">
+              <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-amber-300 text-sm font-extrabold text-[#422006]">
+                {indice + 1}
+              </span>
+              <div>
+                <h3 class="text-sm font-extrabold text-white">{paso.titulo}</h3>
+                <p class="mt-1 text-xs leading-relaxed text-white/70">{paso.texto}</p>
+              </div>
+            </div>
+          ))}
+
+          <div class="flex items-center gap-3 rounded-2xl border border-white/15 bg-white/[0.04] p-4">
+            <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-amber-300">
+              <Icono name="users" class="h-4 w-4" />
+            </span>
+            <p class="text-xs leading-relaxed text-white/70">
+              ¿Ya eres afiliado?{' '}
+              <a href="/login.html" class="font-extrabold text-amber-300 underline underline-offset-2">Inicia sesión</a>{' '}
+              para consultar tu información.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

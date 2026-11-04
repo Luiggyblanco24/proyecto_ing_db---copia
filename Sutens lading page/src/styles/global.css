@@ -1,32 +1,432 @@
 @import "tailwindcss";
 
+/* Plus Jakarta Sans alojada localmente (misma familia que el panel). */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/PlusJakartaSans-400.woff2') format('woff2'), url('/fonts/PlusJakartaSans-400.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/PlusJakartaSans-500.woff2') format('woff2'), url('/fonts/PlusJakartaSans-500.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/PlusJakartaSans-600.woff2') format('woff2'), url('/fonts/PlusJakartaSans-600.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/PlusJakartaSans-700.woff2') format('woff2'), url('/fonts/PlusJakartaSans-700.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/PlusJakartaSans-800.woff2') format('woff2'), url('/fonts/PlusJakartaSans-800.ttf') format('truetype');
+}
+
 @theme {
-  --color-primary: #1b7a38;
-  --color-secondary: #fff;
+  --font-sans: 'Plus Jakarta Sans', Inter, 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  --color-primary: #15803d;
+  --color-secondary: #ffffff;
   --color-accent: #f59e0b;
-  --color-dark: #1e293b;
-  --color-emerald-600: #1b7a38;
-  --color-emerald-700: #14602b;
+  --color-dark: #10231a;
+  --color-emerald-600: #16a34a;
+  --color-emerald-700: #15803d;
+
+  --color-brand-900: #14532d;
+  --color-brand-700: #15803d;
+  --color-brand-600: #16a34a;
+  --color-cream: #f6faf7;
+  --color-surface: #ffffff;
+  --color-ink: #10231a;
+  --color-muted: #4b5f54;
+  --color-line: #dbe7df;
+  --color-verde-suave: #e8f5ec;
 }
 
 :root {
-  color: #1e293b;
-  background: #fff;
-  font-family: Inter, "Open Sans", Arial, sans-serif;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  color-scheme: light;
+
+  --ui-bg: #f6faf7;
+  --ui-surface: #ffffff;
+  --ui-surface-2: #f1f7f3;
+  --ui-text: #10231a;
+  --ui-muted: #4b5f54;
+  --ui-border: #dbe7df;
+  --ui-glass: rgba(255, 255, 255, 0.78);
+  --ui-verde-900: #14532d;
+  --ui-verde-700: #15803d;
+  --ui-verde-600: #16a34a;
+  --ui-foco: #16a34a;
+
+  --ui-r-sm: 10px;
+  --ui-r-md: 12px;
+  --ui-r-lg: 18px;
+  --ui-r-xl: 22px;
+
+  --ui-sombra-1: 0 1px 2px rgba(16, 35, 26, 0.05), 0 2px 8px rgba(16, 35, 26, 0.04);
+  --ui-sombra-2: 0 4px 12px rgba(16, 35, 26, 0.06), 0 12px 28px rgba(16, 35, 26, 0.08);
+  --ui-sombra-3: 0 8px 20px rgba(16, 35, 26, 0.1), 0 24px 48px rgba(16, 35, 26, 0.16);
+
+  --ui-t: 200ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ui-fuente: 'Plus Jakarta Sans', Inter, 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  --verde-institucional: #15803d;
+  --verde-regional: #2e7d32;
+  --verde-oscuro: #14532d;
+  --amarillo: #f59e0b;
+  --ambar-oscuro: #b45309;
+  --azul-informativo: #1d4ed8;
+  --rojo: #dc2626;
+  --crema: var(--ui-bg);
+  --carbon: var(--ui-text);
+  --gris-texto: var(--ui-muted);
+  --borde: var(--ui-border);
+  --verde-suave: #e8f5ec;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   min-width: 320px;
+  margin: 0;
+  background: var(--ui-bg);
+  color: var(--ui-text);
+  font-family: var(--ui-fuente);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
-button,
-a {
-  -webkit-tap-highlight-color: transparent;
+img {
+  max-width: 100%;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+section[id],
+div[id] {
+  scroll-margin-top: 6.5rem;
 }
 
 :focus-visible {
-  outline: 3px solid #f59e0b;
+  outline: 3px solid var(--ui-foco);
   outline-offset: 3px;
+}
+
+::selection {
+  background: #bbf7d0;
+  color: #14532d;
+}
+
+/* ---------- Acceso rápido ---------- */
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  border-radius: var(--ui-r-md);
+  background: var(--ui-verde-900);
+  color: #fff;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: var(--ui-sombra-3);
+  transform: translateY(-160%);
+  transition: transform var(--ui-t);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline-color: #fbbf24;
+}
+
+/* ---------- Header glass ---------- */
+.site-header {
+  background: var(--ui-glass);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1px solid var(--ui-border);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, var(--ui-sombra-1);
+  transition: background var(--ui-t), box-shadow var(--ui-t);
+}
+
+.site-header.is-scrolled {
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, var(--ui-sombra-2);
+}
+
+.nav-link {
+  position: relative;
+  padding: 0.45rem 0.15rem;
+  color: var(--ui-text);
+  font-size: 0.925rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color var(--ui-t);
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--ui-verde-600);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--ui-t);
+}
+
+.nav-link:hover,
+.nav-link.is-active {
+  color: var(--ui-verde-900);
+}
+
+.nav-link:hover::after,
+.nav-link.is-active::after {
+  transform: scaleX(1);
+}
+
+.menu-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: var(--ui-r-md);
+  color: var(--ui-text);
+  font-weight: 700;
+  text-decoration: none;
+  transition: background var(--ui-t), color var(--ui-t);
+}
+
+.menu-link:hover,
+.menu-link:focus-visible {
+  background: var(--verde-suave);
+  color: var(--ui-verde-900);
+}
+
+/* ---------- Botones ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.7rem 1.2rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--ui-t), border-color var(--ui-t), color var(--ui-t), transform var(--ui-t), box-shadow var(--ui-t);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--ui-verde-700), var(--ui-verde-900));
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(21, 128, 61, 0.25);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--ui-verde-600), var(--ui-verde-700));
+  box-shadow: 0 8px 18px rgba(21, 128, 61, 0.32);
+}
+
+.btn-accent {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #422006;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+}
+
+.btn-accent:hover {
+  background: linear-gradient(135deg, #fcd34d, #fbbf24);
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.38);
+}
+
+.btn-outline {
+  border-color: #bbd9c6;
+  background: #fff;
+  color: var(--ui-verde-900);
+}
+
+.btn-outline:hover {
+  border-color: var(--ui-verde-700);
+  background: var(--verde-suave);
+}
+
+.btn-outline-light {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.btn-outline-light:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.btn-ghost-light {
+  color: #fff;
+}
+
+.btn-ghost-light:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.hero .btn:focus-visible {
+  outline-color: #fbbf24;
+}
+
+/* ---------- Patrones y divisores ---------- */
+.hero-pattern {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 86% 14%, rgba(255, 255, 255, 0.14) 0 120px, transparent 121px),
+    radial-gradient(circle at 102% 102%, rgba(255, 255, 255, 0.09) 0 230px, transparent 231px),
+    radial-gradient(circle at 8% 92%, rgba(255, 255, 255, 0.06) 0 170px, transparent 171px),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 26px);
+}
+
+.hero-wave,
+.section-wave {
+  position: absolute;
+  inset-inline: 0;
+  bottom: -1px;
+  line-height: 0;
+  pointer-events: none;
+}
+
+.hero-wave svg,
+.section-wave svg {
+  display: block;
+  width: 100%;
+  height: clamp(44px, 7vw, 100px);
+}
+
+/* ---------- Tarjetas ---------- */
+.card {
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-r-lg);
+  background: var(--ui-surface);
+  box-shadow: var(--ui-sombra-1);
+}
+
+.card-hover {
+  transition: transform var(--ui-t), box-shadow var(--ui-t), border-color var(--ui-t);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  border-color: #86efac;
+  box-shadow: var(--ui-sombra-3);
+}
+
+/* ---------- Tipografía de sección ---------- */
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.display {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+}
+
+/* ---------- Revelado al hacer scroll ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .js .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.55s var(--ui-t), transform 0.55s var(--ui-t);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+}
+
+.js .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- Movimiento reducido ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .js .reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  .btn:hover,
+  .card-hover:hover {
+    transform: none;
+  }
 }

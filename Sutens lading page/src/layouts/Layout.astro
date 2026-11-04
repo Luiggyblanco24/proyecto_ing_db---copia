@@ -1,33 +1,86 @@
 ---
 import "../styles/global.css";
-import Footer from '../components/Fotter.astro'
+import Footer from '../components/Fotter.astro';
 import Header from '../components/Header.astro';
 
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+}
+
+const {
+  title = 'SUTENS | Defensa de la Educación, Unidad de los Trabajadores',
+  description = 'SUTENS es el Sindicato Unitario de Trabajadores de la Educación de Norte de Santander. Conoce nuestra estructura, actividades, comunicaciones y cómo afiliarte.',
+  image = '/sustensFondo.jpg',
+} = Astro.props;
+
+const site = Astro.site;
+const canonicalURL = site ? new URL(Astro.url.pathname, site) : undefined;
+const ogImageURL = site ? new URL(image, site) : image;
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'SUTENS',
+  alternateName: 'Sindicato Unitario de Trabajadores de la Educación de Norte de Santander',
+  description,
+  email: 'afiliaciones@sutens.org',
+  areaServed: 'Norte de Santander, Colombia',
+  ...(site ? { url: site.toString() } : {}),
+};
+const organizationJSON = JSON.stringify(organizationSchema).replace(/</g, '\\u003c');
 ---
 
 <!doctype html>
 <html lang="es">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<meta name="theme-color" content="#1B7A38" />
-		<meta name="description" content="SUTENS: Defensa de la Educación, Unidad de los Trabajadores." />
-		<link rel="icon" type="image/svg+xml" href="/brand/sutens-icono.svg" />
-		<meta name="generator" content={Astro.generator} />
-		<title>SUTENS | Defensa de la Educación</title>
-	</head>
-	<body>
-		<Header></Header>
-		<slot />
-		<Footer></Footer>
-	</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#14532d" />
+    <meta name="description" content={description} />
+    <meta name="robots" content="index,follow" />
+    <link rel="icon" type="image/svg+xml" href="/brand/sutens-icono.svg" />
+    <link rel="preload" href="/fonts/PlusJakartaSans-400.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+    <link rel="preload" href="/fonts/PlusJakartaSans-800.woff2" as="font" type="font/woff2" crossorigin="anonymous" fetchpriority="high" />
+    <meta name="generator" content={Astro.generator} />
+    {canonicalURL && <link rel="canonical" href={canonicalURL} />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="SUTENS" />
+    <meta property="og:locale" content="es_CO" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageURL} />
+    {canonicalURL && <meta property="og:url" content={canonicalURL} />}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageURL} />
+
+    <title>{title}</title>
+    <script type="application/ld+json" set:html={organizationJSON} />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+  </head>
+  <body class="min-h-screen bg-cream text-ink antialiased">
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <Header />
+    <main id="contenido" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
 </html>
 
 <style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		min-height: 100%;
-	}
+  html,
+  body {
+    margin: 0;
+    width: 100%;
+    min-height: 100%;
+  }
+
+  main:focus {
+    outline: none;
+  }
 </style>

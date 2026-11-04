@@ -1,0 +1,144 @@
+---
+import Icono from './Icono.astro';
+---
+
+<section class="relative z-10 bg-cream px-4 sm:px-6" aria-label="SUTENS en cifras">
+  <div id="cifras-panel" class="mx-auto -mt-10 max-w-6xl sm:-mt-14" hidden>
+    <div class="relative overflow-hidden rounded-[1.75rem] border border-line bg-white p-4 shadow-[var(--ui-sombra-3)] sm:p-6">
+      <div class="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-700 via-brand-600 to-accent" aria-hidden="true"></div>
+      <div class="grid gap-3 sm:grid-cols-3">
+        <div data-metric="subdirectivas" class="stat-card flex items-center gap-4 rounded-2xl bg-cream p-4" hidden>
+          <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white text-brand-700 shadow-[var(--ui-sombra-1)]">
+            <Icono name="map-pin" class="h-6 w-6" />
+          </span>
+          <div>
+            <p class="text-sm font-bold text-muted">Subdirectivas</p>
+            <p class="text-2xl font-extrabold tracking-tight text-ink"><span data-count>0</span></p>
+            <p class="text-xs font-semibold text-muted">Presencia territorial</p>
+          </div>
+        </div>
+
+        <div data-metric="cargos" class="stat-card flex items-center gap-4 rounded-2xl bg-cream p-4" hidden>
+          <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#fef3c7] text-[#b45309]">
+            <Icono name="users" class="h-6 w-6" />
+          </span>
+          <div>
+            <p class="text-sm font-bold text-muted">Cargos directivos</p>
+            <p class="text-2xl font-extrabold tracking-tight text-ink"><span data-count>0</span></p>
+            <p class="text-xs font-semibold text-muted">Directiva y subdirectivas</p>
+          </div>
+        </div>
+
+        <div data-metric="documentos" class="stat-card flex items-center gap-4 rounded-2xl bg-cream p-4" hidden>
+          <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-900 text-white">
+            <Icono name="file" class="h-6 w-6" />
+          </span>
+          <div>
+            <p class="text-sm font-bold text-muted">Documentos públicos</p>
+            <p class="text-2xl font-extrabold tracking-tight text-ink"><span data-count>0</span></p>
+            <p class="text-xs font-semibold text-muted">Consulta abierta</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import {
+    getDirectivaDepartamental,
+    getDirectivasSubdirectivas,
+    getDocumentosPublicos,
+  } from '../../lib/public-api.js';
+
+  const panel = document.getElementById('cifras-panel');
+
+  function animarNumero(elemento, total) {
+    const reducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const formato = new Intl.NumberFormat('es-CO');
+    if (reducido) {
+      elemento.textContent = formato.format(total);
+      return;
+    }
+
+    const inicio = performance.now();
+    const duracion = 1100;
+
+    function paso(ahora) {
+      const avance = Math.min(1, (ahora - inicio) / duracion);
+      const suavizado = 1 - Math.pow(1 - avance, 3);
+      elemento.textContent = formato.format(Math.round(total * suavizado));
+      if (avance < 1) requestAnimationFrame(paso);
+    }
+
+    requestAnimationFrame(paso);
+  }
+
+  async function cargarCifras() {
+    if (!panel) return;
+
+    const [subdirectivas, departamental, documentos] = await Promise.allSettled([
+      getDirectivasSubdirectivas(),
+      getDirectivaDepartamental(),
+      getDocumentosPublicos(),
+    ]);
+
+    const lista = (resultado) => (resultado.status === 'fulfilled' && Array.isArray(resultado.value) ? resultado.value : []);
+    const integrantesSubdirectivas = lista(subdirectivas);
+    const integrantesDepartamental = lista(departamental);
+    const documentosPublicos = lista(documentos);
+
+    const subdirectivasUnicas = new Set(integrantesSubdirectivas.map((item) => item.id_subdirectiva)).size;
+    const metricas = {
+      subdirectivas: subdirectivasUnicas,
+      cargos: integrantesSubdirectivas.length + integrantesDepartamental.length,
+      documentos: documentosPublicos.length,
+    };
+
+    const disponibles = Object.entries(metricas).filter(([, total]) => Number.isFinite(total) && total > 0);
+    if (disponibles.length < 2) return;
+
+    const items = [];
+    for (const [clave, total] of disponibles) {
+      const item = panel.querySelector(`[data-metric="${clave}"]`);
+      if (!item) continue;
+      item.hidden = false;
+      const numero = item.querySelector('[data-count]');
+      if (numero) items.push({ numero, total });
+    }
+
+    panel.hidden = false;
+    for (const { numero, total } of items) animarNumero(numero, total);
+  }
+
+  cargarCifras().catch(() => {
+    if (panel) panel.hidden = true;
+  });
+</script>
+
+<style>
+  @media (prefers-reduced-motion: no-preference) {
+    #cifras-panel:not([hidden]) .stat-card {
+      animation: cifra-entrada 0.5s var(--ui-t) both;
+    }
+
+    #cifras-panel:not([hidden]) .stat-card:nth-child(2) {
+      animation-delay: 80ms;
+    }
+
+    #cifras-panel:not([hidden]) .stat-card:nth-child(3) {
+      animation-delay: 160ms;
+    }
+  }
+
+  @keyframes cifra-entrada {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>

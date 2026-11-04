@@ -571,7 +571,13 @@ async function abrirEvento(idEvento) {
 }
 
 async function eliminarEventoCalendario(boton) {
-  if (!window.confirm('¿Eliminar esta actividad? Dejará de mostrarse a todos los afiliados.')) return;
+  const confirmado = await UI.confirmar({
+    titulo: 'Eliminar actividad',
+    descripcion: '¿Eliminar esta actividad? Dejará de mostrarse a todos los afiliados.',
+    variante: 'peligro',
+    textoConfirmar: 'Eliminar actividad',
+  });
+  if (!confirmado) return;
   const mensaje = document.getElementById('mensaje-calendario');
   boton.disabled = true;
   try {
@@ -711,7 +717,14 @@ async function completarEvento(boton) {
 }
 
 async function cancelarEventoCalendario(boton) {
-  if (!window.confirm('¿Cancelar esta actividad? Las personas que pueden verla verán el estado cancelado.')) return;
+  const confirmado = await UI.confirmar({
+    titulo: 'Cancelar actividad',
+    descripcion: '¿Cancelar esta actividad? Las personas que pueden verla verán el estado cancelado.',
+    variante: 'aviso',
+    textoConfirmar: 'Cancelar actividad',
+    textoCancelar: 'Volver',
+  });
+  if (!confirmado) return;
   const mensaje = document.getElementById('mensaje-calendario');
   boton.disabled = true;
   try {
@@ -1082,7 +1095,13 @@ function renderizarBibliotecaEducativa() {
     });
     lista.querySelectorAll('.btn-eliminar-material').forEach((boton) => {
       boton.addEventListener('click', async () => {
-        if (!window.confirm('¿Eliminar este material de la biblioteca educativa?')) return;
+        const confirmado = await UI.confirmar({
+          titulo: 'Eliminar material',
+          descripcion: '¿Eliminar este material de la biblioteca educativa?',
+          variante: 'peligro',
+          textoConfirmar: 'Eliminar material',
+        });
+        if (!confirmado) return;
         boton.disabled = true;
         try {
           const resultado = await apiFetch(`/api/biblioteca/educativa/${boton.dataset.idDocumento}`, { method: 'DELETE' });
@@ -1176,7 +1195,14 @@ function prepararEdicionDocumento(idDocumento) {
 
 async function eliminarDocumentoBiblioteca(idDocumento) {
   const documento = documentosBibliotecaActuales.find((item) => String(item.id_documento) === String(idDocumento));
-  if (!documento?.puede_editar || !window.confirm(`¿Eliminar “${documento.titulo}” de la biblioteca?`)) return;
+  if (!documento?.puede_editar) return;
+  const confirmado = await UI.confirmar({
+    titulo: 'Eliminar documento',
+    descripcion: `¿Eliminar “${documento.titulo}” de la biblioteca?`,
+    variante: 'peligro',
+    textoConfirmar: 'Eliminar documento',
+  });
+  if (!confirmado) return;
   const mensaje = document.getElementById('mensaje-biblioteca');
   mensaje.className = 'mensaje';
   try {
@@ -1549,7 +1575,7 @@ async function cambiarEstadoSindical(idAfiliado, estado) {
     });
     await cargarUsuarios();
   } catch (err) {
-    alert(err.message);
+    UI.toast.error(err.message);
     await cargarUsuarios();
   }
 }
@@ -1595,14 +1621,22 @@ async function cambiarEstado(id, estado) {
     });
     cargarUsuarios();
   } catch (err) {
-    alert(err.message);
+    UI.toast.error(err.message);
   }
 }
 
 async function eliminarAfiliado(id) {
   const afiliado = usuariosActuales.find((usuario) => Number(usuario.id_afiliado) === id);
   if (!esAdmin || !afiliado) return;
-  if (!window.confirm(`¿Eliminar permanentemente a ${nombreCompleto(afiliado)}? Se borrarán su cuenta, afiliación y asignaciones. Esta acción no se puede deshacer.`)) return;
+  const confirmado = await UI.confirmar({
+    titulo: 'Eliminar afiliado',
+    descripcion: `¿Eliminar permanentemente a ${nombreCompleto(afiliado)}? Se borrarán su cuenta, afiliación y asignaciones. Esta acción no se puede deshacer.`,
+    variante: 'peligro',
+    textoConfirmar: 'Eliminar afiliado',
+    critico: true,
+    requiereTexto: true,
+  });
+  if (!confirmado) return;
 
   const mensaje = document.getElementById('mensaje');
   try {
@@ -1619,12 +1653,21 @@ async function eliminarAfiliado(id) {
 async function restablecerContrasenaTemporal(id) {
   const afiliado = usuariosActuales.find((usuario) => Number(usuario.id_afiliado) === id);
   if (!esAdmin || !afiliado?.usuario) return;
-  if (!window.confirm(`¿Generar una contraseña temporal para ${nombreCompleto(afiliado)}? La contraseña actual dejará de funcionar.`)) return;
+  const confirmado = await UI.confirmar({
+    titulo: 'Generar contraseña temporal',
+    descripcion: `¿Generar una contraseña temporal para ${nombreCompleto(afiliado)}? La contraseña actual dejará de funcionar.`,
+    variante: 'aviso',
+    textoConfirmar: 'Generar contraseña',
+  });
+  if (!confirmado) return;
 
   const mensaje = document.getElementById('mensaje');
   try {
     const resultado = await apiFetch(`/api/afiliados/${id}/contrasena-temporal`, { method: 'POST' });
-    window.alert(`Contraseña temporal de ${nombreCompleto(afiliado)}:\n\n${resultado.contrasenaTemporal}\n\nCompártela de forma privada. Solo se mostrará esta vez; el afiliado deberá cambiarla al iniciar sesión.`);
+    await UI.mostrarContrasenaTemporal({
+      nombre: nombreCompleto(afiliado),
+      contrasena: resultado.contrasenaTemporal,
+    });
     mensaje.textContent = resultado.mensaje;
     mensaje.className = 'mensaje exito';
   } catch (err) {
@@ -1989,7 +2032,21 @@ async function eliminarEstructura(tipo, id, nombre) {
     institucion: `¿Eliminar la institución "${nombre}" junto con todas sus sedes? Esta acción no se puede deshacer.`,
     sede: `¿Eliminar la sede "${nombre}"? Esta acción no se puede deshacer.`,
   };
-  if (!window.confirm(advertencias[tipo])) return;
+  const textos = {
+    subdirectiva: { titulo: 'Eliminar subdirectiva', accion: 'Eliminar subdirectiva' },
+    institucion: { titulo: 'Eliminar institución', accion: 'Eliminar institución' },
+    sede: { titulo: 'Eliminar sede', accion: 'Eliminar sede' },
+  };
+  const critico = tipo === 'subdirectiva' || tipo === 'institucion';
+  const confirmado = await UI.confirmar({
+    titulo: textos[tipo]?.titulo || 'Eliminar estructura',
+    descripcion: advertencias[tipo] || '¿Eliminar este elemento? Esta acción no se puede deshacer.',
+    variante: 'peligro',
+    textoConfirmar: textos[tipo]?.accion || 'Eliminar',
+    critico,
+    requiereTexto: critico,
+  });
+  if (!confirmado) return;
   const rutas = {
     subdirectiva: `/api/subdirectivas/${id}`,
     institucion: `/api/subdirectivas/instituciones/${id}`,
@@ -2300,7 +2357,7 @@ document.getElementById('form-cuenta').addEventListener('submit', async (event) 
     });
     mensaje.textContent = respuesta.mensaje;
     mensaje.className = 'mensaje exito';
-    UI.toast(respuesta.mensaje);
+    UI.toast.exito(respuesta.mensaje);
     document.getElementById('cuenta-contrasena-actual').value = '';
     document.getElementById('cuenta-contrasena-nueva').value = '';
     document.getElementById('foto-perfil').value = '';

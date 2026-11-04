@@ -1,0 +1,99 @@
+---
+import Icono from './Icono.astro';
+
+const beneficios = [
+  {
+    icono: 'shield',
+    titulo: 'Defensa de tus derechos laborales',
+    texto: 'Acompañamiento frente a situaciones que afectan tus condiciones de trabajo y tus garantías como servidor público.',
+  },
+  {
+    icono: 'scale',
+    titulo: 'Negociación colectiva',
+    texto: 'Participación en los espacios de concertación y negociación con el sector educativo.',
+  },
+  {
+    icono: 'gavel',
+    titulo: 'Asesoría legal especializada',
+    texto: 'Orientación y acompañamiento en trámites, reclamaciones y situaciones de carácter laboral.',
+  },
+  {
+    icono: 'users',
+    titulo: 'Representación gremial',
+    texto: 'Voz y representación ante empleadores, entidades y escenarios de decisión.',
+  },
+  {
+    icono: 'heart',
+    titulo: 'Programas de bienestar',
+    texto: 'Espacios de encuentro, formación y bienestar pensados para las y los afiliados.',
+  },
+];
+---
+
+<section id="beneficios" class="relative overflow-hidden bg-[#0f3d1e] px-4 pb-28 pt-20 text-white sm:px-6 sm:pb-32 sm:pt-24">
+  <div class="hero-pattern opacity-40" aria-hidden="true"></div>
+  <div class="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-brand-600/10 blur-3xl" aria-hidden="true"></div>
+  <div class="pointer-events-none absolute -right-16 bottom-24 h-80 w-80 rounded-full bg-accent/10 blur-3xl" aria-hidden="true"></div>
+
+  <div class="relative mx-auto max-w-6xl">
+    <header class="max-w-3xl reveal">
+      <p class="eyebrow text-amber-300">Qué ofrecemos</p>
+      <h2 class="display mt-3 text-3xl sm:text-4xl lg:text-5xl">
+        Beneficios para afiliados
+      </h2>
+      <p class="mt-5 max-w-2xl text-lg leading-relaxed text-white/75">
+        La afiliación no es solo un carnet: es respaldo, voz y comunidad. Estos son los frentes en los que SUTENS acompaña a sus afiliados.
+      </p>
+    </header>
+
+    <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+      {beneficios.map((beneficio, indice) => (
+        <article
+          class:list={[
+            'benefit-card group reveal relative overflow-hidden rounded-[1.5rem] border border-white/15 bg-white/[0.07] p-6 backdrop-blur-sm transition duration-300 hover:border-white/30 hover:bg-white/[0.11] motion-safe:hover:-translate-y-1',
+            indice < 3 ? 'lg:col-span-2' : 'lg:col-span-3',
+            indice === 4 ? 'sm:col-span-2 lg:col-span-3' : '',
+          ]}
+          style={`--reveal-delay: ${indice * 70}ms`}
+        >
+          <span class="pointer-events-none absolute right-5 top-4 text-4xl font-extrabold text-white/[0.07]" aria-hidden="true">
+            {String(indice + 1).padStart(2, '0')}
+          </span>
+
+          <span class="grid h-12 w-12 place-items-center rounded-2xl border border-amber-300/30 bg-amber-300/15 text-amber-300">
+            <Icono name={beneficio.icono} class="h-6 w-6" />
+          </span>
+
+          <h3 class="mt-5 max-w-[22ch] text-lg font-extrabold leading-snug text-white">
+            {beneficio.titulo}
+          </h3>
+          <p class="mt-3 text-sm leading-relaxed text-white/70">
+            {beneficio.texto}
+          </p>
+        </article>
+      ))}
+    </div>
+
+    <div class="reveal mt-12 flex flex-col items-start justify-between gap-5 border-t border-white/15 pt-8 sm:flex-row sm:items-center">
+      <p class="max-w-xl text-sm font-semibold text-white/70">
+        ¿Aún no estás afiliado? Haz parte de SUTENS y suma tu voz a la defensa de la educación pública.
+      </p>
+      <div class="flex flex-wrap gap-3">
+        <a href="/register.html" class="btn btn-accent">
+          Afíliate en línea
+          <Icono name="arrow-right" class="h-4 w-4" />
+        </a>
+        <a href="/Formatodeafiliacionsutens.pdf" download class="btn btn-outline-light">
+          <Icono name="download" class="h-4 w-4" />
+          Descargar formulario
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-wave" aria-hidden="true">
+    <svg viewBox="0 0 1440 120" preserveAspectRatio="none" fill="none">
+      <path d="M0 78C210 118 380 122 620 92C860 62 1080 18 1440 44V120H0V78Z" fill="#f6faf7" />
+    </svg>
+  </div>
+</section>

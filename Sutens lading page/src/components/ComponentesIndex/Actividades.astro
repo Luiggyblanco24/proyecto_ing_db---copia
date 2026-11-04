@@ -1,0 +1,145 @@
+---
+import Icono from './Icono.astro';
+---
+
+<section id="actividades" class="bg-white px-4 py-20 sm:px-6 sm:py-24">
+  <div class="mx-auto max-w-6xl">
+    <div class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+      <header class="max-w-3xl reveal">
+        <p class="eyebrow text-brand-700">Actividades</p>
+        <h2 class="display mt-3 text-3xl text-ink sm:text-4xl lg:text-5xl">
+          La organización también se vive en el territorio
+        </h2>
+        <p class="mt-5 text-lg leading-relaxed text-muted">
+          Encuentros, asambleas y jornadas que fortalecen la unidad de las y los trabajadores de la educación. Estas son algunas de las actividades compartidas por SUTENS.
+        </p>
+      </header>
+
+      <a href="/Comunicaciones/" class="btn btn-outline reveal shrink-0">
+        Ver comunicaciones
+        <Icono name="arrow-right" class="h-4 w-4" />
+      </a>
+    </div>
+
+    <div id="galeria-actividades" class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
+      {Array.from({ length: 6 }).map(() => (
+        <div class="skeleton-galeria overflow-hidden rounded-[1.5rem] border border-line bg-cream" aria-hidden="true">
+          <div class="aspect-[4/3] animate-pulse bg-verde-suave motion-reduce:animate-none"></div>
+          <div class="grid gap-2 p-4">
+            <span class="h-3 w-3/4 animate-pulse rounded bg-line motion-reduce:animate-none"></span>
+            <span class="h-2.5 w-1/2 animate-pulse rounded bg-line motion-reduce:animate-none"></span>
+          </div>
+        </div>
+      ))}
+    </div>
+    <p id="galeria-estado" class="mt-4 hidden rounded-2xl border border-line bg-cream p-4 text-sm leading-relaxed text-muted"></p>
+
+    <noscript>
+      <style>
+        .skeleton-galeria {
+          display: none;
+        }
+      </style>
+      <p class="mt-4 rounded-2xl border border-line bg-cream p-4 text-sm text-muted">
+        Activa JavaScript para ver la galería de actividades, o consulta la página de <a class="font-bold text-brand-700 underline" href="/Comunicaciones/">Comunicaciones</a>.
+      </p>
+    </noscript>
+  </div>
+
+  <template id="tpl-galeria">
+    <figure class="group overflow-hidden rounded-[1.5rem] border border-line bg-cream">
+      <div class="relative aspect-[4/3] overflow-hidden bg-verde-suave">
+        <div data-fallback class="absolute inset-0 grid place-items-center text-brand-700">
+          <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="3" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <path d="m21 15-5-5L5 21" />
+          </svg>
+        </div>
+        <img data-photo class="absolute inset-0 h-full w-full object-cover transition duration-500 motion-safe:group-hover:scale-105" alt="" loading="lazy" decoding="async" width="800" height="600" hidden />
+      </div>
+      <figcaption class="flex items-start gap-2.5 p-4">
+        <span class="mt-0.5 shrink-0 text-brand-700">
+          <Icono name="sparkles" class="h-4 w-4" />
+        </span>
+        <span data-descripcion class="line-clamp-2 text-sm font-semibold leading-relaxed text-ink"></span>
+      </figcaption>
+    </figure>
+  </template>
+</section>
+
+<script>
+  import { getGaleriaPublica } from '../../lib/public-api.js';
+
+  function urlSegura(valor) {
+    if (!valor) return '';
+    try {
+      const url = new URL(String(valor), window.location.origin);
+      return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : '';
+    } catch {
+      return '';
+    }
+  }
+
+  function mostrarEstado(mensaje, enlace) {
+    const estado = document.getElementById('galeria-estado');
+    if (!estado) return;
+    estado.textContent = '';
+    estado.append(document.createTextNode(`${mensaje} `));
+    if (enlace) {
+      const ancla = document.createElement('a');
+      ancla.href = enlace.href;
+      ancla.className = 'font-extrabold text-brand-700 underline';
+      ancla.textContent = enlace.texto;
+      estado.append(ancla);
+    }
+    estado.hidden = false;
+  }
+
+  async function cargarGaleria() {
+    const contenedor = document.getElementById('galeria-actividades');
+    const plantilla = document.getElementById('tpl-galeria');
+    if (!contenedor || !plantilla) return;
+
+    const fotos = await getGaleriaPublica().catch(() => []);
+    const lista = Array.isArray(fotos) ? fotos.filter((foto) => urlSegura(foto.imagen_url)).slice(0, 6) : [];
+
+    contenedor.querySelectorAll('.skeleton-galeria').forEach((nodo) => nodo.remove());
+    contenedor.removeAttribute('aria-busy');
+
+    if (lista.length === 0) {
+      mostrarEstado('Aún no hay actividades publicadas en la galería. Mientras tanto, puedes consultar las', {
+        href: '/Comunicaciones/',
+        texto: 'comunicaciones de SUTENS.',
+      });
+      return;
+    }
+
+    lista.forEach((foto) => {
+      const tarjeta = plantilla.content.firstElementChild.cloneNode(true);
+      const imagen = tarjeta.querySelector('[data-photo]');
+      const descripcion = String(foto.descripcion || '').trim();
+
+      tarjeta.querySelector('[data-descripcion]').textContent = descripcion || 'Actividad de SUTENS';
+      if (descripcion) imagen.alt = descripcion;
+
+      imagen.src = urlSegura(foto.imagen_url);
+      imagen.hidden = false;
+      imagen.addEventListener('error', () => {
+        imagen.hidden = true;
+      });
+
+      contenedor.append(tarjeta);
+    });
+  }
+
+  cargarGaleria().catch(() => {
+    const contenedor = document.getElementById('galeria-actividades');
+    contenedor?.removeAttribute('aria-busy');
+    contenedor?.querySelectorAll('.skeleton-galeria').forEach((nodo) => nodo.remove());
+    mostrarEstado('No pudimos cargar la galería en este momento. Puedes consultarla en', {
+      href: '/Comunicaciones/',
+      texto: 'Comunicaciones.',
+    });
+  });
+</script>

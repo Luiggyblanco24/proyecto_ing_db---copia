@@ -1,64 +1,147 @@
 ---
+const navLinks = [
+  { href: '/#quienes-somos', label: 'Quiénes somos', section: 'quienes-somos' },
+  { href: '/#estructura', label: 'Estructura', section: 'estructura' },
+  { href: '/#actividades', label: 'Actividades', section: 'actividades' },
+  { href: '/#comunicaciones', label: 'Comunicaciones', section: 'comunicaciones' },
+  { href: '/#contacto', label: 'Contacto', section: 'contacto' },
+];
 ---
 
-<header class="fixed inset-x-0 top-0 z-50 border-b border-[#e5e1d6] border-t-4 border-t-[#1b7a38] bg-white/95 shadow-sm backdrop-blur">
-  <div class="mx-auto flex min-h-[76px] max-w-7xl items-center justify-between gap-5 px-4 py-2 sm:px-6">
-    <a href="/" class="shrink-0" aria-label="SUTENS, inicio">
-      <img class="h-14 w-[188px] object-contain object-left sm:w-[220px]" src="/brand/sutens-logo-horizontal.png" alt="SUTENS, Defensa de la Educación, Unidad de los Trabajadores" />
+<header id="site-header" class="site-header sticky top-0 z-50">
+  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:h-20 sm:px-6">
+    <a href="/" class="shrink-0 rounded-lg" aria-label="SUTENS, inicio">
+      <img
+        src="/brand/sutens-logo-horizontal.svg"
+        alt="SUTENS, Defensa de la Educación, Unidad de los Trabajadores"
+        width="329"
+        height="72"
+        class="h-9 w-auto sm:h-11"
+      />
     </a>
 
-    <nav class="hidden items-center gap-6 lg:flex" aria-label="Navegación principal">
-      <a href="/" class="font-semibold text-[#1e293b] hover:text-[#1b7a38]">Inicio</a>
-      <a href="/Secretarias/" class="font-semibold text-[#1e293b] hover:text-[#1b7a38]">Subdirectivas</a>
-      <a href="/Nosotros/" class="font-semibold text-[#1e293b] hover:text-[#1b7a38]">Nosotros</a>
-      <a href="/Comunicaciones/" class="font-semibold text-[#1e293b] hover:text-[#1b7a38]">Comunicaciones</a>
+    <nav class="hidden items-center gap-7 lg:flex" aria-label="Navegación principal">
+      {navLinks.map((link) => (
+        <a class="nav-link" href={link.href} data-nav-section={link.section}>{link.label}</a>
+      ))}
     </nav>
 
-    <div id="acciones-publicas" class="hidden items-center gap-3 lg:flex">
-      <a href="/login.html" class="rounded-lg border border-[#1b7a38] px-4 py-2 font-semibold text-[#1b7a38] hover:bg-[#eaf5ec]">Iniciar sesión</a>
-      <a href="/Afiliate/" class="rounded-lg bg-[#f59e0b] px-4 py-2 font-semibold text-[#1e293b] hover:bg-[#d97706]">Afíliate</a>
-    </div>
-    <div id="acciones-sesion" class="hidden items-center gap-3 lg:flex" hidden>
-      <span id="nombre-sesion" class="font-semibold text-[#1e293b]" aria-live="polite"></span>
-      <a href="/dashboard.html" class="rounded-lg border border-[#1b7a38] px-4 py-2 font-semibold text-[#1b7a38] hover:bg-[#eaf5ec]">Ir al panel</a>
-      <button id="cerrar-sesion" class="rounded-lg bg-[#1b7a38] px-4 py-2 font-semibold text-white hover:bg-[#14602b]" type="button">Cerrar sesión</button>
+    <div class="hidden items-center gap-2 lg:flex">
+      <div id="acciones-publicas" class="flex items-center gap-2">
+        <a href="/login.html" class="btn btn-primary">Iniciar sesión</a>
+        <a href="/Afiliate/" class="btn btn-accent">Afíliate</a>
+      </div>
+      <div id="acciones-sesion" class="flex items-center gap-2" hidden>
+        <span id="nombre-sesion" class="max-w-[12rem] truncate text-sm font-bold text-ink" aria-live="polite"></span>
+        <a href="/dashboard.html" class="btn btn-outline">Ir al panel</a>
+        <button id="cerrar-sesion" class="btn btn-primary" type="button">Cerrar sesión</button>
+      </div>
     </div>
 
-    <button id="menu-btn" class="grid h-11 w-11 place-items-center rounded-lg border border-[#e5e1d6] text-[#1b7a38] lg:hidden" type="button" aria-expanded="false" aria-controls="menu" aria-label="Abrir menú">
-      <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <path d="M4 6h16M4 12h16M4 18h16" />
+    <button
+      id="menu-btn"
+      class="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-line bg-white/80 text-brand-900 transition hover:bg-verde-suave lg:hidden"
+      type="button"
+      aria-expanded="false"
+      aria-controls="menu"
+      aria-label="Abrir menú"
+    >
+      <svg class="menu-icon-open h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M4 7h16M4 12h16M4 17h16" />
+      </svg>
+      <svg class="menu-icon-close hidden h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" />
       </svg>
     </button>
   </div>
 
-  <nav id="menu" class="hidden border-t border-[#e5e1d6] bg-white px-5 py-4 lg:hidden" aria-label="Navegación móvil">
-    <div class="mx-auto flex max-w-7xl flex-col gap-1">
-      <a class="rounded-lg px-3 py-3 font-semibold text-[#1e293b] hover:bg-[#eaf5ec]" href="/">Inicio</a>
-      <a class="rounded-lg px-3 py-3 font-semibold text-[#1e293b] hover:bg-[#eaf5ec]" href="/Secretarias/">Subdirectivas</a>
-      <a class="rounded-lg px-3 py-3 font-semibold text-[#1e293b] hover:bg-[#eaf5ec]" href="/Nosotros/">Nosotros</a>
-      <a class="rounded-lg px-3 py-3 font-semibold text-[#1e293b] hover:bg-[#eaf5ec]" href="/Comunicaciones/">Comunicaciones</a>
-      <div id="acciones-publicas-movil" class="flex flex-col gap-1">
-        <a class="rounded-lg px-3 py-3 font-semibold text-[#1b7a38] hover:bg-[#eaf5ec]" href="/login.html">Iniciar sesión</a>
-        <a class="rounded-lg bg-[#f59e0b] px-3 py-3 text-center font-semibold text-[#1e293b]" href="/Afiliate/">Afíliate</a>
+  <div id="menu" class="border-t border-line bg-white/95 lg:hidden" hidden>
+    <nav class="mx-auto max-w-7xl px-4 py-4 sm:px-6" aria-label="Navegación móvil">
+      <div class="grid gap-1">
+        {navLinks.map((link) => (
+          <a class="menu-link" href={link.href} data-nav-section={link.section}>
+            <span>{link.label}</span>
+            <svg class="h-4 w-4 text-brand-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </a>
+        ))}
       </div>
-      <div id="acciones-sesion-movil" class="hidden flex-col gap-1" hidden>
-        <span id="nombre-sesion-movil" class="px-3 py-3 font-semibold text-[#1e293b]" aria-live="polite"></span>
-        <a class="rounded-lg border border-[#1b7a38] px-3 py-3 text-center font-semibold text-[#1b7a38] hover:bg-[#eaf5ec]" href="/dashboard.html">Ir al panel</a>
-        <button id="cerrar-sesion-movil" class="rounded-lg bg-[#1b7a38] px-3 py-3 font-semibold text-white hover:bg-[#14602b]" type="button">Cerrar sesión</button>
+
+      <div class="mt-4 grid gap-2 border-t border-line pt-4">
+        <div id="acciones-publicas-movil" class="grid gap-2">
+          <a href="/login.html" class="btn btn-primary w-full">Iniciar sesión</a>
+          <a href="/Afiliate/" class="btn btn-accent w-full">Afíliate</a>
+        </div>
+        <div id="acciones-sesion-movil" class="grid gap-2" hidden>
+          <span id="nombre-sesion-movil" class="px-1 py-1 text-sm font-bold text-ink" aria-live="polite"></span>
+          <a href="/dashboard.html" class="btn btn-outline w-full">Ir al panel</a>
+          <button id="cerrar-sesion-movil" class="btn btn-primary w-full" type="button">Cerrar sesión</button>
+        </div>
       </div>
-    </div>
-  </nav>
+    </nav>
+  </div>
 </header>
 
+<style>
+  #menu-btn .menu-icon-close {
+    display: none;
+  }
+
+  #menu-btn.is-open .menu-icon-open {
+    display: none;
+  }
+
+  #menu-btn.is-open .menu-icon-close {
+    display: block;
+  }
+</style>
+
 <script>
+  const header = document.getElementById('site-header');
   const button = document.getElementById('menu-btn');
   const menu = document.getElementById('menu');
-  button?.addEventListener('click', () => {
-    const willOpen = menu?.classList.contains('hidden') ?? false;
-    menu?.classList.toggle('hidden', !willOpen);
-    button.setAttribute('aria-expanded', String(willOpen));
-    button.setAttribute('aria-label', willOpen ? 'Cerrar menú' : 'Abrir menú');
+  const desktopQuery = window.matchMedia('(min-width: 1024px)');
+
+  function setMenu(open, options = {}) {
+    if (!menu || !button) return;
+    menu.hidden = !open;
+    button.setAttribute('aria-expanded', String(open));
+    button.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+    button.classList.toggle('is-open', open);
+
+    if (open) {
+      requestAnimationFrame(() => menu.querySelector('a, button')?.focus());
+    } else if (options.restoreFocus) {
+      button.focus();
+    }
+  }
+
+  button?.addEventListener('click', () => setMenu(menu?.hidden ?? true));
+
+  menu?.addEventListener('click', (event) => {
+    if (event.target instanceof Element && event.target.closest('a')) setMenu(false);
   });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && menu && !menu.hidden) setMenu(false, { restoreFocus: true });
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!menu || menu.hidden || !(event.target instanceof Element)) return;
+    if (!event.target.closest('#menu') && !event.target.closest('#menu-btn')) setMenu(false);
+  });
+
+  desktopQuery.addEventListener('change', (event) => {
+    if (event.matches) setMenu(false);
+  });
+
+  function actualizarSombraHeader() {
+    header?.classList.toggle('is-scrolled', window.scrollY > 8);
+  }
+
+  actualizarSombraHeader();
+  window.addEventListener('scroll', actualizarSombraHeader, { passive: true });
 
   const token = localStorage.getItem('token');
   const accionesPublicas = document.getElementById('acciones-publicas');
@@ -67,17 +150,14 @@
   const accionesSesionMovil = document.getElementById('acciones-sesion-movil');
 
   function mostrarSesion(nombre) {
-    document.getElementById('nombre-sesion').textContent = `Hola, ${nombre}`;
-    document.getElementById('nombre-sesion-movil').textContent = `Hola, ${nombre}`;
-    accionesPublicas.hidden = true;
-    accionesSesion.hidden = false;
-    accionesPublicasMovil.hidden = true;
-    accionesSesionMovil.hidden = false;
-    accionesPublicas.classList.add('hidden');
-    accionesSesion.classList.remove('hidden');
-    accionesPublicasMovil.classList.add('hidden');
-    accionesSesionMovil.classList.remove('hidden');
-    accionesSesionMovil.classList.add('flex');
+    const nombreEscritorio = document.getElementById('nombre-sesion');
+    const nombreMovil = document.getElementById('nombre-sesion-movil');
+    if (nombreEscritorio) nombreEscritorio.textContent = `Hola, ${nombre}`;
+    if (nombreMovil) nombreMovil.textContent = `Hola, ${nombre}`;
+    if (accionesPublicas) accionesPublicas.hidden = true;
+    if (accionesSesion) accionesSesion.hidden = false;
+    if (accionesPublicasMovil) accionesPublicasMovil.hidden = true;
+    if (accionesSesionMovil) accionesSesionMovil.hidden = false;
   }
 
   async function cargarSesion() {
@@ -94,8 +174,7 @@
       if (!response.ok) throw new Error('No se pudo verificar la sesión');
 
       const perfil = await response.json();
-      const nombre = [perfil.nombre1, perfil.apellido1].filter(Boolean).join(' ')
-        || perfil.usuario;
+      const nombre = [perfil.nombre1, perfil.apellido1].filter(Boolean).join(' ') || perfil.usuario;
       if (nombre) mostrarSesion(nombre);
     } catch (error) {
       console.error('No se pudo cargar la sesión en la página pública:', error);
@@ -107,7 +186,7 @@
     window.location.reload();
   }
 
-  document.getElementById('cerrar-sesion').addEventListener('click', cerrarSesionPublica);
-  document.getElementById('cerrar-sesion-movil').addEventListener('click', cerrarSesionPublica);
+  document.getElementById('cerrar-sesion')?.addEventListener('click', cerrarSesionPublica);
+  document.getElementById('cerrar-sesion-movil')?.addEventListener('click', cerrarSesionPublica);
   cargarSesion();
 </script>

@@ -29,6 +29,11 @@ const UI = (() => {
     archivo: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>',
     cuadricula: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
     lista: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+    alerta: '<path d="m21.7 18-8-14a2 2 0 0 0-3.4 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3z"/><path d="M12 9v4M12 17h.01"/>',
+    check: '<circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/>',
+    info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+    copiar: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+    llave: '<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/>',
   };
 
   const iconoPorVista = {
@@ -103,21 +108,384 @@ const UI = (() => {
     contenedor.hidden = datos.length === 0;
   }
 
-  let temporizadorToast;
-  function toast(mensaje) {
-    let nodo = document.getElementById('ui-toast');
-    if (!nodo) {
-      nodo = document.createElement('div');
-      nodo.id = 'ui-toast';
-      nodo.setAttribute('role', 'status');
-      nodo.setAttribute('aria-live', 'polite');
-      document.body.appendChild(nodo);
-    }
-    nodo.textContent = mensaje;
-    nodo.classList.add('visible');
-    clearTimeout(temporizadorToast);
-    temporizadorToast = setTimeout(() => nodo.classList.remove('visible'), 3200);
+  // ---------- Diálogos modales y notificaciones ----------
+  const iconoDialogo = {
+    peligro: 'alerta',
+    aviso: 'alerta',
+    info: 'info',
+    exito: 'check',
+  };
+  const iconoToast = {
+    exito: 'check',
+    error: 'alerta',
+    aviso: 'alerta',
+    info: 'info',
+  };
+  let contadorDialogos = 0;
+  let dialogosAbiertos = 0;
+
+  function bloquearScroll(bloquear) {
+    dialogosAbiertos = Math.max(0, dialogosAbiertos + (bloquear ? 1 : -1));
+    document.documentElement.classList.toggle('dlg-scroll-bloqueado', dialogosAbiertos > 0);
   }
+
+  function abrirDialogoBase({
+    role = 'dialog',
+    variante = 'info',
+    titulo,
+    descripcion = '',
+    cuerpo = '',
+    critico = false,
+    cerrarConOverlay = true,
+    valorCancelacion = null,
+    focoInicial = '',
+    acciones = [],
+    alMontar,
+    alCerrar,
+  }) {
+    const numero = ++contadorDialogos;
+    const idTitulo = `dlg-titulo-${numero}`;
+    const idDescripcion = descripcion ? `dlg-descripcion-${numero}` : '';
+    const dialogo = document.createElement('dialog');
+    dialogo.className = `dlg dlg--${variante}`;
+    dialogo.setAttribute('role', role);
+    dialogo.setAttribute('aria-labelledby', idTitulo);
+    if (idDescripcion) dialogo.setAttribute('aria-describedby', idDescripcion);
+    dialogo.innerHTML = `
+      <div class="dlg-caja">
+        <div class="dlg-cabecera">
+          <span class="dlg-icono dlg-icono--${variante}" aria-hidden="true">${svg(iconos[iconoDialogo[variante]] || iconos.info, 22)}</span>
+          <div class="dlg-texto">
+            <h2 class="dlg-titulo" id="${idTitulo}">${esc(titulo)}</h2>
+            ${descripcion ? `<p class="dlg-descripcion" id="${idDescripcion}">${esc(descripcion)}</p>` : ''}
+            ${cuerpo}
+          </div>
+        </div>
+        <div class="dlg-acciones"></div>
+      </div>`;
+
+    const focoPrevio = document.activeElement;
+    let cerrarDialogo;
+    let resuelto = false;
+    const promesa = new Promise((resolve) => {
+      cerrarDialogo = (valor) => {
+        if (resuelto) return;
+        resuelto = true;
+        alCerrar?.(dialogo);
+        if (dialogo.open) dialogo.close();
+        dialogo.remove();
+        bloquearScroll(false);
+        if (focoPrevio instanceof HTMLElement && focoPrevio !== document.body && focoPrevio.isConnected) {
+          focoPrevio.focus({ preventScroll: true });
+        }
+        resolve(valor);
+      };
+    });
+
+    const contenedorAcciones = dialogo.querySelector('.dlg-acciones');
+    for (const accion of acciones) {
+      const boton = document.createElement('button');
+      boton.type = 'button';
+      boton.className = accion.clase || 'btn btn-secundario';
+      boton.textContent = accion.texto;
+      if (accion.cancelar) boton.dataset.dlgCancelar = '';
+      if (accion.principal) boton.dataset.dlgConfirmar = '';
+      if (accion.deshabilitado) boton.disabled = true;
+      boton.addEventListener('click', () => {
+        if (accion.alAccionar) accion.alAccionar(cerrarDialogo, dialogo);
+        else cerrarDialogo(accion.valor);
+      });
+      contenedorAcciones.append(boton);
+    }
+
+    alMontar?.(dialogo, cerrarDialogo);
+    document.body.append(dialogo);
+    bloquearScroll(true);
+    dialogo.addEventListener('cancel', (evento) => {
+      evento.preventDefault();
+      cerrarDialogo(valorCancelacion);
+    });
+    dialogo.addEventListener('click', (evento) => {
+      if (evento.target !== dialogo || critico || !cerrarConOverlay) return;
+      cerrarDialogo(valorCancelacion);
+    });
+    dialogo.showModal();
+    const selectorFoco = focoInicial || (critico ? '[data-dlg-cancelar]' : '[data-dlg-confirmar]');
+    const foco = dialogo.querySelector(selectorFoco)
+      || dialogo.querySelector('button:not([disabled]), input:not([disabled]), [tabindex="0"]');
+    foco?.focus();
+    return { dialogo, promesa, cerrar: cerrarDialogo };
+  }
+
+  function confirmar({
+    titulo,
+    descripcion,
+    variante = 'peligro',
+    textoConfirmar = 'Confirmar',
+    textoCancelar = 'Cancelar',
+    critico = false,
+    requiereTexto = false,
+    textoRequerido = 'ELIMINAR',
+  }) {
+    const esCritico = Boolean(critico);
+    const textoConfirmacion = requiereTexto
+      ? (typeof requiereTexto === 'string' ? requiereTexto : textoRequerido)
+      : '';
+    const idCampo = `dlg-confirmacion-${contadorDialogos + 1}`;
+    const cuerpo = textoConfirmacion
+      ? `<div class="dlg-campo">
+          <label for="${idCampo}">Escribe <strong>${esc(textoConfirmacion)}</strong> para confirmar</label>
+          <input id="${idCampo}" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="${idCampo}-ayuda" />
+          <span class="dlg-ayuda" id="${idCampo}-ayuda">La confirmación distingue mayúsculas y minúsculas.</span>
+        </div>`
+      : '';
+    return abrirDialogoBase({
+      role: esCritico ? 'alertdialog' : 'dialog',
+      variante,
+      titulo,
+      descripcion,
+      cuerpo,
+      critico: esCritico,
+      cerrarConOverlay: !esCritico,
+      valorCancelacion: false,
+      focoInicial: textoConfirmacion ? 'input' : (esCritico ? '[data-dlg-cancelar]' : '[data-dlg-confirmar]'),
+      acciones: [
+        { texto: textoCancelar, valor: false, clase: 'btn btn-secundario', cancelar: true },
+        {
+          texto: textoConfirmar,
+          valor: true,
+          clase: variante === 'peligro' ? 'btn btn-rojo' : 'btn btn-primario',
+          principal: true,
+          deshabilitado: Boolean(textoConfirmacion),
+        },
+      ],
+      alMontar: (dialogo, cerrar) => {
+        if (!textoConfirmacion) return;
+        const input = dialogo.querySelector('input');
+        const boton = dialogo.querySelector('[data-dlg-confirmar]');
+        const actualizar = () => {
+          boton.disabled = input.value.trim() !== textoConfirmacion;
+        };
+        input.addEventListener('input', actualizar);
+        input.addEventListener('keydown', (evento) => {
+          if (evento.key !== 'Enter' || boton.disabled) return;
+          evento.preventDefault();
+          cerrar(true);
+        });
+        actualizar();
+        input.focus();
+      },
+    }).promesa;
+  }
+
+  function pedir({
+    titulo,
+    etiqueta = 'Valor',
+    valorInicial = '',
+    textoConfirmar = 'Guardar',
+    textoCancelar = 'Cancelar',
+    placeholder = '',
+    maxlength = 200,
+    tipo = 'text',
+    validar,
+    mensajeError = 'Escribe un valor.',
+  }) {
+    const idCampo = `dlg-campo-${contadorDialogos + 1}`;
+    const cuerpo = `
+      <div class="dlg-campo">
+        <label for="${idCampo}">${esc(etiqueta)}</label>
+        <input id="${idCampo}" type="${esc(tipo)}" value="${esc(valorInicial)}" placeholder="${esc(placeholder)}" maxlength="${Math.max(1, Number(maxlength) || 200)}" autocomplete="off" />
+        <p class="dlg-error" role="alert" hidden></p>
+      </div>`;
+    return abrirDialogoBase({
+      role: 'dialog',
+      variante: 'info',
+      titulo,
+      cuerpo,
+      focoInicial: 'input',
+      valorCancelacion: null,
+      acciones: [
+        { texto: textoCancelar, valor: null, clase: 'btn btn-secundario', cancelar: true },
+        {
+          texto: textoConfirmar,
+          clase: 'btn btn-primario',
+          principal: true,
+          alAccionar: (cerrar, dialogo) => {
+            const input = dialogo.querySelector('input');
+            const error = dialogo.querySelector('.dlg-error');
+            const valor = input.value.trim();
+            let problema = '';
+            if (typeof validar === 'function') {
+              try {
+                problema = validar(valor) || '';
+              } catch (fallo) {
+                problema = fallo.message || mensajeError;
+              }
+            } else if (!valor) {
+              problema = mensajeError;
+            }
+            if (problema) {
+              error.textContent = problema;
+              error.hidden = false;
+              input.focus();
+              return;
+            }
+            cerrar(valor);
+          },
+        },
+      ],
+      alMontar: (dialogo) => {
+        const input = dialogo.querySelector('input');
+        input.addEventListener('keydown', (evento) => {
+          if (evento.key !== 'Enter') return;
+          evento.preventDefault();
+          dialogo.querySelector('[data-dlg-confirmar]').click();
+        });
+      },
+    }).promesa;
+  }
+
+  async function copiarTexto(texto) {
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(texto);
+        return true;
+      } catch {
+        // Se intenta el mecanismo alternativo.
+      }
+    }
+    const area = document.createElement('textarea');
+    area.value = texto;
+    area.setAttribute('readonly', '');
+    area.style.position = 'fixed';
+    area.style.opacity = '0';
+    document.body.append(area);
+    area.select();
+    let copiado = false;
+    try {
+      copiado = document.execCommand('copy');
+    } catch {
+      copiado = false;
+    }
+    area.remove();
+    return copiado;
+  }
+
+  function mostrarContrasenaTemporal({ nombre, contrasena }) {
+    const idCodigo = `dlg-contrasena-${contadorDialogos + 1}`;
+    const cuerpo = `
+      <div class="dlg-contrasena">
+        <code class="dlg-codigo" id="${idCodigo}" tabindex="0">${esc(contrasena)}</code>
+        <button type="button" class="btn btn-secundario dlg-copiar" data-dlg-copiar>
+          ${svg(iconos.copiar, 16)}<span>Copiar</span>
+        </button>
+        <p class="dlg-aviso">Compártela de forma privada. Solo se mostrará esta vez; el afiliado deberá cambiarla al iniciar sesión.</p>
+        <p class="dlg-copiado" role="status" hidden></p>
+      </div>`;
+    return abrirDialogoBase({
+      role: 'dialog',
+      variante: 'info',
+      titulo: `Contraseña temporal de ${nombre}`,
+      cuerpo,
+      focoInicial: '[data-dlg-copiar]',
+      valorCancelacion: null,
+      acciones: [
+        { texto: 'Entendido', valor: null, clase: 'btn btn-primario', principal: true },
+      ],
+      alMontar: (dialogo) => {
+        const codigo = dialogo.querySelector('.dlg-codigo');
+        const boton = dialogo.querySelector('[data-dlg-copiar]');
+        const estado = dialogo.querySelector('.dlg-copiado');
+        boton.addEventListener('click', async () => {
+          const copiado = await copiarTexto(contrasena);
+          estado.hidden = false;
+          estado.classList.toggle('error', !copiado);
+          estado.textContent = copiado
+            ? 'Contraseña copiada.'
+            : 'No se pudo copiar. Selecciona la contraseña y cópiala manualmente.';
+          if (copiado) {
+            boton.querySelector('span').textContent = 'Copiado';
+            setTimeout(() => {
+              if (boton.isConnected) boton.querySelector('span').textContent = 'Copiar';
+            }, 1600);
+          } else {
+            codigo.focus();
+          }
+        });
+      },
+      alCerrar: (dialogo) => {
+        const codigo = dialogo.querySelector('.dlg-codigo');
+        if (codigo) codigo.textContent = '';
+      },
+    }).promesa;
+  }
+
+  let contenedorToasts;
+  function obtenerContenedorToasts() {
+    if (!contenedorToasts) {
+      contenedorToasts = document.createElement('div');
+      contenedorToasts.id = 'ui-toasts';
+      contenedorToasts.className = 'ui-toasts';
+      document.body.append(contenedorToasts);
+    }
+    return contenedorToasts;
+  }
+
+  function cerrarToast(nodo) {
+    if (!nodo || nodo.dataset.saliendo) return;
+    nodo.dataset.saliendo = '1';
+    nodo.classList.add('ui-toast--saliendo');
+    setTimeout(() => nodo.remove(), 180);
+  }
+
+  function mostrarToast(mensaje, tipo = 'info', opciones = {}) {
+    const contenedor = obtenerContenedorToasts();
+    const duracion = opciones.duracion ?? (tipo === 'error' ? 8000 : tipo === 'aviso' ? 6000 : 5000);
+    const nodo = document.createElement('div');
+    nodo.className = `ui-toast ui-toast--${tipo}`;
+    nodo.setAttribute('role', tipo === 'error' ? 'alert' : 'status');
+    nodo.innerHTML = `
+      <span class="ui-toast__icono" aria-hidden="true">${svg(iconos[iconoToast[tipo]] || iconos.info, 18)}</span>
+      <p class="ui-toast__texto"></p>
+      <button type="button" class="ui-toast__cerrar" aria-label="Cerrar notificación">${svg(iconos.cerrar, 16)}</button>`;
+    nodo.querySelector('.ui-toast__texto').textContent = String(mensaje ?? '');
+    contenedor.append(nodo);
+    while (contenedor.children.length > 4) cerrarToast(contenedor.firstElementChild);
+
+    let temporizador;
+    let inicio = 0;
+    let restante = duracion;
+    const programar = () => {
+      inicio = Date.now();
+      temporizador = setTimeout(() => cerrarToast(nodo), restante);
+    };
+    const pausar = () => {
+      if (!temporizador) return;
+      clearTimeout(temporizador);
+      temporizador = null;
+      restante = Math.max(0, restante - (Date.now() - inicio));
+    };
+    const reanudar = () => {
+      if (temporizador || restante <= 0) return;
+      programar();
+    };
+    nodo.addEventListener('mouseenter', pausar);
+    nodo.addEventListener('mouseleave', reanudar);
+    nodo.addEventListener('focusin', pausar);
+    nodo.addEventListener('focusout', (evento) => {
+      if (!nodo.contains(evento.relatedTarget)) reanudar();
+    });
+    nodo.querySelector('.ui-toast__cerrar').addEventListener('click', () => cerrarToast(nodo));
+    programar();
+  }
+
+  function toast(mensaje, opciones = {}) {
+    return mostrarToast(mensaje, 'exito', opciones);
+  }
+  toast.exito = (mensaje, opciones = {}) => mostrarToast(mensaje, 'exito', opciones);
+  toast.error = (mensaje, opciones = {}) => mostrarToast(mensaje, 'error', opciones);
+  toast.aviso = (mensaje, opciones = {}) => mostrarToast(mensaje, 'aviso', opciones);
+  toast.info = (mensaje, opciones = {}) => mostrarToast(mensaje, 'info', opciones);
 
   // Chips con los filtros activos; quitar uno limpia el control y repite la búsqueda existente.
   function iniciarChips({ ids, contenedor, botonBuscar }) {
@@ -258,7 +626,7 @@ const UI = (() => {
       modalPrevia.classList.add('visible');
       modalPrevia.querySelector('.btn-icono').focus();
     } catch (error) {
-      toast(error.message);
+      toast.error(error.message);
     }
   }
 
@@ -308,7 +676,7 @@ const UI = (() => {
     paginar({ cuerpo: 'cuerpo-afiliados', pie: 'paginacion-local', tamano: 10 });
   }
 
-  return { esc, svg, iconos, iniciales, avatar, avatares, skeletonFilas, skeletonTarjetas, estadoVacio, setResumen, toast, chipsDesdeSelect, vistaPrevia, iconoArchivo, iniciar };
+  return { esc, svg, iconos, iniciales, avatar, avatares, skeletonFilas, skeletonTarjetas, estadoVacio, setResumen, toast, confirmar, pedir, mostrarContrasenaTemporal, chipsDesdeSelect, vistaPrevia, iconoArchivo, iniciar };
 })();
 
 UI.iniciar();

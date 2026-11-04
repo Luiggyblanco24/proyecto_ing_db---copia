@@ -1,28 +1,127 @@
-<section class="relative isolate overflow-hidden bg-[#0f3d1e] text-white">
-  <img src="/Actividades/5.jpg" alt="" aria-hidden="true" fetchpriority="high" decoding="async" class="absolute inset-0 -z-20 h-full w-full object-cover" />
-  <div class="absolute inset-0 -z-10 bg-gradient-to-r from-[#0f3d1e] via-[#0f3d1e]/90 to-[#0f3d1e]/50"></div>
-  <div class="mx-auto grid min-h-[640px] max-w-7xl items-center gap-12 px-4 pb-20 pt-36 sm:px-6 lg:grid-cols-[1.25fr_1fr] lg:pb-24">
-    <div>
-      <p class="mb-5 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-sm font-bold uppercase tracking-[0.15em] text-[#fbbf24]">
-        <span class="h-2 w-2 rounded-full bg-[#fbbf24]" aria-hidden="true"></span>
-        Un sindicato para la educación pública
+---
+import { Picture } from 'astro:assets';
+import heroPhoto from '../../assets/landing/5.jpg';
+import detailPhoto from '../../assets/landing/3.jpg';
+---
+
+<section class="hero relative isolate overflow-hidden text-white">
+  <div class="hero-pattern" aria-hidden="true"></div>
+
+  <div class="relative mx-auto grid min-h-[38rem] max-w-7xl items-center gap-14 px-4 pb-28 pt-14 sm:px-6 sm:pb-32 sm:pt-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:pb-36 lg:pt-20">
+    <div class="max-w-3xl">
+      <p class="eyebrow inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-[#fde68a]">
+        <span class="h-1.5 w-1.5 rounded-full bg-[#fbbf24]" aria-hidden="true"></span>
+        Sindicato de trabajadores de la educación · Norte de Santander
       </p>
-      <h1 class="max-w-3xl text-balance text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-6xl">
-        Defendemos la educación y la unidad de quienes la hacen posible.
+
+      <h1 class="display mt-6 text-balance text-[2.55rem] leading-[1.03] sm:text-6xl lg:text-[4.2rem]">
+        Defensa de la Educación,
+        <span class="text-[#fbbf24]">Unidad de los Trabajadores</span>
       </h1>
-      <p class="mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-white/85">
-        Conoce nuestra organización, encuentra tu subdirectiva y participa en la construcción colectiva de mejores condiciones para las y los trabajadores de la educación.
+
+      <p class="mt-6 max-w-2xl text-pretty text-base leading-relaxed text-white/85 sm:text-lg">
+        Somos la organización que representa y defiende a docentes, directivos y administrativos de Norte de Santander. Un espacio de unidad, formación y acción colectiva por la educación pública.
       </p>
+
       <div class="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        <a href="/register.html" class="rounded-lg bg-[#f59e0b] px-7 py-3.5 text-center font-bold text-[#1e293b] shadow-lg transition hover:bg-[#fbbf24]">Iniciar afiliación</a>
-        <a href="/login.html" class="rounded-lg border border-white/60 px-7 py-3.5 text-center font-bold text-white transition hover:bg-white/10">Iniciar sesión</a>
-        <a href="/Nosotros/" class="rounded-lg px-4 py-3.5 text-center font-bold text-white underline decoration-white/40 underline-offset-4 transition hover:decoration-white">Conócenos →</a>
+        <a href="/register.html" class="btn btn-accent px-7 py-4 text-base">
+          Afíliate a SUTENS
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </a>
+        <a href="/login.html" class="btn btn-outline-light px-7 py-4 text-base">
+          Iniciar sesión
+        </a>
       </div>
-      <a href="/Formatodeafiliacionsutens.pdf" download class="mt-6 inline-block text-sm font-semibold text-white/80 underline decoration-transparent underline-offset-4 transition hover:text-white hover:decoration-current">Descargar formulario de afiliación (PDF)</a>
+
+      <div class="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm font-semibold text-white/80">
+        <a href="#quienes-somos" class="inline-flex items-center gap-1.5 underline decoration-white/35 underline-offset-4 transition hover:text-white hover:decoration-white">
+          Conoce la organización
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+        </a>
+        <a href="/Formatodeafiliacionsutens.pdf" download class="inline-flex items-center gap-1.5 underline decoration-white/35 underline-offset-4 transition hover:text-white hover:decoration-white">
+          Descargar formulario PDF
+        </a>
+      </div>
     </div>
 
-    <div class="hidden rounded-2xl border border-white/15 bg-white/95 p-8 shadow-2xl lg:block">
-      <img src="/brand/sutens-logo-horizontal.png" alt="SUTENS - Sindicato Unitario de Trabajadores de la Educación de Norte de Santander" decoding="async" width="1205" height="661" class="w-full" />
+    <div class="relative mx-auto w-full max-w-[34rem] lg:mx-0">
+      <div class="absolute -left-10 top-10 hidden h-40 w-40 rounded-full border border-white/15 bg-white/5 sm:block" aria-hidden="true"></div>
+      <div class="absolute -bottom-8 right-0 hidden h-28 w-28 rounded-full bg-[#f59e0b]/20 blur-xl sm:block" aria-hidden="true"></div>
+
+      <div class="hero-photo-frame relative overflow-hidden rounded-[2rem] border border-white/20 bg-white/10 p-2 shadow-2xl">
+        <div class="aspect-[4/3] overflow-hidden rounded-[1.55rem]">
+          <Picture
+            src={heroPhoto}
+            alt="Actividad sindical de SUTENS en Norte de Santander"
+            formats={['avif', 'webp']}
+            fallbackFormat="jpg"
+            widths={[360, 540, 720, 900]}
+            sizes="(min-width: 1024px) 40vw, 90vw"
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+            quality={82}
+          />
+        </div>
+      </div>
+
+      <div class="hero-photo-small absolute -bottom-7 -left-4 hidden w-40 overflow-hidden rounded-2xl border-4 border-[#0f3d1e] shadow-xl sm:block lg:-left-8 lg:w-48">
+        <Picture
+          src={detailPhoto}
+          alt="Encuentro de trabajadores de la educación de SUTENS"
+          formats={['avif', 'webp']}
+          fallbackFormat="jpg"
+          widths={[160, 240, 320]}
+          sizes="192px"
+          loading="lazy"
+          decoding="async"
+          quality={80}
+        />
+      </div>
+
+      <div class="absolute -right-2 top-5 flex items-center gap-3 rounded-2xl border border-white/20 bg-[#0b2e19]/85 px-4 py-3 shadow-xl backdrop-blur sm:-right-5">
+        <span class="grid h-10 w-10 place-items-center rounded-xl bg-white/10">
+          <img src="/brand/sutens-icono.svg" alt="" width="72" height="72" class="h-7 w-7" />
+        </span>
+        <span class="leading-tight">
+          <strong class="block text-sm font-extrabold text-white">Norte de Santander</strong>
+          <span class="text-xs font-semibold text-white/70">Presencia departamental</span>
+        </span>
+      </div>
     </div>
   </div>
+
+  <div class="hero-wave" aria-hidden="true">
+    <svg viewBox="0 0 1440 120" preserveAspectRatio="none" fill="none">
+      <path d="M0 78C210 118 380 122 620 92C860 62 1080 18 1440 44V120H0V78Z" fill="#f6faf7" />
+    </svg>
+  </div>
 </section>
+
+<style>
+  .hero {
+    background:
+      radial-gradient(circle at 78% 18%, rgba(22, 163, 74, 0.35), transparent 42%),
+      linear-gradient(135deg, #0b2e19 0%, #14532d 46%, #15803d 100%);
+  }
+
+  .hero-photo-frame {
+    transform: rotate(1.2deg);
+  }
+
+  .hero-photo-frame picture,
+  .hero-photo-frame img,
+  .hero-photo-small picture,
+  .hero-photo-small img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (max-width: 1023px) {
+    .hero-photo-frame {
+      transform: none;
+    }
+  }
+</style>

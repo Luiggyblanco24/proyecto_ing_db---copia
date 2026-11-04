@@ -193,30 +193,6 @@
   padding-block: 20px;
 }
 
-/* ---------- Toast ---------- */
-#ui-toast {
-  position: fixed;
-  z-index: 300;
-  left: 50%;
-  bottom: 28px;
-  max-width: calc(100vw - 32px);
-  padding: 12px 20px;
-  border-radius: 999px;
-  background: var(--ui-verde-900);
-  box-shadow: var(--ui-sombra-3);
-  color: #fff;
-  font-weight: 600;
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(-50%, 16px);
-  transition: opacity var(--ui-t), transform var(--ui-t);
-}
-
-#ui-toast.visible {
-  opacity: 1;
-  transform: translate(-50%, 0);
-}
-
 /* ---------- Paginación ---------- */
 .paginacion {
   display: flex;
@@ -1503,10 +1479,6 @@
   .skeleton,
   .seleccion-afiliados:not([hidden]) {
     animation: none;
-    transition: none;
-  }
-
-  #ui-toast {
     transition: none;
   }
 }

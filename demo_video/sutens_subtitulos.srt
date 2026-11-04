@@ -1,0 +1,119 @@
+1
+00:00:00,000 --> 00:00:03,500
+⚠️ Gestionar miles de afiliados docentes
+con formularios en papel...
+
+2
+00:00:03,500 --> 00:00:07,000
+...genera retrasos, errores
+y pérdida de información crítica.
+
+3
+00:00:07,000 --> 00:00:11,500
+El magisterio de Norte de Santander
+necesitaba una solución digital real.
+
+4
+00:00:11,500 --> 00:00:15,000
+¿Y si hubiera una plataforma
+diseñada exactamente para esto?
+
+5
+00:00:15,000 --> 00:00:18,500
+🖥️ Servidor local iniciando...
+Código real. No es una maqueta.
+
+6
+00:00:18,500 --> 00:00:22,000
+Backend Node.js + PostgreSQL
+corriendo en localhost:3000
+
+7
+00:00:22,000 --> 00:00:26,500
+Construyendo la solución sindical
+desde cero.
+
+8
+00:00:26,500 --> 00:00:30,000
+Conoce SUTENS —
+La plataforma digital del magisterio.
+
+9
+00:00:30,000 --> 00:00:34,000
+🔐 Acceso seguro con autenticación JWT
+y control de roles (RBAC)
+
+10
+00:00:34,000 --> 00:00:38,000
+3 niveles de acceso:
+Administrador · Afiliado · Público
+
+11
+00:00:38,000 --> 00:00:42,500
+Sesiones con expiración automática
+por inactividad (30 minutos)
+
+12
+00:00:42,500 --> 00:00:45,000
+Ingreso validado ✅
+Redirigiendo al panel principal...
+
+13
+00:00:45,000 --> 00:00:49,500
+📊 Dashboard centralizado
+con toda la información del sindicato
+
+14
+00:00:49,500 --> 00:00:53,500
+KPIs en tiempo real:
+afiliados activos, pendientes y sedes
+
+15
+00:00:53,500 --> 00:00:57,500
+Gestión de subdirectivas
+por institución educativa
+
+16
+00:00:57,500 --> 00:01:00,000
+Todo en un solo lugar.
+Sin papel. Sin demoras.
+
+17
+00:01:00,000 --> 00:01:04,500
+✨ El flujo completo de afiliación
+—en segundos, no en semanas—
+
+18
+00:01:04,500 --> 00:01:08,500
+El docente llena el formulario público:
+nombre, cédula, institución, correo...
+
+19
+00:01:08,500 --> 00:01:12,000
+Acepta el aviso de tratamiento
+de datos personales ✓
+
+20
+00:01:12,000 --> 00:01:15,000
+La solicitud llega al panel
+del administrador al instante 🔔
+
+21
+00:01:15,000 --> 00:01:20,000
+Un clic del administrador...
+¡y el afiliado queda activo! ✅
+
+22
+00:01:20,000 --> 00:01:24,000
+Radicado único generado.
+Notificación enviada. Historial registrado.
+
+23
+00:01:24,000 --> 00:01:27,500
+"El código ya funciona."
+"El próximo paso es escalarlo."
+
+24
+00:01:27,500 --> 00:01:30,000
+🌐 SUTENS — Plataforma del Magisterio
+Sindicato Unitario Norte de Santander

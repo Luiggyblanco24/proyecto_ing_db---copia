@@ -1,0 +1,240 @@
+---
+import Icono from './Icono.astro';
+---
+
+<section id="estructura" class="bg-cream px-4 py-20 sm:px-6 sm:py-24">
+  <div class="mx-auto max-w-6xl">
+    <header class="max-w-3xl reveal">
+      <p class="eyebrow text-brand-700">Estructura</p>
+      <h2 class="display mt-3 text-3xl text-ink sm:text-4xl lg:text-5xl">
+        Una organización cerca de cada municipio
+      </h2>
+      <p class="mt-5 text-lg leading-relaxed text-muted">
+        La Directiva Departamental y las subdirectivas sostienen el trabajo sindical en el territorio. Así se organiza SUTENS para acompañar a sus afiliados.
+      </p>
+    </header>
+
+    <div class="mt-12 grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+      <div class="reveal">
+        <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+          <div>
+            <h3 class="text-2xl font-extrabold tracking-tight text-ink">Directiva Departamental</h3>
+            <p class="mt-1 text-sm font-semibold text-muted">Representación departamental de SUTENS.</p>
+          </div>
+          <a href="/Nosotros/" class="inline-flex items-center gap-1 text-sm font-extrabold text-brand-700 hover:underline">
+            Ver detalle
+            <Icono name="arrow-right" class="h-4 w-4" />
+          </a>
+        </div>
+
+        <div id="directiva-grid" class="mt-5 grid gap-4 sm:grid-cols-2" aria-busy="true">
+          {Array.from({ length: 4 }).map(() => (
+            <div class="skeleton-directiva flex animate-pulse items-center gap-4 rounded-2xl border border-line bg-white p-4 motion-reduce:animate-none" aria-hidden="true">
+              <span class="h-14 w-14 shrink-0 rounded-2xl bg-verde-suave"></span>
+              <span class="grid flex-1 gap-2">
+                <span class="h-3 w-3/4 rounded bg-line"></span>
+                <span class="h-2.5 w-1/2 rounded bg-line"></span>
+              </span>
+            </div>
+          ))}
+        </div>
+        <p id="directiva-estado" class="mt-4 hidden rounded-2xl border border-line bg-white p-4 text-sm leading-relaxed text-muted"></p>
+
+        <noscript>
+          <style>
+            .skeleton-directiva,
+            .skeleton-subdirectiva {
+              display: none;
+            }
+          </style>
+          <p class="mt-4 rounded-2xl border border-line bg-white p-4 text-sm text-muted">
+            Activa JavaScript para ver la directiva, o consulta la página de <a class="font-bold text-brand-700 underline" href="/Nosotros/">Nosotros</a>.
+          </p>
+        </noscript>
+      </div>
+
+      <div class="reveal" style="--reveal-delay: 100ms">
+        <div class="flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+          <div>
+            <h3 class="text-2xl font-extrabold tracking-tight text-ink">Subdirectivas</h3>
+            <p class="mt-1 text-sm font-semibold text-muted">Presencia territorial y equipos locales.</p>
+          </div>
+          <a href="/Secretarias/" class="inline-flex items-center gap-1 text-sm font-extrabold text-brand-700 hover:underline">
+            Ver todas
+            <Icono name="arrow-right" class="h-4 w-4" />
+          </a>
+        </div>
+
+        <div id="subdirectivas-lista" class="mt-5 grid gap-3" aria-busy="true">
+          {Array.from({ length: 3 }).map(() => (
+            <div class="skeleton-subdirectiva flex animate-pulse items-center gap-3 rounded-2xl border border-line bg-white p-4 motion-reduce:animate-none" aria-hidden="true">
+              <span class="h-10 w-10 shrink-0 rounded-xl bg-verde-suave"></span>
+              <span class="grid flex-1 gap-2">
+                <span class="h-3 w-2/3 rounded bg-line"></span>
+                <span class="h-2.5 w-1/3 rounded bg-line"></span>
+              </span>
+            </div>
+          ))}
+        </div>
+        <p id="subdirectivas-estado" class="mt-4 hidden rounded-2xl border border-line bg-white p-4 text-sm leading-relaxed text-muted"></p>
+
+        <p class="mt-4 flex items-center gap-2 text-xs font-semibold text-muted">
+          <Icono name="sparkles" class="h-4 w-4 text-brand-700" />
+          Información actualizada desde el panel de SUTENS.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <template id="tpl-directivo">
+    <article class="flex items-center gap-4 rounded-2xl border border-line bg-white p-4 shadow-[var(--ui-sombra-1)]">
+      <div class="relative grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-2xl bg-verde-suave text-lg font-extrabold text-brand-700">
+        <span data-initials></span>
+        <img data-photo class="absolute inset-0 h-full w-full object-cover" alt="" loading="lazy" decoding="async" hidden />
+      </div>
+      <div class="min-w-0">
+        <h4 data-name class="truncate text-sm font-extrabold text-ink"></h4>
+        <p data-cargo class="mt-0.5 text-xs font-bold text-brand-700"></p>
+      </div>
+    </article>
+  </template>
+
+  <template id="tpl-subdirectiva">
+    <a href="/Secretarias/" class="group flex items-center justify-between gap-3 rounded-2xl border border-line bg-white p-4 transition hover:border-brand-600/40 hover:shadow-[var(--ui-sombra-2)]">
+      <span class="flex min-w-0 items-center gap-3">
+        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-900 text-white">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 0 1 16 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+        </span>
+        <span class="min-w-0">
+          <span data-nombre class="block truncate text-sm font-extrabold text-ink"></span>
+          <span data-detalle class="mt-0.5 block text-xs font-semibold text-muted"></span>
+        </span>
+      </span>
+      <span class="shrink-0 text-xs font-extrabold text-brand-700 transition group-hover:translate-x-0.5">Ver</span>
+    </a>
+  </template>
+</section>
+
+<script>
+  import { getDirectivaDepartamental, getDirectivasSubdirectivas } from '../../lib/public-api.js';
+
+  function iniciales(nombre) {
+    return String(nombre || '')
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((parte) => parte[0])
+      .join('')
+      .toUpperCase();
+  }
+
+  function mostrarEstado(elemento, mensaje, enlace) {
+    if (!elemento) return;
+    elemento.textContent = '';
+    elemento.append(document.createTextNode(`${mensaje} `));
+    if (enlace) {
+      const ancla = document.createElement('a');
+      ancla.href = enlace.href;
+      ancla.className = 'ml-1 font-extrabold text-brand-700 underline';
+      ancla.textContent = enlace.texto;
+      elemento.append(ancla);
+    }
+    elemento.hidden = false;
+  }
+
+  function limpiarEsqueletos(contenedor, selector) {
+    contenedor.querySelectorAll(selector).forEach((nodo) => nodo.remove());
+    contenedor.removeAttribute('aria-busy');
+  }
+
+  function renderDirectiva(integrantes) {
+    const contenedor = document.getElementById('directiva-grid');
+    const estado = document.getElementById('directiva-estado');
+    const plantilla = document.getElementById('tpl-directivo');
+    if (!contenedor || !plantilla) return;
+
+    limpiarEsqueletos(contenedor, '.skeleton-directiva');
+
+    if (!Array.isArray(integrantes) || integrantes.length === 0) {
+      mostrarEstado(estado, 'No pudimos cargar la directiva en este momento. Puedes consultarla en', { href: '/Nosotros/', texto: 'Nosotros.' });
+      return;
+    }
+
+    integrantes.forEach((integrante, indice) => {
+      const tarjeta = plantilla.content.firstElementChild.cloneNode(true);
+      if (indice === 0) tarjeta.classList.add('sm:col-span-2');
+
+      const nombre = String(integrante.nombre || '').trim();
+      const cargo = String(integrante.cargo || '').trim();
+      tarjeta.querySelector('[data-initials]').textContent = iniciales(nombre);
+      tarjeta.querySelector('[data-name]').textContent = nombre || 'Sin nombre';
+      tarjeta.querySelector('[data-cargo]').textContent = cargo || 'Cargo sin asignar';
+
+      const foto = tarjeta.querySelector('[data-photo]');
+      if (integrante.foto && foto) {
+        foto.src = integrante.foto;
+        foto.alt = `Foto de ${nombre}`;
+        foto.hidden = false;
+        foto.addEventListener('error', () => {
+          foto.hidden = true;
+        });
+      }
+
+      contenedor.append(tarjeta);
+    });
+  }
+
+  function renderSubdirectivas(integrantes) {
+    const contenedor = document.getElementById('subdirectivas-lista');
+    const estado = document.getElementById('subdirectivas-estado');
+    const plantilla = document.getElementById('tpl-subdirectiva');
+    if (!contenedor || !plantilla) return;
+
+    limpiarEsqueletos(contenedor, '.skeleton-subdirectiva');
+
+    const grupos = new Map();
+    for (const integrante of integrantes || []) {
+      const id = integrante.id_subdirectiva;
+      if (id === undefined || id === null) continue;
+      if (!grupos.has(id)) {
+        grupos.set(id, { nombre: String(integrante.subdirectiva || '').trim(), cargos: 0 });
+      }
+      grupos.get(id).cargos += 1;
+    }
+
+    const lista = [...grupos.values()]
+      .filter((grupo) => grupo.nombre)
+      .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
+    if (lista.length === 0) {
+      mostrarEstado(estado, 'Todavía no hay subdirectivas publicadas. Consulta la información actualizada en', { href: '/Secretarias/', texto: 'Secretarías.' });
+      return;
+    }
+
+    lista.forEach((grupo) => {
+      const tarjeta = plantilla.content.firstElementChild.cloneNode(true);
+      tarjeta.querySelector('[data-nombre]').textContent = grupo.nombre;
+      tarjeta.querySelector('[data-detalle]').textContent = `${grupo.cargos} ${grupo.cargos === 1 ? 'cargo publicado' : 'cargos publicados'}`;
+      contenedor.append(tarjeta);
+    });
+  }
+
+  async function cargarEstructura() {
+    const [directiva, subdirectivas] = await Promise.allSettled([
+      getDirectivaDepartamental(),
+      getDirectivasSubdirectivas(),
+    ]);
+
+    renderDirectiva(directiva.status === 'fulfilled' ? directiva.value : []);
+    renderSubdirectivas(subdirectivas.status === 'fulfilled' ? subdirectivas.value : []);
+  }
+
+  cargarEstructura().catch(() => {
+    renderDirectiva([]);
+    renderSubdirectivas([]);
+  });
+</script>

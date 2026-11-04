@@ -14,6 +14,13 @@ function responderConFotos(res, rows) {
   try {
     return res.json(rows.map((row) => ({ ...row, foto: urlFotoPerfil(row.foto) })));
   } catch (error) {
+    if (error.code === 'STORAGE_CONFIGURATION_MISSING' && process.env.NODE_ENV !== 'production') {
+      console.warn('Sin SUPABASE_URL: las fotos locales de la directiva se omiten (solo desarrollo).');
+      return res.json(rows.map((row) => ({
+        ...row,
+        foto: /^\/uploads\/avatars\//i.test(row.foto || '') ? null : row.foto,
+      })));
+    }
     console.error('No se pudieron resolver las fotos de la directiva:', error);
     return res.status(503).json({ error: 'El almacenamiento de fotos no está configurado correctamente' });
   }
