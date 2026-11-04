@@ -395,8 +395,8 @@ export async function cambiarEstado(req, res) {
 
     const { rows } = await client.query(
       `UPDATE afiliado
-       SET estado = $1,
-           fecha_aprobacion = CASE WHEN $1 = 'aprobado' THEN now() ELSE NULL END,
+       SET estado = $1::varchar,
+           fecha_aprobacion = CASE WHEN $1::varchar = 'aprobado' THEN now() ELSE NULL END,
            estado_sindical = 'inactivo'
        WHERE id_afiliado = $2
        RETURNING id_afiliado, estado, radicado`,

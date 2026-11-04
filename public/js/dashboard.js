@@ -1539,7 +1539,7 @@ function actualizarCargosAsignacion(idCargo = '') {
   const cargos = cargosSindicales.filter((cargo) => {
     return subdirectiva?.es_principal
       ? cargo.es_departamental || cargo.nombre === 'Afiliado'
-      : !cargo.es_departamental;
+      : !cargo.es_departamental && cargo.nombre !== 'Afiliado';
   });
   const selectorCargo = document.getElementById('asignacion-cargo');
   selectorCargo.innerHTML = `<option value="">${subdirectiva?.es_principal ? 'Selecciona un cargo...' : 'Sin cargo en esta subdirectiva'}</option>` +
