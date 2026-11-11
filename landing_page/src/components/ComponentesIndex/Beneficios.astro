@@ -1,34 +1,43 @@
 ---
 import { Picture } from 'astro:assets';
-import benefitIcon from './Icono.astro';
+import imagenDerechos from '../../assets/landing/1.jpg';
+import imagenAsesoria from '../../assets/landing/2.jpg';
+import imagenCapacitacion from '../../assets/landing/3.jpg';
+import imagenParticipacion from '../../assets/landing/5.jpg';
+import imagenSede from '../../assets/landing/6.jpg';
 
 const beneficios = [
   {
     icon: 'shield',
+    imageUrl: imagenDerechos,
     title: 'Defensa de los derechos laborales',
     description: 'Protección de los derechos laborales y condiciones de trabajo justas para todos los afiliados.',
     color: 'text-amber-700'
   },
   {
     icon: 'check',
+    imageUrl: imagenAsesoria,
     title: 'Asesoría legal gratuita',
     description: 'Asesoría profesional en temas laborales y derechos sindicales sin costo.',
     color: 'text-primary'
   },
   {
     icon: 'briefcase',
+    imageUrl: imagenCapacitacion,
     title: 'Capacitación y desarrollo profesional',
     description: 'Cursos y talleres para mejorar competencias profesionales y liderazgo.',
     color: 'text-primary'
   },
   {
     icon: 'calendar',
+    imageUrl: imagenParticipacion,
     title: 'Participación activa',
     description: 'Asambleas, conferencias y actividades para mantener el diálogo sindical.',
     color: 'text-primary'
   },
   {
     icon: 'map-pin',
+    imageUrl: imagenSede,
     title: 'Sede y presencia territorial',
     description: 'Sede central en Cali y delegaciones en todo el departamento de Norte de Santander.',
     color: 'text-primary'

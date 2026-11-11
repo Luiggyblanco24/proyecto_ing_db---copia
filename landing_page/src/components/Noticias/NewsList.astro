@@ -17,7 +17,7 @@ const formattedNews = news.map((item) => ({
     <article class="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
       <div class="relative aspect-[4/3] overflow-hidden">
         <Picture
-          src={`../../assets/${item.imageUrl}`}
+          src={item.imageUrl}
           alt={item.title}
           formats={['avif', 'webp']}
           fallbackFormat="jpg"

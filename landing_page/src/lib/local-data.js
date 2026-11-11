@@ -1,12 +1,17 @@
 // Datos locales para la landing page de SUTENS
 // Reemplaza la integración con Sanity por datos estáticos
 
+import imagenNoticia1 from '../assets/landing/5.jpg';
+import imagenNoticia2 from '../assets/landing/3.jpg';
+import imagenNoticia3 from '../assets/landing/1.jpg';
+import imagenNoticia4 from '../assets/landing/2.jpg';
+
 export const news = [
   {
     id: 1,
     title: "Nuevo convenio colectivo beneficia a todos los afiliados",
     description: "Se ha firmado un nuevo convenio colectivo que beneficia a todos los afiliados de SUTENS, fortaleciendo la organización sindical y los derechos laborales.",
-    imageUrl: "landing/5.jpg",
+    imageUrl: imagenNoticia1,
     publishedAt: "2024-03-15",
     category: "noticias"
   },
@@ -14,7 +19,7 @@ export const news = [
     id: 2,
     title: "Resolución de la huelga de docentes",
     description: "La dirección de SUTENS ha firmado una resolución que garantiza condiciones laborales justas y la protección de los derechos de los docentes en Norte de Santander.",
-    imageUrl: "landing/3.jpg",
+    imageUrl: imagenNoticia2,
     publishedAt: "2024-03-14",
     category: "noticias"
   },
@@ -22,7 +27,7 @@ export const news = [
     id: 3,
     title: "Conferencia de la Confederación Sindical",
     description: "Participación de representantes de SUTENS en la conferencia nacional de la Confederación Sindical, defendiendo los intereses de los trabajadores del sector educativo.",
-    imageUrl: "landing/1.jpg",
+    imageUrl: imagenNoticia3,
     publishedAt: "2024-03-13",
     category: "noticias"
   },
@@ -30,7 +35,7 @@ export const news = [
     id: 4,
     title: "Formación continua para afiliados",
     description: "Programa de capacitación organizado por SUTENS para fortalecer las competencias profesionales de sus miembros y mejorar su desempeño laboral.",
-    imageUrl: "landing/2.jpg",
+    imageUrl: imagenNoticia4,
     publishedAt: "2024-03-12",
     category: "noticias"
   }

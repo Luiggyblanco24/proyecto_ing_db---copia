@@ -15,7 +15,7 @@ proyecto_ing_db/
 ├── database/             # Esquema, semillas y migraciones PostgreSQL
 ├── public/               # Login, registro, dashboard y recursos del backend
 ├── src/                  # API REST Node.js (Express + pg)
-└── Sutens lading page/   # Landing pública Astro + Tailwind
+└── landing_page/         # Landing pública Astro + Tailwind
 ```
 
 ## 1. Crear la base de datos en PostgreSQL
@@ -82,12 +82,12 @@ La migración 005 marca `Directiva Departamental` como Directiva Principal y cre
 ## 2. Instalar y compilar la landing pública
 
 ```bash
-cd "Sutens lading page"
+cd landing_page
 npm install
 npm run build
 ```
 
-El build estático queda en `Sutens lading page/dist`; Express lo sirve como portada.
+El build estático queda en `landing_page/dist`; Express lo sirve como portada.
 
 ## 3. Levantar el backend (Node.js)
 

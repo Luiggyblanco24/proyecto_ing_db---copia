@@ -13,7 +13,7 @@ dotenv.config();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const raizProyecto = path.join(__dirname, '..');
-const directorioLanding = path.join(raizProyecto, 'Sutens lading page', 'dist');
+const directorioLanding = path.join(raizProyecto, 'landing_page', 'dist');
 const origenesPermitidos = (process.env.CORS_ORIGINS || 'http://localhost:3000')
   .split(',')
   .map((origen) => origen.trim())
