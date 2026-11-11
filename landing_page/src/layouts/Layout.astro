@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import Footer from '../components/Fotter.astro';
 import Header from '../components/Header.astro';
+import BotonWhatsappFlotante from '../components/BotonWhatsappFlotante.astro';
 
 interface Props {
   title?: string;
@@ -10,8 +11,8 @@ interface Props {
 }
 
 const {
-  title = 'SUTENS | Defensa de la Educación, Unidad de los Trabajadores',
-  description = 'SUTENS es el Sindicato Unitario de Trabajadores de la Educación de Norte de Santander. Conoce nuestra estructura, actividades, comunicaciones y cómo afiliarte.',
+  title = 'SUTENS | Sindicato de Trabajadores de la Educación de Norte de Santander',
+  description = 'Sindicato Unitario de Trabajadores de la Educación de Norte de Santander (SUTENS). Defensa de los derechos laborales, representación gremial, subdirectivas y afiliación oficial.',
   image = '/sustensFondo.jpg',
 } = Astro.props;
 
@@ -24,7 +25,6 @@ const organizationSchema = {
   name: 'SUTENS',
   alternateName: 'Sindicato Unitario de Trabajadores de la Educación de Norte de Santander',
   description,
-  email: 'afiliaciones@sutens.org',
   areaServed: 'Norte de Santander, Colombia',
   ...(site ? { url: site.toString() } : {}),
 };
@@ -51,12 +51,16 @@ const organizationJSON = JSON.stringify(organizationSchema).replace(/</g, '\\u00
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={ogImageURL} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="SUTENS - Sindicato Unitario de Trabajadores de la Educación de Norte de Santander" />
     {canonicalURL && <meta property="og:url" content={canonicalURL} />}
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageURL} />
+    <meta name="twitter:image:alt" content="SUTENS - Sindicato Unitario de Trabajadores de la Educación de Norte de Santander" />
 
     <title>{title}</title>
     <script type="application/ld+json" set:html={organizationJSON} />
@@ -69,6 +73,7 @@ const organizationJSON = JSON.stringify(organizationSchema).replace(/</g, '\\u00
       <slot />
     </main>
     <Footer />
+    <BotonWhatsappFlotante />
   </body>
 </html>
 

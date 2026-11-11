@@ -1,145 +1,201 @@
 ---
+import { Picture } from 'astro:assets';
 import Icono from './Icono.astro';
+import { actividadesGaleria } from '../../data/galeria.js';
+
+import fotoAsamblea from '../../assets/landing/5.jpg';
+import fotoDialogo from '../../assets/landing/1.jpg';
+import fotoFormacion from '../../assets/landing/3.jpg';
+import fotoDelegados from '../../assets/landing/2.jpg';
+import fotoTerritorio from '../../assets/landing/6.jpg';
+
+const mapaImagenes: Record<string, any> = {
+  asamblea: fotoAsamblea,
+  dialogo: fotoDialogo,
+  formacion: fotoFormacion,
+  delegados: fotoDelegados,
+  territorio: fotoTerritorio,
+};
+
+// Regla: mínimo 4 fotos para mostrar la galería; si hay menos, se oculta
+const mostrarGaleria = Array.isArray(actividadesGaleria) && actividadesGaleria.length >= 4;
 ---
 
-<section id="actividades" class="bg-white px-4 py-20 sm:px-6 sm:py-24">
-  <div class="mx-auto max-w-6xl">
-    <div class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-      <header class="max-w-3xl reveal">
-        <p class="eyebrow text-brand-700">Actividades</p>
-        <h2 class="display mt-3 text-3xl text-ink sm:text-4xl lg:text-5xl">
-          La organización también se vive en el territorio
-        </h2>
-        <p class="mt-5 text-lg leading-relaxed text-muted">
-          Encuentros, asambleas y jornadas que fortalecen la unidad de las y los trabajadores de la educación. Estas son algunas de las actividades compartidas por SUTENS.
-        </p>
-      </header>
+{mostrarGaleria && (
+  <section id="actividades" class="bg-white px-4 py-20 sm:px-6 sm:py-24" aria-labelledby="actividades-titulo">
+    <div class="mx-auto max-w-6xl">
+      <div class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+        <header class="max-w-3xl reveal">
+          <p class="eyebrow text-brand-700">Registro de actividades</p>
+          <h2 id="actividades-titulo" class="display mt-3 text-3xl text-ink sm:text-4xl lg:text-5xl">
+            La organización se vive en el territorio
+          </h2>
+          <p class="mt-4 text-base leading-relaxed text-muted sm:text-lg">
+            Encuentros, asambleas y jornadas de formación que consolidan la unidad de los trabajadores de la educación en Norte de Santander.
+          </p>
+        </header>
 
-      <a href="/Comunicaciones/" class="btn btn-outline reveal shrink-0">
-        Ver comunicaciones
-        <Icono name="arrow-right" class="h-4 w-4" />
-      </a>
-    </div>
-
-    <div id="galeria-actividades" class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
-      {Array.from({ length: 6 }).map(() => (
-        <div class="skeleton-galeria overflow-hidden rounded-[1.5rem] border border-line bg-cream" aria-hidden="true">
-          <div class="aspect-[4/3] animate-pulse bg-verde-suave motion-reduce:animate-none"></div>
-          <div class="grid gap-2 p-4">
-            <span class="h-3 w-3/4 animate-pulse rounded bg-line motion-reduce:animate-none"></span>
-            <span class="h-2.5 w-1/2 animate-pulse rounded bg-line motion-reduce:animate-none"></span>
-          </div>
-        </div>
-      ))}
-    </div>
-    <p id="galeria-estado" class="mt-4 hidden rounded-2xl border border-line bg-cream p-4 text-sm leading-relaxed text-muted"></p>
-
-    <noscript>
-      <style>
-        .skeleton-galeria {
-          display: none;
-        }
-      </style>
-      <p class="mt-4 rounded-2xl border border-line bg-cream p-4 text-sm text-muted">
-        Activa JavaScript para ver la galería de actividades, o consulta la página de <a class="font-bold text-brand-700 underline" href="/Comunicaciones/">Comunicaciones</a>.
-      </p>
-    </noscript>
-  </div>
-
-  <template id="tpl-galeria">
-    <figure class="group overflow-hidden rounded-[1.5rem] border border-line bg-cream">
-      <div class="relative aspect-[4/3] overflow-hidden bg-verde-suave">
-        <div data-fallback class="absolute inset-0 grid place-items-center text-brand-700">
-          <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3" y="3" width="18" height="18" rx="3" />
-            <circle cx="8.5" cy="8.5" r="1.5" />
-            <path d="m21 15-5-5L5 21" />
-          </svg>
-        </div>
-        <img data-photo class="absolute inset-0 h-full w-full object-cover transition duration-500 motion-safe:group-hover:scale-105" alt="" loading="lazy" decoding="async" width="800" height="600" hidden />
+        <a href="/Comunicaciones/" class="btn btn-outline reveal shrink-0 inline-flex items-center gap-2">
+          Ver comunicaciones
+          <Icono name="arrow-right" class="h-4 w-4" />
+        </a>
       </div>
-      <figcaption class="flex items-start gap-2.5 p-4">
-        <span class="mt-0.5 shrink-0 text-brand-700">
-          <Icono name="sparkles" class="h-4 w-4" />
-        </span>
-        <span data-descripcion class="line-clamp-2 text-sm font-semibold leading-relaxed text-ink"></span>
-      </figcaption>
-    </figure>
-  </template>
-</section>
+
+      <!-- Mosaico fotográfico interactivo -->
+      <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 reveal" style="--reveal-delay: 80ms">
+        {actividadesGaleria.map((actividad, idx) => {
+          const imgAsset = mapaImagenes[actividad.imagenKey] ?? fotoAsamblea;
+          const esDestacada = idx === 0;
+
+          return (
+            <figure
+              class={`group relative overflow-hidden rounded-2xl border border-line bg-cream shadow-sm transition-all duration-300 hover:shadow-lg ${
+                esDestacada ? 'sm:col-span-2 lg:col-span-2' : ''
+              }`}
+            >
+              <button
+                type="button"
+                class="btn-abrir-lightbox block w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-700"
+                data-titulo={actividad.titulo}
+                data-descripcion={actividad.descripcion}
+                data-categoria={actividad.categoria}
+                data-img-src={imgAsset.src}
+                aria-label={`Ampliar imagen: ${actividad.titulo}`}
+              >
+                <div class={`relative overflow-hidden bg-verde-suave ${esDestacada ? 'aspect-[16/9]' : 'aspect-[4/3]'}`}>
+                  <Picture
+                    src={imgAsset}
+                    alt={actividad.descripcion}
+                    formats={['avif', 'webp']}
+                    fallbackFormat="jpg"
+                    widths={[400, 800, 1200]}
+                    sizes={esDestacada ? '(min-width: 1024px) 66vw, 100vw' : '(min-width: 768px) 33vw, 100vw'}
+                    loading="lazy"
+                    decoding="async"
+                    quality={82}
+                    class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent opacity-80 transition duration-300 group-hover:opacity-90" aria-hidden="true"></div>
+                  
+                  <!-- Badge de categoría -->
+                  <span class="absolute top-3 left-3 rounded-full bg-white/90 px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-brand-900 backdrop-blur-sm shadow-sm">
+                    {actividad.categoria}
+                  </span>
+
+                  <!-- Ícono de lupa para indicar interactividad -->
+                  <span class="absolute top-3 right-3 grid h-8 w-8 place-items-center rounded-full bg-black/40 text-white opacity-0 transition group-hover:opacity-100" aria-hidden="true">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                    </svg>
+                  </span>
+
+                  <!-- Título sobre la foto -->
+                  <figcaption class="absolute inset-x-0 bottom-0 p-5 text-white">
+                    <h3 class="text-base font-extrabold leading-snug sm:text-lg">
+                      {actividad.titulo}
+                    </h3>
+                    <p class="mt-1 line-clamp-2 text-xs text-white/80 sm:text-sm">
+                      {actividad.descripcion}
+                    </p>
+                  </figcaption>
+                </div>
+              </button>
+            </figure>
+          );
+        })}
+      </div>
+    </div>
+
+    <!-- Visor Modal (Lightbox) accesible -->
+    <dialog
+      id="lightbox-dialog"
+      class="m-auto w-[min(900px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-line bg-white p-0 shadow-2xl backdrop:bg-black/70 backdrop:backdrop-blur-sm"
+      aria-labelledby="lightbox-titulo"
+      aria-describedby="lightbox-descripcion"
+    >
+      <div class="relative flex flex-col">
+        <!-- Barra superior del modal -->
+        <div class="flex items-center justify-between border-b border-line bg-cream px-5 py-3.5">
+          <span id="lightbox-categoria" class="rounded-full bg-verde-suave px-2.5 py-0.5 text-xs font-extrabold uppercase tracking-wider text-brand-700"></span>
+          <button
+            id="lightbox-cerrar"
+            type="button"
+            class="grid h-8 w-8 place-items-center rounded-full text-muted transition hover:bg-white hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-700"
+            aria-label="Cerrar visor de imagen"
+          >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Imagen ampliada -->
+        <div class="relative aspect-[16/10] max-h-[65vh] w-full overflow-hidden bg-black">
+          <img id="lightbox-img" src="" alt="" class="h-full w-full object-contain" />
+        </div>
+
+        <!-- Pie descriptivo -->
+        <div class="p-5 sm:p-6">
+          <h3 id="lightbox-titulo" class="text-lg font-extrabold text-ink sm:text-xl"></h3>
+          <p id="lightbox-descripcion" class="mt-2 text-sm leading-relaxed text-muted sm:text-base"></p>
+        </div>
+      </div>
+    </dialog>
+  </section>
+)}
 
 <script>
-  import { getGaleriaPublica } from '../../lib/public-api.js';
+  const dialog = document.getElementById('lightbox-dialog') as HTMLDialogElement | null;
+  const botones = document.querySelectorAll('.btn-abrir-lightbox');
+  const btnCerrar = document.getElementById('lightbox-cerrar');
+  const imgElem = document.getElementById('lightbox-img') as HTMLImageElement | null;
+  const tituloElem = document.getElementById('lightbox-titulo');
+  const descElem = document.getElementById('lightbox-descripcion');
+  const catElem = document.getElementById('lightbox-categoria');
 
-  function urlSegura(valor) {
-    if (!valor) return '';
-    try {
-      const url = new URL(String(valor), window.location.origin);
-      return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : '';
-    } catch {
-      return '';
-    }
+  let ultimoBotonEnfocado: HTMLElement | null = null;
+
+  function abrirLightbox(boton: Element) {
+    if (!dialog || !imgElem || !tituloElem || !descElem || !catElem) return;
+
+    ultimoBotonEnfocado = boton as HTMLElement;
+
+    const titulo = boton.getAttribute('data-titulo') || '';
+    const desc = boton.getAttribute('data-descripcion') || '';
+    const cat = boton.getAttribute('data-categoria') || '';
+    const src = boton.getAttribute('data-img-src') || '';
+
+    imgElem.src = src;
+    imgElem.alt = desc || titulo;
+    tituloElem.textContent = titulo;
+    descElem.textContent = desc;
+    catElem.textContent = cat;
+
+    dialog.showModal();
+    btnCerrar?.focus();
   }
 
-  function mostrarEstado(mensaje, enlace) {
-    const estado = document.getElementById('galeria-estado');
-    if (!estado) return;
-    estado.textContent = '';
-    estado.append(document.createTextNode(`${mensaje} `));
-    if (enlace) {
-      const ancla = document.createElement('a');
-      ancla.href = enlace.href;
-      ancla.className = 'font-extrabold text-brand-700 underline';
-      ancla.textContent = enlace.texto;
-      estado.append(ancla);
-    }
-    estado.hidden = false;
+  function cerrarLightbox() {
+    if (!dialog || !dialog.open) return;
+    dialog.close();
+    ultimoBotonEnfocado?.focus();
   }
 
-  async function cargarGaleria() {
-    const contenedor = document.getElementById('galeria-actividades');
-    const plantilla = document.getElementById('tpl-galeria');
-    if (!contenedor || !plantilla) return;
+  botones.forEach((btn) => {
+    btn.addEventListener('click', () => abrirLightbox(btn));
+  });
 
-    const fotos = await getGaleriaPublica().catch(() => []);
-    const lista = Array.isArray(fotos) ? fotos.filter((foto) => urlSegura(foto.imagen_url)).slice(0, 6) : [];
+  btnCerrar?.addEventListener('click', cerrarLightbox);
 
-    contenedor.querySelectorAll('.skeleton-galeria').forEach((nodo) => nodo.remove());
-    contenedor.removeAttribute('aria-busy');
-
-    if (lista.length === 0) {
-      mostrarEstado('Aún no hay actividades publicadas en la galería. Mientras tanto, puedes consultar las', {
-        href: '/Comunicaciones/',
-        texto: 'comunicaciones de SUTENS.',
-      });
-      return;
-    }
-
-    lista.forEach((foto) => {
-      const tarjeta = plantilla.content.firstElementChild.cloneNode(true);
-      const imagen = tarjeta.querySelector('[data-photo]');
-      const descripcion = String(foto.descripcion || '').trim();
-
-      tarjeta.querySelector('[data-descripcion]').textContent = descripcion || 'Actividad de SUTENS';
-      if (descripcion) imagen.alt = descripcion;
-
-      imagen.src = urlSegura(foto.imagen_url);
-      imagen.hidden = false;
-      imagen.addEventListener('error', () => {
-        imagen.hidden = true;
-      });
-
-      contenedor.append(tarjeta);
-    });
-  }
-
-  cargarGaleria().catch(() => {
-    const contenedor = document.getElementById('galeria-actividades');
-    contenedor?.removeAttribute('aria-busy');
-    contenedor?.querySelectorAll('.skeleton-galeria').forEach((nodo) => nodo.remove());
-    mostrarEstado('No pudimos cargar la galería en este momento. Puedes consultarla en', {
-      href: '/Comunicaciones/',
-      texto: 'Comunicaciones.',
-    });
+  // Cerrar al hacer clic en el backdrop
+  dialog?.addEventListener('click', (evento) => {
+    const rect = dialog.getBoundingClientRect();
+    const clicEnBackdrop = (
+      evento.clientX < rect.left ||
+      evento.clientX > rect.right ||
+      evento.clientY < rect.top ||
+      evento.clientY > rect.bottom
+    );
+    if (clicEnBackdrop) cerrarLightbox();
   });
 </script>

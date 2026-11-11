@@ -1,0 +1,172 @@
+---
+import Icono from './Icono.astro';
+import { municipiosSubdirectivas } from '../../data/subdirectivas.js';
+---
+
+<div class="mapa-subdirectivas-wrapper relative rounded-3xl border border-line bg-white p-5 shadow-sm sm:p-7">
+  <div class="flex items-center justify-between gap-3 border-b border-line pb-4">
+    <div>
+      <p class="text-xs font-extrabold uppercase tracking-widest text-brand-700">Despliegue territorial</p>
+      <h3 class="text-lg font-extrabold text-ink sm:text-xl">Presencia en Norte de Santander</h3>
+    </div>
+    <span class="inline-flex items-center gap-1.5 rounded-full bg-verde-suave px-3 py-1 text-xs font-bold text-brand-700">
+      <span class="h-2 w-2 rounded-full bg-brand-600 animate-pulse" aria-hidden="true"></span>
+      4 subdirectivas activas
+    </span>
+  </div>
+
+  <!-- Contenedor del mapa interactivo con silueta SVG -->
+  <div class="relative mx-auto mt-6 aspect-[600/760] max-w-[420px] select-none">
+    <!-- SVG de la silueta -->
+    <img
+      src="/mapa-norte-santander.svg"
+      alt="Mapa territorial de Norte de Santander con subdirectivas de SUTENS"
+      class="pointer-events-none h-full w-full object-contain"
+      width="600"
+      height="760"
+      loading="lazy"
+    />
+
+    <!-- Marcadores interactivos sobre el mapa -->
+    {municipiosSubdirectivas.map((muni) => (
+      <div
+        class="marcador-nodo group absolute -translate-x-1/2 -translate-y-1/2"
+        style={`left: ${muni.x}%; top: ${muni.y}%;`}
+        data-muni-id={muni.id}
+      >
+        <!-- Botón del marcador con pulso accesible -->
+        <button
+          type="button"
+          class="marcador-btn relative grid h-8 w-8 place-items-center rounded-full bg-brand-900 text-white shadow-md transition duration-200 hover:scale-125 focus:scale-125 focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400"
+          aria-expanded="false"
+          aria-label={`Subdirectiva ${muni.nombre}`}
+        >
+          <span class="absolute inset-0 rounded-full bg-brand-700/50 animate-ping opacity-60 pointer-events-none" aria-hidden="true"></span>
+          <span class="h-2.5 w-2.5 rounded-full bg-[#fbbf24] shadow-sm"></span>
+        </button>
+
+        <!-- Tarjeta flotante interactiva (Tooltip al hover/focus/tap) -->
+        <div
+          class="marcador-card pointer-events-none absolute bottom-full left-1/2 mb-3 w-48 -translate-x-1/2 scale-95 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:scale-100 group-focus-within:opacity-100 z-20"
+          role="tooltip"
+        >
+          <div class="rounded-xl border border-line bg-white p-3 shadow-xl">
+            <div class="flex items-center justify-between gap-2">
+              <h4 class="text-sm font-extrabold text-ink">{muni.nombre}</h4>
+              <span class="rounded bg-verde-suave px-1.5 py-0.5 text-[0.65rem] font-extrabold text-brand-700">Subdirectiva</span>
+            </div>
+            
+            <p class="mt-1 text-xs text-muted" data-cargos-detalle>
+              Cargando equipo...
+            </p>
+
+            <a
+              href="/Secretarias/"
+              class="mt-2.5 inline-flex items-center gap-1 text-[0.7rem] font-extrabold text-brand-700 hover:underline"
+            >
+              Ver integrantes
+              <Icono name="arrow-right" class="h-3 w-3" />
+            </a>
+          </div>
+          <!-- Flecha indicadora inferior -->
+          <div class="mx-auto -mt-1 h-2 w-2 rotate-45 border-b border-r border-line bg-white" aria-hidden="true"></div>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <!-- Alternativa accesible: lista textual con cargos para móviles y lectores de pantalla -->
+  <div class="mt-6 border-t border-line/70 pt-4">
+    <p class="text-xs font-bold text-muted mb-3">Subdirectivas en el territorio:</p>
+    <ul class="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Lista de subdirectivas de SUTENS">
+      {municipiosSubdirectivas.map((muni) => (
+        <li class="rounded-xl border border-line/80 bg-cream/70 p-2.5 text-center transition hover:bg-white hover:border-brand-600/30">
+          <span class="block text-xs font-extrabold text-ink">{muni.nombre}</span>
+          <span class="mt-0.5 block text-[0.7rem] font-semibold text-brand-700" data-cargos-resumen={muni.id}>
+            Equipo local
+          </span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+
+<script>
+  import { getDirectivasSubdirectivas } from '../../lib/public-api.js';
+
+  // Normalización toponímica institucional
+  function normalizar(texto: string) {
+    return String(texto || '')
+      .trim()
+      .replace(/\bel tarra\b/gi, 'El Tarra');
+  }
+
+  async function sincronizarCargosMapa() {
+    try {
+      const integrantes = await getDirectivasSubdirectivas();
+      if (!Array.isArray(integrantes)) return;
+
+      const conteos: Record<string, number> = {
+        ocana: 0,
+        abrego: 0,
+        'san-calixto': 0,
+        'el-tarra': 0,
+      };
+
+      for (const item of integrantes) {
+        const sub = normalizar(item.subdirectiva).toLowerCase();
+        if (sub.includes('ocaña') || sub.includes('ocana')) conteos.ocana += 1;
+        else if (sub.includes('ábrego') || sub.includes('abrego')) conteos.abrego += 1;
+        else if (sub.includes('san calixto')) conteos['san-calixto'] += 1;
+        else if (sub.includes('el tarra') || sub.includes('tarra')) conteos['el-tarra'] += 1;
+      }
+
+      // Actualizar tarjetas del mapa y lista resumen
+      Object.entries(conteos).forEach(([id, total]) => {
+        const nodo = document.querySelector(`[data-muni-id="${id}"]`);
+        if (nodo) {
+          const detalle = nodo.querySelector('[data-cargos-detalle]');
+          if (detalle) {
+            detalle.textContent = total > 0
+              ? `${total} ${total === 1 ? 'cargo directivo' : 'cargos directivos'}`
+              : 'Equipo sindical publicado';
+          }
+        }
+
+        const resumen = document.querySelector(`[data-cargos-resumen="${id}"]`);
+        if (resumen && total > 0) {
+          resumen.textContent = `${total} ${total === 1 ? 'cargo' : 'cargos'}`;
+        }
+      });
+    } catch {
+      // Si falla o no hay conexión, se preserva el texto por defecto
+    }
+  }
+
+  // Soporte táctil en móviles para alternar visibilidad de las tarjetas del mapa
+  const marcadores = document.querySelectorAll('.marcador-nodo');
+  marcadores.forEach((m) => {
+    const btn = m.querySelector('.marcador-btn');
+    btn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const estaAbierto = btn.getAttribute('aria-expanded') === 'true';
+      marcadores.forEach((otro) => {
+        otro.querySelector('.marcador-btn')?.setAttribute('aria-expanded', 'false');
+        otro.querySelector('.marcador-card')?.classList.remove('opacity-100', 'pointer-events-auto');
+      });
+      if (!estaAbierto) {
+        btn.setAttribute('aria-expanded', 'true');
+        m.querySelector('.marcador-card')?.classList.add('opacity-100', 'pointer-events-auto');
+      }
+    });
+  });
+
+  document.addEventListener('click', () => {
+    marcadores.forEach((m) => {
+      m.querySelector('.marcador-btn')?.setAttribute('aria-expanded', 'false');
+      m.querySelector('.marcador-card')?.classList.remove('opacity-100', 'pointer-events-auto');
+    });
+  });
+
+  sincronizarCargosMapa();
+</script>

@@ -62,7 +62,7 @@ export const sections = [
       {
         icon: "building",
         title: "Presencia territorial",
-        description: "Sede central en Cali y delegaciones en todo Norte de Santander.",
+        description: "Presencia activa y delegaciones en todo Norte de Santander.",
         color: "text-primary"
       }
     ]
@@ -112,7 +112,7 @@ export const sections = [
       {
         icon: "map-pin",
         title: "Sede",
-        description: "Dirección de la sede central en Cali.",
+        description: "Dirección de la sede central en Norte de Santander.",
         color: "text-primary"
       }
     ]
@@ -137,7 +137,7 @@ export const sections = [
       {
         icon: "map-pin",
         title: "Sede",
-        description: "Cali, Norte de Santander",
+        description: "Norte de Santander, Colombia",
         color: "text-primary"
       }
     ]

@@ -1,46 +1,81 @@
 <div class="mx-auto max-w-6xl">
   <div class="mb-10 text-center">
-    <p class="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-[#1b7a38]">Representación sindical</p>
-    <h2 class="text-3xl font-bold text-[#1e293b] sm:text-4xl">Directiva Departamental</h2>
-    <p class="mx-auto mt-3 max-w-2xl text-[#475569]">Conoce a quienes representan a SUTENS a nivel departamental. La información se actualiza cuando cambia la asignación de cargos.</p>
+    <span class="inline-block rounded-full bg-verde-suave px-3 py-1 text-xs font-extrabold uppercase tracking-widest text-brand-700 mb-3">Representación sindical</span>
+    <h2 class="text-3xl font-extrabold text-ink sm:text-4xl">Directiva Departamental</h2>
+    <p class="mx-auto mt-3 max-w-2xl text-muted">Conoce a quienes representan a SUTENS a nivel departamental. La información se actualiza cuando cambia la asignación de cargos.</p>
   </div>
+
   <div id="equipo-departamental" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite">
-    <p class="col-span-full text-center text-[#475569]">Cargando integrantes de la directiva…</p>
+    <!-- Skeletons mientras carga -->
+    {Array.from({ length: 3 }).map(() => (
+      <div class="flex flex-col items-center rounded-3xl border border-line bg-cream/60 p-8 animate-pulse">
+        <div class="h-24 w-24 rounded-2xl bg-verde-suave mb-5"></div>
+        <div class="h-4 w-20 rounded bg-line mb-3"></div>
+        <div class="h-5 w-36 rounded bg-line mb-2"></div>
+        <div class="h-3 w-24 rounded bg-line"></div>
+      </div>
+    ))}
   </div>
 </div>
 
 <script>
   const equipo = document.getElementById('equipo-departamental');
 
-  function crearTarjeta(integrante) {
+  function iniciales(nombre: string) {
+    return String(nombre || '')
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0])
+      .join('')
+      .toUpperCase();
+  }
+
+  function crearTarjeta(integrante: any) {
     const card = document.createElement('article');
-    card.className = 'overflow-hidden rounded-xl border border-[#e5e1d6] bg-white shadow-sm';
-    const imagen = document.createElement('img');
-    imagen.className = 'h-64 w-full bg-[#eaf5ec] object-cover';
-    imagen.alt = `Foto de ${integrante.nombre}`;
-    imagen.loading = 'lazy';
-    imagen.decoding = 'async';
-    imagen.width = 640;
-    imagen.height = 256;
-    if (integrante.foto) imagen.src = integrante.foto;
-    else {
-      imagen.src = '/brand/sutens-icono.svg';
-      imagen.classList.add('object-contain', 'p-10');
+    card.className = 'group flex flex-col items-center text-center rounded-3xl border border-line bg-cream/40 p-8 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-brand-600/40 hover:bg-white hover:shadow-lg';
+
+    // Avatar contenedor
+    const avatarWrapper = document.createElement('div');
+    avatarWrapper.className = 'relative mb-5 grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#1b7a3e] via-[#14532d] to-[#0b2e19] text-white shadow-md ring-4 ring-emerald-500/20';
+
+    const textoIniciales = document.createElement('span');
+    textoIniciales.className = 'text-xl font-extrabold tracking-wider';
+    textoIniciales.textContent = iniciales(integrante.nombre);
+    avatarWrapper.append(textoIniciales);
+
+    if (integrante.foto) {
+      const img = document.createElement('img');
+      img.src = integrante.foto;
+      img.alt = `Foto de ${integrante.nombre}`;
+      img.className = 'absolute inset-0 h-full w-full object-cover';
+      img.loading = 'lazy';
+      img.addEventListener('error', () => img.remove());
+      avatarWrapper.append(img);
     }
-    const contenido = document.createElement('div');
-    contenido.className = 'p-5 text-center';
+
+    // Badge de cargo
+    const cargo = document.createElement('span');
+    cargo.className = 'rounded-full bg-verde-suave px-3.5 py-1 text-[0.7rem] font-extrabold uppercase tracking-wider text-brand-900 border border-emerald-600/20';
+    cargo.textContent = integrante.cargo || 'Directivo';
+
+    // Nombre
     const nombre = document.createElement('h3');
-    nombre.className = 'text-xl font-bold text-[#1e293b]';
-    nombre.textContent = integrante.nombre;
-    const cargo = document.createElement('p');
-    cargo.className = 'mt-2 font-semibold text-[#1b7a38]';
-    cargo.textContent = integrante.cargo;
-    contenido.append(nombre, cargo);
-    card.append(imagen, contenido);
+    nombre.className = 'mt-3 text-base font-extrabold leading-snug text-ink line-clamp-2 break-words';
+    nombre.textContent = integrante.nombre || 'Sin nombre asignado';
+
+    // Nivel
+    const nivel = document.createElement('p');
+    nivel.className = 'mt-1 text-xs font-semibold text-muted';
+    nivel.textContent = 'Directiva Departamental · SUTENS';
+
+    card.append(avatarWrapper, cargo, nombre, nivel);
     return card;
   }
 
   async function cargarEquipoDepartamental() {
+    if (!equipo) return;
     try {
       const response = await fetch('/api/public/directivas/departamental');
       if (!response.ok) throw new Error('No se pudo cargar la directiva');
@@ -48,14 +83,20 @@
       equipo.replaceChildren();
       if (integrantes.length === 0) {
         const vacio = document.createElement('p');
-        vacio.className = 'col-span-full rounded-xl border border-[#e5e1d6] bg-white p-6 text-center text-[#475569]';
+        vacio.className = 'col-span-full rounded-3xl border border-line bg-white p-8 text-center text-muted shadow-sm';
         vacio.textContent = 'La información de los integrantes de la directiva aún no está disponible.';
         equipo.append(vacio);
         return;
       }
-      integrantes.forEach((integrante) => equipo.append(crearTarjeta(integrante)));
+      integrantes.forEach((integrante: any) => equipo.append(crearTarjeta(integrante)));
     } catch {
-      equipo.textContent = 'No fue posible cargar la información de la directiva. Intenta actualizar la página.';
+      if (equipo) {
+        equipo.innerHTML = `
+          <p class="col-span-full rounded-3xl border border-line bg-white p-8 text-center text-muted shadow-sm">
+            No fue posible cargar la información de la directiva. Intenta actualizar la página.
+          </p>
+        `;
+      }
     }
   }
 

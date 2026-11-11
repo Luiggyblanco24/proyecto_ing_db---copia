@@ -1,88 +1,89 @@
 ---
 import { Picture } from 'astro:assets';
 import imagenDerechos from '../../assets/landing/1.jpg';
+import imagenNegociacion from '../../assets/landing/5.jpg';
 import imagenAsesoria from '../../assets/landing/2.jpg';
-import imagenCapacitacion from '../../assets/landing/3.jpg';
-import imagenParticipacion from '../../assets/landing/5.jpg';
-import imagenSede from '../../assets/landing/6.jpg';
+import imagenRepresentacion from '../../assets/landing/6.jpg';
+import imagenFormacion from '../../assets/landing/3.jpg';
+import { beneficios } from '../../data/beneficios.js';
+import Icono from './Icono.astro';
 
-const beneficios = [
-  {
-    icon: 'shield',
-    imageUrl: imagenDerechos,
-    title: 'Defensa de los derechos laborales',
-    description: 'Protección de los derechos laborales y condiciones de trabajo justas para todos los afiliados.',
-    color: 'text-amber-700'
-  },
-  {
-    icon: 'check',
-    imageUrl: imagenAsesoria,
-    title: 'Asesoría legal gratuita',
-    description: 'Asesoría profesional en temas laborales y derechos sindicales sin costo.',
-    color: 'text-primary'
-  },
-  {
-    icon: 'briefcase',
-    imageUrl: imagenCapacitacion,
-    title: 'Capacitación y desarrollo profesional',
-    description: 'Cursos y talleres para mejorar competencias profesionales y liderazgo.',
-    color: 'text-primary'
-  },
-  {
-    icon: 'calendar',
-    imageUrl: imagenParticipacion,
-    title: 'Participación activa',
-    description: 'Asambleas, conferencias y actividades para mantener el diálogo sindical.',
-    color: 'text-primary'
-  },
-  {
-    icon: 'map-pin',
-    imageUrl: imagenSede,
-    title: 'Sede y presencia territorial',
-    description: 'Sede central en Cali y delegaciones en todo el departamento de Norte de Santander.',
-    color: 'text-primary'
-  },
-];
+const imagenesPorKey: Record<string, any> = {
+  derechos: imagenDerechos,
+  negociacion: imagenNegociacion,
+  asesoria: imagenAsesoria,
+  representacion: imagenRepresentacion,
+  formacion: imagenFormacion,
+};
 ---
 
-<section id="beneficios" class="relative overflow-hidden bg-[#f6faf7] px-4 pt-24 pb-32 sm:px-6 sm:pb-40">
+<section id="beneficios" class="relative overflow-hidden bg-[#f6faf7] px-4 pt-20 pb-28 sm:px-6 sm:pb-36" aria-labelledby="beneficios-titulo">
   <div class="max-w-6xl mx-auto">
+    
+    <header class="max-w-3xl mb-12 reveal">
+      <p class="eyebrow text-brand-700">Respaldo y garantías</p>
+      <h2 id="beneficios-titulo" class="display mt-3 text-3xl text-ink sm:text-4xl lg:text-5xl">
+        Beneficios para los trabajadores de la educación
+      </h2>
+      <p class="mt-4 text-base leading-relaxed text-muted sm:text-lg">
+        Al afiliarte a SUTENS cuentas con el respaldo institucional de un equipo comprometido con la dignidad docente y el acompañamiento constante en el territorio.
+      </p>
+    </header>
+
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {beneficios.map((beneficio, index) => (
-        <article class="group p-8 rounded-2xl border border-slate-200 bg-white shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl reveal" style={`--reveal-delay: ${index * 50}ms`}>
-          <div class="relative aspect-[4/3] overflow-hidden">
-            <Picture
-              src={beneficio.imageUrl}
-              alt={beneficio.title}
-              formats={['avif', 'webp']}
-              fallbackFormat="jpg"
-              widths={[400, 600, 800]}
-              sizes="(min-width: 768px) 33vw, 90vw"
-              loading="lazy"
-              decoding="async"
-              quality={82}
-            />
-            <div class="absolute inset-0 bg-gradient-to-t from-brand-700/40 via-brand-700/20 to-transparent" aria-hidden="true"></div>
-          </div>
-          <div class="relative z-10">
-            <h3 class="text-2xl font-extrabold tracking-tight text-ink mb-4">{beneficio.title}</h3>
-            <p class="text-base leading-relaxed text-muted">{beneficio.description}</p>
-            <a href="/beneficios" class="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-primary transition-colors hover:text-primary/80">
-              Saber más
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-            </a>
-          </div>
-        </article>
-      ))}
+      {beneficios.map((beneficio, index) => {
+        const imagen = imagenesPorKey[beneficio.imagenKey] ?? imagenDerechos;
+        return (
+          <article class="group flex flex-col p-6 rounded-2xl border border-slate-200 bg-white shadow-md transition-all duration-300 hover:scale-[1.01] hover:shadow-xl reveal" style={`--reveal-delay: ${index * 40}ms`}>
+            <div class="relative aspect-[16/10] overflow-hidden rounded-xl">
+              <Picture
+                src={imagen}
+                alt={beneficio.title}
+                formats={['avif', 'webp']}
+                fallbackFormat="jpg"
+                widths={[400, 600]}
+                sizes="(min-width: 768px) 33vw, 90vw"
+                loading="lazy"
+                decoding="async"
+                quality={82}
+                class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-brand-900/60 via-transparent to-transparent" aria-hidden="true"></div>
+              <span class="absolute bottom-3 left-3 grid h-9 w-9 place-items-center rounded-xl bg-white/90 text-brand-700 backdrop-blur-sm shadow-sm">
+                <Icono name={beneficio.icon} class="h-5 w-5" />
+              </span>
+            </div>
+            
+            <div class="mt-5 flex flex-1 flex-col">
+              <h3 class="text-xl font-extrabold tracking-tight text-ink">{beneficio.title}</h3>
+              <p class="mt-2.5 text-sm leading-relaxed text-muted">{beneficio.description}</p>
+              
+              <div class="mt-auto pt-5">
+                <a
+                  href="/Afiliate/"
+                  class="inline-flex items-center gap-1.5 text-xs font-extrabold text-brand-700 transition-colors hover:underline"
+                >
+                  Afíliate para acceder
+                  <Icono name="arrow-right" class="h-3.5 w-3.5" />
+                </a>
+              </div>
+            </div>
+          </article>
+        );
+      })}
     </div>
+
+    <!-- CTA corto al final de Beneficios -->
+    <div class="mt-12 rounded-2xl border border-line bg-white p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 reveal" style="--reveal-delay: 100ms">
+      <div>
+        <h4 class="text-base font-extrabold text-ink sm:text-lg">¿Quieres contar con este respaldo sindical?</h4>
+        <p class="mt-0.5 text-xs text-muted sm:text-sm">Únete a SUTENS y fortalece la defensa de tus derechos laborales en Norte de Santander.</p>
+      </div>
+      <a href="/register.html" class="btn btn-accent shrink-0 flex items-center gap-2">
+        Afíliate ahora
+        <Icono name="arrow-right" class="h-4 w-4" />
+      </a>
+    </div>
+
   </div>
 </section>
-
-<style>
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-</style>

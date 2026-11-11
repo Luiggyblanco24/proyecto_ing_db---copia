@@ -1,79 +1,143 @@
 ---
 import Icono from './Icono.astro';
-
-const pasos = [
-  {
-    titulo: 'Elige cómo afiliarte',
-    texto: 'Regístrate en línea o descarga el formulario de afiliación en PDF.',
-  },
-  {
-    titulo: 'Completa tus datos',
-    texto: 'Diligencia la información y autoriza el tratamiento de tus datos personales.',
-  },
-  {
-    titulo: 'Únete a tu subdirectiva',
-    texto: 'Tu afiliación se asigna a la subdirectiva que te corresponde.',
-  },
-];
+import {
+  pasosAfiliacion,
+  documentosRequeridos,
+  informacionAfiliacion,
+} from '../../data/afiliacion.js';
 ---
 
-<section id="afiliacion" class="bg-cream px-4 pb-20 sm:px-6 sm:pb-24">
+<section id="afiliacion" class="bg-cream px-4 pb-20 pt-10 sm:px-6 sm:pb-28">
   <div class="mx-auto max-w-6xl">
-    <div class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-900 via-[#0f3d1e] to-brand-700 p-6 text-white shadow-[var(--ui-sombra-3)] sm:p-10 lg:p-12">
-      <div class="hero-pattern opacity-30" aria-hidden="true"></div>
-      <div class="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full border border-white/10" aria-hidden="true"></div>
 
-      <div class="relative grid gap-10 lg:grid-cols-[1fr_0.92fr] lg:items-center">
-        <div class="reveal">
-          <p class="eyebrow text-amber-300">Afiliación</p>
-          <h2 class="display mt-3 text-3xl sm:text-4xl lg:text-5xl">
-            Haz parte de SUTENS
-          </h2>
-          <p class="mt-5 max-w-xl text-lg leading-relaxed text-white/75">
-            Afiliarte es sumar tu voz a la defensa de la educación pública y contar con el respaldo de una organización que conoce el territorio.
-          </p>
+    <!-- Tarjeta principal envolvente del proceso -->
+    <div class="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#0a2715] via-[#103d22] to-[#15803d] p-6 text-white shadow-[var(--ui-sombra-3)] sm:p-10 lg:p-14">
+      <div class="hero-pattern opacity-25" aria-hidden="true"></div>
+      <div class="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full border border-white/10" aria-hidden="true"></div>
+      <div class="pointer-events-none absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-brand-600/10 blur-3xl" aria-hidden="true"></div>
 
-          <div class="mt-7 flex flex-wrap gap-3">
-            <a href="/register.html" class="btn btn-accent">
-              Afíliate en línea
-              <Icono name="arrow-right" class="h-4 w-4" />
-            </a>
-            <a href="/Formatodeafiliacionsutens.pdf" download class="btn btn-outline-light">
-              <Icono name="download" class="h-4 w-4" />
-              Descargar formulario
-            </a>
+      <!-- Cabecera de la sección -->
+      <header class="relative max-w-3xl reveal">
+        <p class="eyebrow text-amber-300">Paso a paso</p>
+        <h2 class="display mt-3 text-3xl sm:text-4xl lg:text-5xl">
+          Cómo afiliarte a SUTENS
+        </h2>
+        <p class="mt-4 text-base leading-relaxed text-white/80 sm:text-lg">
+          Únete a la organización sindical que defiende tus derechos en Norte de Santander. El trámite es claro, gratuito y consta de 3 sencillos pasos:
+        </p>
+      </header>
+
+      <!-- 3 Pasos conectados -->
+      <div class="relative mt-12 grid gap-6 md:grid-cols-3 reveal" style="--reveal-delay: 80ms">
+        <!-- Conector horizontal visible en pantallas medianas y grandes -->
+        <div class="pointer-events-none absolute left-[15%] right-[15%] top-12 hidden h-0.5 border-t-2 border-dashed border-white/25 md:block" aria-hidden="true"></div>
+
+        {pasosAfiliacion.map((paso, idx) => (
+          <article class="relative flex flex-col rounded-2xl border border-white/15 bg-white/[0.07] p-6 backdrop-blur-md transition duration-300 hover:border-amber-300/40 hover:bg-white/[0.11]">
+            <div class="flex items-center justify-between gap-3">
+              <span class="relative z-10 grid h-12 w-12 place-items-center rounded-2xl bg-amber-400 font-extrabold text-[#3a1d04] shadow-md ring-4 ring-[#103d22]">
+                {paso.numero}
+              </span>
+              <span class="grid h-10 w-10 place-items-center rounded-xl bg-white/10 text-amber-300">
+                <Icono name={paso.icono} class="h-5 w-5" />
+              </span>
+            </div>
+
+            <h3 class="mt-6 text-xl font-extrabold text-white">
+              {paso.titulo}
+            </h3>
+            <p class="mt-2 text-sm leading-relaxed text-white/75">
+              {paso.descripcion}
+            </p>
+
+            {paso.enlace && (
+              <a
+                href={paso.enlace.url}
+                download={paso.enlace.download}
+                target={paso.enlace.external ? '_blank' : undefined}
+                rel={paso.enlace.external ? 'noopener noreferrer' : undefined}
+                class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-amber-300 transition hover:underline"
+              >
+                {paso.enlace.texto}
+                <Icono name="arrow-right" class="h-3.5 w-3.5" />
+              </a>
+            )}
+          </article>
+        ))}
+      </div>
+
+      <!-- Barra de botones de acción principales -->
+      <div class="relative mt-10 flex flex-wrap items-center gap-3.5 border-t border-white/15 pt-8 reveal" style="--reveal-delay: 140ms">
+        <a href={informacionAfiliacion.registroEnLineaUrl} class="btn btn-accent flex items-center gap-2">
+          Afíliate ahora
+          <Icono name="arrow-right" class="h-4 w-4" />
+        </a>
+        <a href={informacionAfiliacion.formularioPdfUrl} download class="btn btn-outline-light flex items-center gap-2">
+          <Icono name="download" class="h-4 w-4" />
+          Descargar formulario PDF
+        </a>
+        <a
+          href={informacionAfiliacion.whatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 rounded-xl border border-emerald-400/40 bg-emerald-600/30 px-5 py-3 text-sm font-bold text-emerald-100 backdrop-blur-sm transition hover:bg-emerald-600/50 hover:text-white"
+        >
+          <Icono name="whatsapp" class="h-4 w-4 text-emerald-300" />
+          Escríbenos por WhatsApp
+        </a>
+      </div>
+
+      <!-- Bloque: ¿Qué necesitas? (Documentos requeridos) -->
+      <div class="relative mt-12 rounded-2xl border border-white/15 bg-black/20 p-6 sm:p-8 reveal" style="--reveal-delay: 180ms">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="text-xs font-extrabold uppercase tracking-widest text-amber-300">Requisitos</p>
+            <h3 class="mt-1 text-2xl font-extrabold text-white">¿Qué necesitas para afiliarte?</h3>
           </div>
-
-          <p class="mt-4 text-xs font-semibold text-white/60">
-            La afiliación se asigna a la subdirectiva que te corresponde según tu municipio.
-          </p>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1 text-xs font-semibold text-white/80">
+            <Icono name="check-circle" class="h-3.5 w-3.5 text-amber-300" />
+            4 documentos básicos
+          </span>
         </div>
 
-        <div class="grid gap-3 reveal" style="--reveal-delay: 120ms">
-          {pasos.map((paso, indice) => (
-            <div class="flex items-start gap-4 rounded-2xl border border-white/15 bg-white/[0.07] p-4 backdrop-blur-sm">
-              <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-amber-300 text-sm font-extrabold text-[#422006]">
-                {indice + 1}
+        <p class="mt-3 text-sm text-white/70">
+          Para formalizar tu afiliación a SUTENS debes adjuntar la siguiente documentación:
+        </p>
+
+        <div class="mt-6 grid gap-3 sm:grid-cols-2">
+          {documentosRequeridos.map((doc, i) => (
+            <div class="flex items-start gap-3.5 rounded-xl border border-white/10 bg-white/[0.05] p-3.5">
+              <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-amber-400/20 text-xs font-extrabold text-amber-300">
+                {i + 1}
               </span>
-              <div>
-                <h3 class="text-sm font-extrabold text-white">{paso.titulo}</h3>
-                <p class="mt-1 text-xs leading-relaxed text-white/70">{paso.texto}</p>
+              <div class="min-w-0">
+                <h4 class="text-sm font-bold text-white">{doc.nombre}</h4>
+                <p class="mt-0.5 text-xs text-white/65">{doc.detalle}</p>
               </div>
             </div>
           ))}
+        </div>
 
-          <div class="flex items-center gap-3 rounded-2xl border border-white/15 bg-white/[0.04] p-4">
-            <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-amber-300">
-              <Icono name="users" class="h-4 w-4" />
-            </span>
-            <p class="text-xs leading-relaxed text-white/70">
-              ¿Ya eres afiliado?{' '}
-              <a href="/login.html" class="font-extrabold text-amber-300 underline underline-offset-2">Inicia sesión</a>{' '}
-              para consultar tu información.
-            </p>
-          </div>
+        {informacionAfiliacion.cuotaSindical.visible && informacionAfiliacion.cuotaSindical.valor && (
+          <p class="mt-5 rounded-xl border border-amber-300/30 bg-amber-400/10 p-3 text-xs font-medium text-amber-200">
+            Cuota sindical mensual: {informacionAfiliacion.cuotaSindical.valor}
+          </p>
+        )}
+
+        <div class="mt-6 flex flex-col gap-3 border-t border-white/10 pt-4 text-xs text-white/70 sm:flex-row sm:items-center sm:justify-between">
+          <p class="flex items-center gap-1.5">
+            <Icono name="map-pin" class="h-4 w-4 shrink-0 text-amber-300" />
+            <span>Entrega física en: <strong class="text-white">{informacionAfiliacion.sedeFisica}</strong> o con tu delegado municipal.</span>
+          </p>
+          <p class="shrink-0">
+            ¿Ya eres afiliado?{' '}
+            <a href="/login.html" class="font-extrabold text-amber-300 underline underline-offset-2 hover:text-amber-200">
+              Inicia sesión aquí
+            </a>
+          </p>
         </div>
       </div>
+
     </div>
   </div>
 </section>

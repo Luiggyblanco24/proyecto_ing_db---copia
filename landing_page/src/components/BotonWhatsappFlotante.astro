@@ -1,0 +1,24 @@
+---
+import Icono from './ComponentesIndex/Icono.astro';
+import { datosContacto } from '../data/contacto.js';
+---
+
+<!-- Botón flotante accesible de WhatsApp -->
+<aside class="fixed bottom-5 right-5 z-40 sm:bottom-6 sm:right-6" aria-label="Contacto rápido por WhatsApp">
+  <a
+    href={datosContacto.canales.whatsapp.url}
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Contactar a SUTENS por WhatsApp (abre en nueva pestaña)"
+    title="Escríbenos por WhatsApp"
+    class="group relative flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-2xl ring-4 ring-white/60 transition duration-300 hover:scale-110 hover:bg-[#20ba59] hover:shadow-[0_12px_24px_rgba(37,211,102,0.4)] focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-700"
+  >
+    <span class="sr-only">Contactar a SUTENS por WhatsApp</span>
+    <Icono name="whatsapp" class="h-7 w-7 text-white" />
+
+    <!-- Tooltip emergente al pasar el cursor (solo en pantallas medianas hacia arriba) -->
+    <span class="pointer-events-none absolute right-full mr-3 hidden whitespace-nowrap rounded-xl bg-ink px-3 py-1.5 text-xs font-bold text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 sm:inline-block">
+      ¿Dudas sobre afiliación? Escríbenos
+    </span>
+  </a>
+</aside>

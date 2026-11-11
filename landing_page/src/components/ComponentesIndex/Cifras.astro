@@ -1,5 +1,9 @@
 ---
 import Icono from './Icono.astro';
+import { cifrasDinamicasConfig, cifrasEstaticas } from '../../data/cifras.js';
+
+// Filtramos solo cifras estáticas con valor real y confirmadas (no [CONFIRMAR])
+const estaticasVisibles = cifrasEstaticas.filter((c) => c.visible && c.valor !== null && c.valor !== undefined);
 ---
 
 <section class="relative z-10 bg-cream px-4 sm:px-6" aria-label="SUTENS en cifras">
@@ -8,37 +12,50 @@ import Icono from './Icono.astro';
       <div class="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-700 via-brand-600 to-accent" aria-hidden="true"></div>
       <div class="grid gap-3 sm:grid-cols-3">
         <div data-metric="subdirectivas" class="stat-card flex items-center gap-4 rounded-2xl bg-cream p-4" hidden>
-          <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white text-brand-700 shadow-[var(--ui-sombra-1)]">
-            <Icono name="map-pin" class="h-6 w-6" />
+          <span class={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${cifrasDinamicasConfig.subdirectivas.colorFondo} ${cifrasDinamicasConfig.subdirectivas.colorIcono} shadow-[var(--ui-sombra-1)]`}>
+            <Icono name={cifrasDinamicasConfig.subdirectivas.icono} class="h-6 w-6" />
           </span>
           <div>
-            <p class="text-sm font-bold text-muted">Subdirectivas</p>
+            <p class="text-sm font-bold text-muted">{cifrasDinamicasConfig.subdirectivas.etiqueta}</p>
             <p class="text-2xl font-extrabold tracking-tight text-ink"><span data-count>0</span></p>
-            <p class="text-xs font-semibold text-muted">Presencia territorial</p>
+            <p class="text-xs font-semibold text-muted">{cifrasDinamicasConfig.subdirectivas.descripcion}</p>
           </div>
         </div>
 
         <div data-metric="cargos" class="stat-card flex items-center gap-4 rounded-2xl bg-cream p-4" hidden>
-          <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#fef3c7] text-[#b45309]">
-            <Icono name="users" class="h-6 w-6" />
+          <span class={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${cifrasDinamicasConfig.cargos.colorFondo} ${cifrasDinamicasConfig.cargos.colorIcono}`}>
+            <Icono name={cifrasDinamicasConfig.cargos.icono} class="h-6 w-6" />
           </span>
           <div>
-            <p class="text-sm font-bold text-muted">Cargos directivos</p>
+            <p class="text-sm font-bold text-muted">{cifrasDinamicasConfig.cargos.etiqueta}</p>
             <p class="text-2xl font-extrabold tracking-tight text-ink"><span data-count>0</span></p>
-            <p class="text-xs font-semibold text-muted">Directiva y subdirectivas</p>
+            <p class="text-xs font-semibold text-muted">{cifrasDinamicasConfig.cargos.descripcion}</p>
           </div>
         </div>
 
         <div data-metric="documentos" class="stat-card flex items-center gap-4 rounded-2xl bg-cream p-4" hidden>
-          <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-900 text-white">
-            <Icono name="file" class="h-6 w-6" />
+          <span class={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${cifrasDinamicasConfig.documentos.colorFondo} ${cifrasDinamicasConfig.documentos.colorIcono}`}>
+            <Icono name={cifrasDinamicasConfig.documentos.icono} class="h-6 w-6" />
           </span>
           <div>
-            <p class="text-sm font-bold text-muted">Documentos públicos</p>
+            <p class="text-sm font-bold text-muted">{cifrasDinamicasConfig.documentos.etiqueta}</p>
             <p class="text-2xl font-extrabold tracking-tight text-ink"><span data-count>0</span></p>
-            <p class="text-xs font-semibold text-muted">Consulta abierta</p>
+            <p class="text-xs font-semibold text-muted">{cifrasDinamicasConfig.documentos.descripcion}</p>
           </div>
         </div>
+
+        {estaticasVisibles.map((stat) => (
+          <div data-metric={stat.id} class="stat-card flex items-center gap-4 rounded-2xl bg-cream p-4">
+            <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white text-brand-700 shadow-[var(--ui-sombra-1)]">
+              <Icono name={stat.icono} class="h-6 w-6" />
+            </span>
+            <div>
+              <p class="text-sm font-bold text-muted">{stat.etiqueta}</p>
+              <p class="text-2xl font-extrabold tracking-tight text-ink"><span data-count data-static-total={stat.valor}>0</span></p>
+              <p class="text-xs font-semibold text-muted">{stat.descripcion}</p>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   </div>
@@ -62,7 +79,7 @@ import Icono from './Icono.astro';
     }
 
     const inicio = performance.now();
-    const duracion = 1100;
+    const duracion = 1200;
 
     function paso(ahora) {
       const avance = Math.min(1, (ahora - inicio) / duracion);
@@ -72,6 +89,35 @@ import Icono from './Icono.astro';
     }
 
     requestAnimationFrame(paso);
+  }
+
+  let animado = false;
+  function iniciarAnimaciones(items) {
+    if (animado) return;
+    animado = true;
+    for (const { numero, total } of items) {
+      animarNumero(numero, total);
+    }
+  }
+
+  function observarEntrada(items) {
+    if (!panel) return;
+    if (!('IntersectionObserver' in window)) {
+      iniciarAnimaciones(items);
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          iniciarAnimaciones(items);
+          observer.disconnect();
+          break;
+        }
+      }
+    }, { threshold: 0.15 });
+
+    observer.observe(panel);
   }
 
   async function cargarCifras() {
@@ -107,8 +153,17 @@ import Icono from './Icono.astro';
       if (numero) items.push({ numero, total });
     }
 
+    // Agregar indicadores estáticos visibles si existen
+    const estaticos = panel.querySelectorAll('[data-static-total]');
+    estaticos.forEach((el) => {
+      const total = Number(el.getAttribute('data-static-total'));
+      if (Number.isFinite(total) && total > 0) {
+        items.push({ numero: el, total });
+      }
+    });
+
     panel.hidden = false;
-    for (const { numero, total } of items) animarNumero(numero, total);
+    observarEntrada(items);
   }
 
   cargarCifras().catch(() => {

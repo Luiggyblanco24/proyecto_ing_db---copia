@@ -9,60 +9,70 @@ const navLinks = [
 ---
 
 <header id="site-header" class="site-header sticky top-0 z-50">
-  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:h-20 sm:px-6">
-    <a href="/" class="shrink-0 rounded-lg" aria-label="SUTENS, inicio">
+  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:h-[4.5rem] sm:px-6">
+
+    <!-- Logo -->
+    <a href="/" class="shrink-0 flex items-center gap-3 rounded-lg" aria-label="SUTENS, inicio">
       <img
         src="/brand/sutens-logo-horizontal.svg"
-        alt="SUTENS, Defensa de la Educación, Unidad de los Trabajadores"
+        alt="SUTENS"
         width="329"
         height="72"
-        class="h-9 w-auto sm:h-11"
+        class="h-8 w-auto sm:h-10"
+        loading="eager"
       />
     </a>
 
-    <nav class="hidden items-center gap-7 lg:flex" aria-label="Navegación principal">
+    <!-- Separador vertical -->
+    <div class="hidden h-6 w-px bg-line lg:block" aria-hidden="true"></div>
+
+    <!-- Nav desktop -->
+    <nav class="hidden flex-1 items-center gap-1 lg:flex" aria-label="Navegación principal">
       {navLinks.map((link) => (
         <a class="nav-link" href={link.href} data-nav-section={link.section}>{link.label}</a>
       ))}
     </nav>
 
+    <!-- Acciones desktop -->
     <div class="hidden items-center gap-2 lg:flex">
       <div id="acciones-publicas" class="flex items-center gap-2">
-        <a href="/login.html" class="btn btn-primary">Iniciar sesión</a>
-        <a href="/Afiliate/" class="btn btn-accent">Afíliate</a>
+        <a href="/login.html" class="btn btn-outline text-sm">Iniciar sesión</a>
+        <a href="/Afiliate/" class="btn btn-accent text-sm">Afíliate</a>
       </div>
       <div id="acciones-sesion" class="flex items-center gap-2" hidden>
         <span id="nombre-sesion" class="max-w-[12rem] truncate text-sm font-bold text-ink" aria-live="polite"></span>
-        <a href="/dashboard.html" class="btn btn-outline">Ir al panel</a>
-        <button id="cerrar-sesion" class="btn btn-primary" type="button">Cerrar sesión</button>
+        <a href="/dashboard.html" class="btn btn-outline text-sm">Ir al panel</a>
+        <button id="cerrar-sesion" class="btn btn-primary text-sm" type="button">Cerrar sesión</button>
       </div>
     </div>
 
+    <!-- Botón hamburguesa móvil -->
     <button
       id="menu-btn"
-      class="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-line bg-white/80 text-brand-900 transition hover:bg-verde-suave lg:hidden"
+      class="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line bg-white/80 text-brand-900 shadow-sm transition hover:bg-verde-suave lg:hidden"
       type="button"
       aria-expanded="false"
       aria-controls="menu"
       aria-label="Abrir menú"
     >
       <svg class="menu-icon-open h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-        <path d="M4 7h16M4 12h16M4 17h16" />
+        <path d="M4 7h16M4 12h10M4 17h16"/>
       </svg>
       <svg class="menu-icon-close hidden h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-        <path d="M6 6l12 12M18 6L6 18" />
+        <path d="M6 6l12 12M18 6L6 18"/>
       </svg>
     </button>
   </div>
 
-  <div id="menu" class="border-t border-line bg-white/95 lg:hidden" hidden>
+  <!-- Menú móvil -->
+  <div id="menu" class="mobile-menu border-t border-line/60 bg-white/97 lg:hidden" hidden>
     <nav class="mx-auto max-w-7xl px-4 py-4 sm:px-6" aria-label="Navegación móvil">
-      <div class="grid gap-1">
+      <div class="grid gap-0.5">
         {navLinks.map((link) => (
           <a class="menu-link" href={link.href} data-nav-section={link.section}>
             <span>{link.label}</span>
-            <svg class="h-4 w-4 text-brand-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="m9 18 6-6-6-6" />
+            <svg class="h-4 w-4 text-brand-700 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m9 18 6-6-6-6"/>
             </svg>
           </a>
         ))}
@@ -71,7 +81,7 @@ const navLinks = [
       <div class="mt-4 grid gap-2 border-t border-line pt-4">
         <div id="acciones-publicas-movil" class="grid gap-2">
           <a href="/login.html" class="btn btn-primary w-full">Iniciar sesión</a>
-          <a href="/Afiliate/" class="btn btn-accent w-full">Afíliate</a>
+          <a href="/Afiliate/" class="btn btn-accent w-full">Afíliate a SUTENS</a>
         </div>
         <div id="acciones-sesion-movil" class="grid gap-2" hidden>
           <span id="nombre-sesion-movil" class="px-1 py-1 text-sm font-bold text-ink" aria-live="polite"></span>
@@ -84,16 +94,60 @@ const navLinks = [
 </header>
 
 <style>
-  #menu-btn .menu-icon-close {
-    display: none;
+  #menu-btn .menu-icon-close { display: none; }
+  #menu-btn.is-open .menu-icon-open { display: none; }
+  #menu-btn.is-open .menu-icon-close { display: block; }
+
+  /* Menú móvil con animación de deslizamiento */
+  .mobile-menu {
+    backdrop-filter: blur(20px) saturate(1.8);
+    -webkit-backdrop-filter: blur(20px) saturate(1.8);
   }
 
-  #menu-btn.is-open .menu-icon-open {
-    display: none;
+  /* Modo transparente sobre el hero */
+  .site-header.hero-mode {
+    background: rgba(10, 25, 15, 0.45);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+    box-shadow: none;
   }
 
-  #menu-btn.is-open .menu-icon-close {
-    display: block;
+  .site-header.hero-mode .nav-link {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .site-header.hero-mode .nav-link:hover,
+  .site-header.hero-mode .nav-link.is-active {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.10);
+  }
+
+  .site-header.hero-mode #menu-btn {
+    background: rgba(255, 255, 255, 0.10);
+    border-color: rgba(255, 255, 255, 0.20);
+    color: #fff;
+  }
+
+  /* Cuando scrollea por encima del hero: vuelve al modo claro */
+  .site-header.is-scrolled.hero-mode {
+    background: rgba(255, 255, 255, 0.96);
+    border-bottom-color: rgba(219, 231, 223, 0.9);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 4px 32px rgba(16,35,26,0.10);
+  }
+
+  .site-header.is-scrolled.hero-mode .nav-link {
+    color: var(--ui-muted);
+  }
+
+  .site-header.is-scrolled.hero-mode .nav-link:hover,
+  .site-header.is-scrolled.hero-mode .nav-link.is-active {
+    color: var(--ui-verde-900);
+    background: var(--verde-suave);
+  }
+
+  .site-header.is-scrolled.hero-mode #menu-btn {
+    background: rgba(255, 255, 255, 0.80);
+    border-color: var(--ui-border);
+    color: var(--ui-verde-900);
   }
 </style>
 
@@ -103,53 +157,79 @@ const navLinks = [
   const menu = document.getElementById('menu');
   const desktopQuery = window.matchMedia('(min-width: 1024px)');
 
-  function setMenu(open, options = {}) {
+  // ── Menú móvil ──
+  function setMenu(open: boolean, options: { restoreFocus?: boolean } = {}) {
     if (!menu || !button) return;
     menu.hidden = !open;
     button.setAttribute('aria-expanded', String(open));
     button.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
     button.classList.toggle('is-open', open);
-
-    if (open) {
-      requestAnimationFrame(() => menu.querySelector('a, button')?.focus());
-    } else if (options.restoreFocus) {
-      button.focus();
-    }
+    if (open) requestAnimationFrame(() => (menu.querySelector('a, button') as HTMLElement)?.focus());
+    else if (options.restoreFocus) button.focus();
   }
 
   button?.addEventListener('click', () => setMenu(menu?.hidden ?? true));
-
   menu?.addEventListener('click', (event) => {
     if (event.target instanceof Element && event.target.closest('a')) setMenu(false);
   });
-
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && menu && !menu.hidden) setMenu(false, { restoreFocus: true });
   });
-
   document.addEventListener('click', (event) => {
     if (!menu || menu.hidden || !(event.target instanceof Element)) return;
     if (!event.target.closest('#menu') && !event.target.closest('#menu-btn')) setMenu(false);
   });
+  desktopQuery.addEventListener('change', (event) => { if (event.matches) setMenu(false); });
 
-  desktopQuery.addEventListener('change', (event) => {
-    if (event.matches) setMenu(false);
-  });
+  // ── Header transparente sobre el hero / sombra al scrollear ──
+  const isHomePage = window.location.pathname === '/' || window.location.pathname === '/index.html';
 
-  function actualizarSombraHeader() {
-    header?.classList.toggle('is-scrolled', window.scrollY > 8);
+  function updateHeader() {
+    if (!header) return;
+    const scrolled = window.scrollY > 8;
+    header.classList.toggle('is-scrolled', scrolled);
+
+    if (isHomePage) {
+      const heroSection = document.querySelector('.hero');
+      const heroBottom = heroSection ? (heroSection as HTMLElement).offsetHeight : 0;
+      const inHero = window.scrollY < heroBottom - 80;
+      header.classList.toggle('hero-mode', inHero);
+    }
   }
 
-  actualizarSombraHeader();
-  window.addEventListener('scroll', actualizarSombraHeader, { passive: true });
+  updateHeader();
+  window.addEventListener('scroll', updateHeader, { passive: true });
 
+  // ── Indicador de sección activa ──
+  const navLinks = document.querySelectorAll<HTMLElement>('.nav-link[data-nav-section]');
+
+  function updateActiveLink() {
+    const sections = Array.from(navLinks)
+      .map(link => document.getElementById(link.dataset.navSection!))
+      .filter(Boolean) as HTMLElement[];
+
+    const scrollMid = window.scrollY + window.innerHeight / 3;
+    let activeId = '';
+    for (const section of sections) {
+      if (section.offsetTop <= scrollMid) activeId = section.id;
+    }
+
+    navLinks.forEach(link => {
+      link.classList.toggle('is-active', link.dataset.navSection === activeId);
+    });
+  }
+
+  window.addEventListener('scroll', updateActiveLink, { passive: true });
+  updateActiveLink();
+
+  // ── Sesión ──
   const token = localStorage.getItem('token');
   const accionesPublicas = document.getElementById('acciones-publicas');
   const accionesSesion = document.getElementById('acciones-sesion');
   const accionesPublicasMovil = document.getElementById('acciones-publicas-movil');
   const accionesSesionMovil = document.getElementById('acciones-sesion-movil');
 
-  function mostrarSesion(nombre) {
+  function mostrarSesion(nombre: string) {
     const nombreEscritorio = document.getElementById('nombre-sesion');
     const nombreMovil = document.getElementById('nombre-sesion-movil');
     if (nombreEscritorio) nombreEscritorio.textContent = `Hola, ${nombre}`;
@@ -162,30 +242,19 @@ const navLinks = [
 
   async function cargarSesion() {
     if (!token) return;
-
     try {
-      const response = await fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.status === 401 || response.status === 403) {
-        localStorage.removeItem('token');
-        return;
-      }
+      const response = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+      if (response.status === 401 || response.status === 403) { localStorage.removeItem('token'); return; }
       if (!response.ok) throw new Error('No se pudo verificar la sesión');
-
       const perfil = await response.json();
       const nombre = [perfil.nombre1, perfil.apellido1].filter(Boolean).join(' ') || perfil.usuario;
       if (nombre) mostrarSesion(nombre);
     } catch (error) {
-      console.error('No se pudo cargar la sesión en la página pública:', error);
+      console.error('No se pudo cargar la sesión:', error);
     }
   }
 
-  function cerrarSesionPublica() {
-    localStorage.removeItem('token');
-    window.location.reload();
-  }
-
+  function cerrarSesionPublica() { localStorage.removeItem('token'); window.location.reload(); }
   document.getElementById('cerrar-sesion')?.addEventListener('click', cerrarSesionPublica);
   document.getElementById('cerrar-sesion-movil')?.addEventListener('click', cerrarSesionPublica);
   cargarSesion();

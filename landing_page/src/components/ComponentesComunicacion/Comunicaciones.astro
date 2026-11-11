@@ -1,23 +1,34 @@
 ---
 import Galeria from "../ComponentesNosotros/Galeria.astro";
 ---
-<section class="px-4 pb-10 pt-32 text-center">
-    <div class="mx-auto max-w-3xl">
-        <p class="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-[#1b7a38]">Información institucional</p>
-        <h1 class="text-4xl font-bold text-[#1e293b] md:text-5xl">
-            Mantente informado de las
-            <span class="text-[#1b7a38]">comunicaciones</span>
-        </h1>
-        <p class="mx-auto mt-4 max-w-2xl text-lg text-[#475569]">Aquí aparecen los documentos de la biblioteca sindical que Administración o la Directiva Departamental hayan elegido publicar.</p>
-    </div>
-</section>
 
-<section class="bg-white px-4 py-12 sm:py-16" aria-labelledby="documentos-publicos-titulo">
+<!-- Hero institucional Comunicaciones -->
+<header class="relative isolate overflow-hidden bg-gradient-to-b from-[#0a2715] via-[#103d22] to-[#15803d] pb-16 pt-32 text-white sm:pb-20 sm:pt-40">
+  <div class="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-amber-400/10 blur-3xl" aria-hidden="true"></div>
+  <div class="pointer-events-none absolute -left-20 bottom-0 h-80 w-80 rounded-full bg-emerald-400/10 blur-3xl" aria-hidden="true"></div>
+
+  <div class="relative z-10 mx-auto max-w-6xl px-4 text-center sm:px-6">
+    <span class="inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-400/10 px-4 py-1.5 text-xs font-extrabold uppercase tracking-widest text-amber-300 mb-4 shadow-sm">
+      <span class="h-2 w-2 rounded-full bg-amber-400" aria-hidden="true"></span>
+      Información institucional
+    </span>
+
+    <h1 class="text-3xl font-extrabold sm:text-4xl md:text-5xl lg:text-6xl text-balance">
+      Comunicaciones <span class="text-amber-300">SUTENS</span>
+    </h1>
+
+    <p class="mx-auto mt-4 max-w-2xl text-base text-white/85 sm:text-lg text-balance">
+      Documentos de la biblioteca sindical publicados por la Directiva Departamental para consulta y descarga de los afiliados.
+    </p>
+  </div>
+</header>
+
+<section class="bg-cream px-4 py-12 sm:py-16" aria-labelledby="documentos-publicos-titulo">
     <div class="mx-auto max-w-6xl">
         <header class="mb-8">
-            <p class="text-sm font-bold uppercase tracking-[0.16em] text-[#1b7a38]">Biblioteca sindical</p>
-            <h2 id="documentos-publicos-titulo" class="mt-2 text-3xl font-bold text-[#1e293b]">Documentos destacados</h2>
-            <p class="mt-2 text-[#475569]">Resoluciones, circulares, actas y otros documentos que puedes consultar y descargar.</p>
+            <span class="inline-block rounded-full bg-verde-suave px-3 py-1 text-xs font-extrabold uppercase tracking-widest text-brand-700 mb-3">Biblioteca sindical</span>
+            <h2 id="documentos-publicos-titulo" class="mt-2 text-3xl font-extrabold text-ink">Documentos destacados</h2>
+            <p class="mt-2 text-muted">Resoluciones, circulares, actas y otros documentos que puedes consultar y descargar.</p>
         </header>
 
         <div class="relative px-1 sm:px-3">
@@ -38,9 +49,9 @@ import Galeria from "../ComponentesNosotros/Galeria.astro";
 <section class="bg-white px-4 py-14 sm:py-16" aria-labelledby="galeria-comunicaciones-titulo">
     <div class="mx-auto max-w-6xl">
         <header class="mb-8 text-center">
-            <p class="text-sm font-bold uppercase tracking-[0.16em] text-[#1b7a38]">Registro de actividades</p>
-            <h2 id="galeria-comunicaciones-titulo" class="mt-2 text-3xl font-bold text-[#1e293b]">Galería SUTENS</h2>
-            <p class="mx-auto mt-2 max-w-2xl text-[#475569]">Momentos de encuentro, organización y trabajo colectivo de nuestras directivas y afiliados.</p>
+            <span class="inline-block rounded-full bg-verde-suave px-3 py-1 text-xs font-extrabold uppercase tracking-widest text-brand-700 mb-3">Registro de actividades</span>
+            <h2 id="galeria-comunicaciones-titulo" class="mt-2 text-3xl font-extrabold text-ink">Galería SUTENS</h2>
+            <p class="mx-auto mt-2 max-w-2xl text-muted">Momentos de encuentro, organización y trabajo colectivo de nuestras directivas y afiliados.</p>
         </header>
         <Galeria />
     </div>
@@ -184,9 +195,15 @@ import Galeria from "../ComponentesNosotros/Galeria.astro";
         overflow: hidden;
         scroll-snap-align: start;
         border: 1px solid #e5e1d6;
-        border-radius: 14px;
+        border-radius: 20px;
         background: #fff;
         box-shadow: 0 5px 16px rgb(30 41 59 / 9%);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    :global(.documento-publico-card:hover) {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px rgb(30 41 59 / 15%);
     }
 
     :global(.documento-publico-cubierta) {
@@ -196,7 +213,7 @@ import Galeria from "../ComponentesNosotros/Galeria.astro";
         align-items: center;
         justify-content: center;
         gap: 12px;
-        background: linear-gradient(120deg, #1b7a38, #2e7d32);
+        background: linear-gradient(135deg, #0a2715, #1b7a38);
         color: #fff;
     }
 
@@ -284,6 +301,7 @@ import Galeria from "../ComponentesNosotros/Galeria.astro";
         background: #fff;
         color: #1b7a38;
         box-shadow: 0 3px 12px rgb(30 41 59 / 12%);
+        transition: background 0.2s;
     }
 
     :global(.documentos-flecha:hover) {
@@ -295,6 +313,7 @@ import Galeria from "../ComponentesNosotros/Galeria.astro";
         height: 11px;
         border-radius: 50%;
         background: #b8d8c0;
+        transition: background 0.2s;
     }
 
     :global(.documentos-punto.activo) {
@@ -304,7 +323,7 @@ import Galeria from "../ComponentesNosotros/Galeria.astro";
     :global(.documentos-estado) {
         width: 100%;
         border: 1px solid #e5e1d6;
-        border-radius: 12px;
+        border-radius: 20px;
         background: #fff;
         padding: 20px;
         color: #475569;

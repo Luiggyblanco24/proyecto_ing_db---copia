@@ -1,5 +1,6 @@
 ---
 import Icono from './Icono.astro';
+import MapaSubdirectivas from './MapaSubdirectivas.astro';
 ---
 
 <section id="estructura" class="bg-cream px-4 py-20 sm:px-6 sm:py-24">
@@ -84,16 +85,33 @@ import Icono from './Icono.astro';
         </p>
       </div>
     </div>
+
+    <!-- Mapa territorial interactivo de subdirectivas -->
+    <div class="mt-12 reveal" style="--reveal-delay: 140ms">
+      <MapaSubdirectivas />
+    </div>
+
+    <!-- CTA corto al final de Estructura -->
+    <div class="mt-8 rounded-2xl border border-line bg-white p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 reveal" style="--reveal-delay: 160ms">
+      <div>
+        <h4 class="text-base font-extrabold text-ink sm:text-lg">¿Quieres participar activamente en tu subdirectiva?</h4>
+        <p class="mt-0.5 text-xs text-muted sm:text-sm">Afíliate a SUTENS y fortalece la representación sindical en tu municipio.</p>
+      </div>
+      <a href="/Afiliate/" class="btn btn-outline shrink-0 flex items-center gap-2">
+        Conoce el proceso
+        <Icono name="arrow-right" class="h-4 w-4" />
+      </a>
+    </div>
   </div>
 
   <template id="tpl-directivo">
     <article class="flex items-center gap-4 rounded-2xl border border-line bg-white p-4 shadow-[var(--ui-sombra-1)]">
-      <div class="relative grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-2xl bg-verde-suave text-lg font-extrabold text-brand-700">
+      <div class="relative grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#1b7a3e] to-[#0f3d24] text-white text-base font-extrabold tracking-wider shadow-sm ring-2 ring-emerald-600/20">
         <span data-initials></span>
         <img data-photo class="absolute inset-0 h-full w-full object-cover" alt="" loading="lazy" decoding="async" hidden />
       </div>
-      <div class="min-w-0">
-        <h4 data-name class="truncate text-sm font-extrabold text-ink"></h4>
+      <div class="min-w-0 flex-1">
+        <h4 data-name class="text-sm font-extrabold leading-snug text-ink line-clamp-2 break-words"></h4>
         <p data-cargo class="mt-0.5 text-xs font-bold text-brand-700"></p>
       </div>
     </article>
@@ -109,7 +127,7 @@ import Icono from './Icono.astro';
           </svg>
         </span>
         <span class="min-w-0">
-          <span data-nombre class="block truncate text-sm font-extrabold text-ink"></span>
+          <span data-nombre class="block text-sm font-extrabold leading-snug text-ink line-clamp-2 break-words"></span>
           <span data-detalle class="mt-0.5 block text-xs font-semibold text-muted"></span>
         </span>
       </span>
@@ -120,6 +138,13 @@ import Icono from './Icono.astro';
 
 <script>
   import { getDirectivaDepartamental, getDirectivasSubdirectivas } from '../../lib/public-api.js';
+
+  function normalizarNombreLugar(nombre) {
+    if (!nombre) return '';
+    return String(nombre)
+      .trim()
+      .replace(/\bel tarra\b/gi, 'El Tarra');
+  }
 
   function iniciales(nombre) {
     return String(nombre || '')
@@ -201,7 +226,7 @@ import Icono from './Icono.astro';
       const id = integrante.id_subdirectiva;
       if (id === undefined || id === null) continue;
       if (!grupos.has(id)) {
-        grupos.set(id, { nombre: String(integrante.subdirectiva || '').trim(), cargos: 0 });
+        grupos.set(id, { nombre: normalizarNombreLugar(integrante.subdirectiva), cargos: 0 });
       }
       grupos.get(id).cargos += 1;
     }

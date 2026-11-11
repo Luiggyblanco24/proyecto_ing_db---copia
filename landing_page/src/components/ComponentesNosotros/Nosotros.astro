@@ -2,48 +2,90 @@
 import Historia from "./Historia.astro";
 import MisionVision from "./MisionVision.astro";
 import EquipoDirectivo from "./EquipoDirectivo.astro";
+import Icono from '../ComponentesIndex/Icono.astro';
+import { datosContacto } from '../../data/contacto.js';
 ---
 
-<!-- Hero Section -->
-<section class="relative px-4 pb-12 pt-32 text-center sm:pb-16">
-    <div class="container mx-auto">
-        <p class="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-[#1b7a38]">Organización sindical</p>
-        <h1 class="text-4xl md:text-5xl font-bold mb-6">Sobre SUTENS</h1>
-        <p class="mx-auto max-w-3xl text-xl text-[#475569]">
-            Sindicato Unitario de Trabajadores de la Educación de Norte de Santander. Defensa de la Educación, Unidad de los Trabajadores.
-        </p>
+<!-- Hero institucional Nosotros -->
+<header class="relative isolate overflow-hidden bg-gradient-to-b from-[#0a2715] via-[#103d22] to-[#15803d] pb-16 pt-32 text-white sm:pb-20 sm:pt-40">
+  <div class="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-amber-400/10 blur-3xl" aria-hidden="true"></div>
+  <div class="pointer-events-none absolute -left-20 bottom-0 h-80 w-80 rounded-full bg-emerald-400/10 blur-3xl" aria-hidden="true"></div>
+
+  <div class="relative z-10 mx-auto max-w-6xl px-4 text-center sm:px-6">
+    <span class="inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-400/10 px-4 py-1.5 text-xs font-extrabold uppercase tracking-widest text-amber-300 mb-4 shadow-sm">
+      <span class="h-2 w-2 rounded-full bg-amber-400" aria-hidden="true"></span>
+      Organización sindical · Desde 2016
+    </span>
+
+    <h1 class="text-3xl font-extrabold sm:text-4xl md:text-5xl lg:text-6xl text-balance">
+      Sobre SUTENS
+    </h1>
+
+    <p class="mx-auto mt-4 max-w-2xl text-base text-white/85 sm:text-lg text-balance">
+      Sindicato Unitario de Trabajadores de la Educación de Norte de Santander. Defensa de la Educación, Unidad de los Trabajadores.
+    </p>
+
+    <!-- Estadísticas rápidas -->
+    <div class="mx-auto mt-10 grid max-w-2xl grid-cols-3 gap-4 sm:gap-6">
+      <div class="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+        <p class="text-2xl font-extrabold text-amber-300">2016</p>
+        <p class="mt-1 text-xs text-white/70 font-semibold uppercase tracking-wide">Fundado</p>
+      </div>
+      <div class="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+        <p class="text-2xl font-extrabold text-amber-300">4</p>
+        <p class="mt-1 text-xs text-white/70 font-semibold uppercase tracking-wide">Subdirectivas</p>
+      </div>
+      <div class="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+        <p class="text-2xl font-extrabold text-amber-300">N. de S.</p>
+        <p class="mt-1 text-xs text-white/70 font-semibold uppercase tracking-wide">Departamento</p>
+      </div>
     </div>
+  </div>
+</header>
+
+<!-- Historia -->
+<section class="bg-cream px-4 py-16 sm:py-20">
+  <Historia />
 </section>
 
-<section class=" px-4">
-    <Historia />
+<!-- Misión, Visión y Principios -->
+<section class="bg-white px-4 py-16 sm:py-20">
+  <MisionVision />
 </section>
 
-<!-- Sección Misión, Visión y Valores -->
-<section class="py-16 bg-secondary px-4">
-    <MisionVision />
+<!-- Equipo Directivo -->
+<section class="bg-cream px-4 py-16 sm:py-20">
+  <EquipoDirectivo />
 </section>
 
-<section class="py-16 bg-secondary px-4">
-    <EquipoDirectivo />
-</section>
-
-<section class="py-16 bg-[#1b7a38] text-white">
-    <div class="max-w-4xl mx-auto text-center px-4">
-        <h2 class="text-3xl font-bold mb-6">
-            ¿Quieres conocer más sobre SUTENS?
-        </h2>
-        <p class="text-xl mb-8">
-            Contáctanos para obtener más información sobre nuestra labor y cómo
-            podemos ayudarte.
-        </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-                href="/register.html"
-                class="rounded-lg bg-[#f59e0b] px-6 py-3 font-semibold text-[#1e293b] shadow-md transition-all hover:bg-[#d97706]"
-            >
-                Afíliate en línea
-            </a>
-        </div>
+<!-- CTA final -->
+<section class="bg-gradient-to-br from-[#0a2715] via-[#103d22] to-[#1b7a3e] px-4 py-16 text-white sm:py-20">
+  <div class="mx-auto max-w-4xl text-center">
+    <span class="inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-400/10 px-4 py-1.5 text-xs font-extrabold uppercase tracking-widest text-amber-300 mb-6">
+      Únete
+    </span>
+    <h2 class="text-3xl font-extrabold sm:text-4xl text-balance">
+      ¿Quieres conocer más sobre SUTENS?
+    </h2>
+    <p class="mx-auto mt-4 max-w-xl text-white/80 text-lg">
+      Contáctanos para obtener más información sobre nuestra labor y cómo podemos orientarte.
+    </p>
+    <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+      <a
+        href="/Afiliate/"
+        class="inline-flex items-center gap-2 rounded-full bg-amber-400 px-7 py-3 font-extrabold text-[#1e293b] shadow-lg transition hover:bg-amber-300 hover:scale-105"
+      >
+        Afíliate a SUTENS
+      </a>
+      <a
+        href={datosContacto.canales.whatsapp.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-7 py-3 font-extrabold text-white backdrop-blur-sm transition hover:bg-white/20 hover:scale-105"
+      >
+        <Icono name="whatsapp" class="h-4 w-4" />
+        Consultar por WhatsApp
+      </a>
     </div>
+  </div>
 </section>

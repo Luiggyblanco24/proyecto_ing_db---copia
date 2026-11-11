@@ -1,38 +1,49 @@
 ---
 import Icono from './Icono.astro';
+import { datosContacto } from '../../data/contacto.js';
 ---
 
-<section id="contacto" class="bg-cream px-4 pb-20 pt-4 sm:px-6 sm:pb-24">
+<section id="contacto" class="bg-cream px-4 pb-20 pt-4 sm:px-6 sm:pb-24" aria-labelledby="contacto-titulo">
   <div class="mx-auto max-w-6xl">
     <div class="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
       <header class="reveal">
-        <p class="eyebrow text-brand-700">Contacto</p>
-        <h2 class="display mt-3 text-3xl text-ink sm:text-4xl lg:text-5xl">
-          Hablemos
+        <p class="eyebrow text-brand-700">Canales de atención</p>
+        <h2 id="contacto-titulo" class="display mt-3 text-3xl text-ink sm:text-4xl lg:text-5xl">
+          Contáctanos
         </h2>
         <p class="mt-5 max-w-xl text-lg leading-relaxed text-muted">
-          Para afiliaciones, dudas sobre tus derechos o información sobre el trabajo sindical, estos son los canales oficiales de SUTENS.
+          Para afiliaciones, dudas sobre tus derechos laborales o información sobre el trabajo sindical, estos son los canales oficiales de SUTENS.
         </p>
 
         <div class="mt-7 grid gap-3">
-          <a href="mailto:afiliaciones@sutens.org" class="group flex items-center gap-4 rounded-2xl border border-line bg-white p-4 shadow-[var(--ui-sombra-1)] transition hover:border-brand-600/40 hover:shadow-[var(--ui-sombra-2)]">
-            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-verde-suave text-brand-700">
-              <Icono name="mail" class="h-5 w-5" />
+          <!-- Canal directo de WhatsApp -->
+          <a
+            href={datosContacto.canales.whatsapp.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group flex items-center gap-4 rounded-2xl border border-line bg-white p-4 shadow-[var(--ui-sombra-1)] transition hover:border-brand-600/40 hover:shadow-[var(--ui-sombra-2)]"
+          >
+            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#e8f5ec] text-brand-700">
+              <Icono name="whatsapp" class="h-5 w-5" />
             </span>
             <span class="min-w-0">
-              <span class="block text-xs font-bold text-muted">Correo oficial</span>
-              <span class="block truncate text-sm font-extrabold text-ink">afiliaciones@sutens.org</span>
+              <span class="block text-xs font-bold text-muted">Línea de WhatsApp</span>
+              <span class="block truncate text-sm font-extrabold text-ink">{datosContacto.canales.whatsapp.numero}</span>
             </span>
             <Icono name="arrow-right" class="ml-auto h-4 w-4 shrink-0 text-brand-700 transition group-hover:translate-x-0.5" />
           </a>
 
-          <a href="/Afiliate/" class="group flex items-center gap-4 rounded-2xl border border-line bg-white p-4 shadow-[var(--ui-sombra-1)] transition hover:border-brand-600/40 hover:shadow-[var(--ui-sombra-2)]">
+          <!-- Trámite de afiliación -->
+          <a
+            href="/Afiliate/"
+            class="group flex items-center gap-4 rounded-2xl border border-line bg-white p-4 shadow-[var(--ui-sombra-1)] transition hover:border-brand-600/40 hover:shadow-[var(--ui-sombra-2)]"
+          >
             <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-900 text-white">
               <Icono name="users" class="h-5 w-5" />
             </span>
             <span class="min-w-0">
               <span class="block text-xs font-bold text-muted">Afiliación</span>
-              <span class="block text-sm font-extrabold text-ink">Conoce el proceso y afíliate</span>
+              <span class="block text-sm font-extrabold text-ink">Conoce el proceso en 3 pasos y afíliate</span>
             </span>
             <Icono name="arrow-right" class="ml-auto h-4 w-4 shrink-0 text-brand-700 transition group-hover:translate-x-0.5" />
           </a>
@@ -40,41 +51,74 @@ import Icono from './Icono.astro';
       </header>
 
       <div class="grid gap-3 sm:grid-cols-2 reveal" style="--reveal-delay: 100ms">
-        <article class="card p-5">
-          <span class="grid h-10 w-10 place-items-center rounded-xl bg-verde-suave text-brand-700">
-            <Icono name="map-pin" class="h-5 w-5" />
-          </span>
-          <h3 class="mt-4 text-base font-extrabold text-ink">Sede</h3>
-          <p class="mt-1.5 text-sm leading-relaxed text-muted">Dirección de la sede por confirmar.</p>
+        <!-- Sede principal con enlace a Google Maps -->
+        <article class="card p-5 sm:col-span-2">
+          <div class="flex items-start justify-between gap-3">
+            <span class="grid h-10 w-10 place-items-center rounded-xl bg-verde-suave text-brand-700">
+              <Icono name="map-pin" class="h-5 w-5" />
+            </span>
+            <a
+              href={datosContacto.sede.googleMapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 text-xs font-extrabold text-brand-700 hover:underline"
+            >
+              Cómo llegar
+              <Icono name="arrow-right" class="h-3.5 w-3.5" />
+            </a>
+          </div>
+          <h3 class="mt-4 text-base font-extrabold text-ink">Sede principal</h3>
+          <p class="mt-1 text-sm leading-relaxed text-muted">
+            {datosContacto.sede.direccionCompleta}
+          </p>
         </article>
 
+        <!-- Red social oficial Facebook -->
+        <article class="card p-5">
+          <span class="grid h-10 w-10 place-items-center rounded-xl bg-[#eff6ff] text-[#1d4ed8]">
+            <Icono name="facebook" class="h-5 w-5" />
+          </span>
+          <h3 class="mt-4 text-base font-extrabold text-ink">Facebook oficial</h3>
+          <p class="mt-1 text-xs leading-relaxed text-muted">
+            Información y comunicados públicos en nuestra página oficial.
+          </p>
+          <a
+            href={datosContacto.canales.facebook.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="mt-3 inline-flex items-center gap-1.5 text-xs font-extrabold text-brand-700 hover:underline"
+          >
+            Visitar SUTENS Oficial
+            <Icono name="arrow-right" class="h-3 w-3" />
+          </a>
+        </article>
+
+        <!-- Acompañamiento en subdirectivas -->
         <article class="card p-5">
           <span class="grid h-10 w-10 place-items-center rounded-xl bg-[#fef3c7] text-[#b45309]">
-            <Icono name="clock" class="h-5 w-5" />
+            <Icono name="building" class="h-5 w-5" />
           </span>
-          <h3 class="mt-4 text-base font-extrabold text-ink">Horario</h3>
-          <p class="mt-1.5 text-sm leading-relaxed text-muted">Horario de atención por confirmar.</p>
-        </article>
-
-        <article class="card p-5 sm:col-span-2">
-          <span class="grid h-10 w-10 place-items-center rounded-xl bg-brand-900 text-white">
-            <Icono name="phone" class="h-5 w-5" />
-          </span>
-          <h3 class="mt-4 text-base font-extrabold text-ink">Teléfono</h3>
-          <p class="mt-1.5 text-sm leading-relaxed text-muted">Teléfono de contacto por confirmar.</p>
-          <p class="mt-2 text-xs font-semibold text-brand-700">
-            Mientras tanto, escríbenos al correo oficial.
+          <h3 class="mt-4 text-base font-extrabold text-ink">Subdirectivas</h3>
+          <p class="mt-1 text-xs leading-relaxed text-muted">
+            Presencia directa en Ábrego, El Tarra, Ocaña y San Calixto.
           </p>
+          <a
+            href="/Secretarias/"
+            class="mt-3 inline-flex items-center gap-1.5 text-xs font-extrabold text-brand-700 hover:underline"
+          >
+            Ver delegados locales
+            <Icono name="arrow-right" class="h-3 w-3" />
+          </a>
         </article>
       </div>
     </div>
 
+    <!-- Bloque de personería y registro legal -->
     <div class="mt-8 flex items-start gap-3 rounded-2xl border border-line bg-white p-5 text-sm leading-relaxed text-muted reveal">
       <Icono name="sparkles" class="mt-0.5 h-5 w-5 shrink-0 text-brand-700" />
       <p>
-        Estamos actualizando los canales de atención. Si necesitas comunicarte con SUTENS, el correo{' '}
-        <a class="font-extrabold text-brand-700 underline" href="mailto:afiliaciones@sutens.org">afiliaciones@sutens.org</a>{' '}
-        es el medio oficial disponible.
+        <strong>Personería jurídica y registro:</strong> {datosContacto.sindicato} (SUTENS) ·
+        NIT: {datosContacto.legal.nit} · Registro Ministerio del Trabajo {datosContacto.legal.registroMinTrabajo}.
       </p>
     </div>
   </div>

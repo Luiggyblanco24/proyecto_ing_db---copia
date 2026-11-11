@@ -1,0 +1,55 @@
+---
+import Icono from './Icono.astro';
+import { datosContacto } from '../../data/contacto.js';
+---
+
+<section class="bg-cream px-4 pb-20 pt-4 sm:px-6 sm:pb-24" aria-labelledby="cta-final-titulo">
+  <div class="mx-auto max-w-6xl">
+    <div class="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#0b2e19] via-[#14532d] to-[#15803d] p-8 text-white shadow-2xl sm:p-12 lg:p-16">
+      
+      <!-- Efectos sutiles de fondo -->
+      <div class="hero-pattern absolute inset-0 opacity-20 pointer-events-none" aria-hidden="true"></div>
+      <div class="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-amber-400/10 blur-3xl" aria-hidden="true"></div>
+      <div class="pointer-events-none absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-emerald-400/10 blur-3xl" aria-hidden="true"></div>
+
+      <div class="relative z-10 mx-auto max-w-3xl text-center reveal">
+        <span class="inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-400/10 px-4 py-1.5 text-xs font-extrabold uppercase tracking-widest text-amber-300 mb-5">
+          <span class="h-2 w-2 rounded-full bg-amber-400" aria-hidden="true"></span>
+          Unidad sindical en Norte de Santander
+        </span>
+
+        <h2 id="cta-final-titulo" class="display text-3xl font-extrabold sm:text-4xl lg:text-5xl text-balance">
+          ¿Listo para unirte? <span class="text-amber-300">Afíliate hoy</span>
+        </h2>
+
+        <p class="mt-4 text-base leading-relaxed text-white/85 sm:text-lg text-balance max-w-2xl mx-auto">
+          Suma tu voz a la defensa de la educación pública y cuenta con el respaldo de una organización comprometida con tus derechos laborales y tu bienestar.
+        </p>
+
+        <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5">
+          <a
+            href="/register.html"
+            class="btn btn-accent w-full sm:w-auto px-8 py-4 text-base font-extrabold shadow-lg flex items-center justify-center gap-2"
+          >
+            Afíliate ahora
+            <Icono name="arrow-right" class="h-4 w-4" />
+          </a>
+          <a
+            href={datosContacto.canales.whatsapp.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-outline-light w-full sm:w-auto px-8 py-4 text-base font-extrabold flex items-center justify-center gap-2"
+          >
+            <Icono name="whatsapp" class="h-5 w-5 text-emerald-300" />
+            Escríbenos por WhatsApp
+          </a>
+        </div>
+
+        <p class="mt-6 text-xs text-white/60">
+          Atención y orientación personalizada para docentes, directivos y administrativos.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
