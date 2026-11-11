@@ -1,99 +1,79 @@
 ---
-import Icono from './Icono.astro';
+import { Picture } from 'astro:assets';
+import benefitIcon from './Icono.astro';
 
 const beneficios = [
   {
-    icono: 'shield',
-    titulo: 'Defensa de tus derechos laborales',
-    texto: 'Acompañamiento frente a situaciones que afectan tus condiciones de trabajo y tus garantías como servidor público.',
+    icon: 'shield',
+    title: 'Defensa de los derechos laborales',
+    description: 'Protección de los derechos laborales y condiciones de trabajo justas para todos los afiliados.',
+    color: 'text-amber-700'
   },
   {
-    icono: 'scale',
-    titulo: 'Negociación colectiva',
-    texto: 'Participación en los espacios de concertación y negociación con el sector educativo.',
+    icon: 'check',
+    title: 'Asesoría legal gratuita',
+    description: 'Asesoría profesional en temas laborales y derechos sindicales sin costo.',
+    color: 'text-primary'
   },
   {
-    icono: 'gavel',
-    titulo: 'Asesoría legal especializada',
-    texto: 'Orientación y acompañamiento en trámites, reclamaciones y situaciones de carácter laboral.',
+    icon: 'briefcase',
+    title: 'Capacitación y desarrollo profesional',
+    description: 'Cursos y talleres para mejorar competencias profesionales y liderazgo.',
+    color: 'text-primary'
   },
   {
-    icono: 'users',
-    titulo: 'Representación gremial',
-    texto: 'Voz y representación ante empleadores, entidades y escenarios de decisión.',
+    icon: 'calendar',
+    title: 'Participación activa',
+    description: 'Asambleas, conferencias y actividades para mantener el diálogo sindical.',
+    color: 'text-primary'
   },
   {
-    icono: 'heart',
-    titulo: 'Programas de bienestar',
-    texto: 'Espacios de encuentro, formación y bienestar pensados para las y los afiliados.',
+    icon: 'map-pin',
+    title: 'Sede y presencia territorial',
+    description: 'Sede central en Cali y delegaciones en todo el departamento de Norte de Santander.',
+    color: 'text-primary'
   },
 ];
 ---
 
-<section id="beneficios" class="relative overflow-hidden bg-[#0f3d1e] px-4 pb-28 pt-20 text-white sm:px-6 sm:pb-32 sm:pt-24">
-  <div class="hero-pattern opacity-40" aria-hidden="true"></div>
-  <div class="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-brand-600/10 blur-3xl" aria-hidden="true"></div>
-  <div class="pointer-events-none absolute -right-16 bottom-24 h-80 w-80 rounded-full bg-accent/10 blur-3xl" aria-hidden="true"></div>
-
-  <div class="relative mx-auto max-w-6xl">
-    <header class="max-w-3xl reveal">
-      <p class="eyebrow text-amber-300">Qué ofrecemos</p>
-      <h2 class="display mt-3 text-3xl sm:text-4xl lg:text-5xl">
-        Beneficios para afiliados
-      </h2>
-      <p class="mt-5 max-w-2xl text-lg leading-relaxed text-white/75">
-        La afiliación no es solo un carnet: es respaldo, voz y comunidad. Estos son los frentes en los que SUTENS acompaña a sus afiliados.
-      </p>
-    </header>
-
-    <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
-      {beneficios.map((beneficio, indice) => (
-        <article
-          class:list={[
-            'benefit-card group reveal relative overflow-hidden rounded-[1.5rem] border border-white/15 bg-white/[0.07] p-6 backdrop-blur-sm transition duration-300 hover:border-white/30 hover:bg-white/[0.11] motion-safe:hover:-translate-y-1',
-            indice < 3 ? 'lg:col-span-2' : 'lg:col-span-3',
-            indice === 4 ? 'sm:col-span-2 lg:col-span-3' : '',
-          ]}
-          style={`--reveal-delay: ${indice * 70}ms`}
-        >
-          <span class="pointer-events-none absolute right-5 top-4 text-4xl font-extrabold text-white/[0.07]" aria-hidden="true">
-            {String(indice + 1).padStart(2, '0')}
-          </span>
-
-          <span class="grid h-12 w-12 place-items-center rounded-2xl border border-amber-300/30 bg-amber-300/15 text-amber-300">
-            <Icono name={beneficio.icono} class="h-6 w-6" />
-          </span>
-
-          <h3 class="mt-5 max-w-[22ch] text-lg font-extrabold leading-snug text-white">
-            {beneficio.titulo}
-          </h3>
-          <p class="mt-3 text-sm leading-relaxed text-white/70">
-            {beneficio.texto}
-          </p>
+<section id="beneficios" class="relative overflow-hidden bg-[#f6faf7] px-4 pt-24 pb-32 sm:px-6 sm:pb-40">
+  <div class="max-w-6xl mx-auto">
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {beneficios.map((beneficio, index) => (
+        <article class="group p-8 rounded-2xl border border-slate-200 bg-white shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl reveal" style={`--reveal-delay: ${index * 50}ms`}>
+          <div class="relative aspect-[4/3] overflow-hidden">
+            <Picture
+              src={beneficio.imageUrl}
+              alt={beneficio.title}
+              formats={['avif', 'webp']}
+              fallbackFormat="jpg"
+              widths={[400, 600, 800]}
+              sizes="(min-width: 768px) 33vw, 90vw"
+              loading="lazy"
+              decoding="async"
+              quality={82}
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-brand-700/40 via-brand-700/20 to-transparent" aria-hidden="true"></div>
+          </div>
+          <div class="relative z-10">
+            <h3 class="text-2xl font-extrabold tracking-tight text-ink mb-4">{beneficio.title}</h3>
+            <p class="text-base leading-relaxed text-muted">{beneficio.description}</p>
+            <a href="/beneficios" class="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-primary transition-colors hover:text-primary/80">
+              Saber más
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </a>
+          </div>
         </article>
       ))}
     </div>
-
-    <div class="reveal mt-12 flex flex-col items-start justify-between gap-5 border-t border-white/15 pt-8 sm:flex-row sm:items-center">
-      <p class="max-w-xl text-sm font-semibold text-white/70">
-        ¿Aún no estás afiliado? Haz parte de SUTENS y suma tu voz a la defensa de la educación pública.
-      </p>
-      <div class="flex flex-wrap gap-3">
-        <a href="/register.html" class="btn btn-accent">
-          Afíliate en línea
-          <Icono name="arrow-right" class="h-4 w-4" />
-        </a>
-        <a href="/Formatodeafiliacionsutens.pdf" download class="btn btn-outline-light">
-          <Icono name="download" class="h-4 w-4" />
-          Descargar formulario
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <div class="section-wave" aria-hidden="true">
-    <svg viewBox="0 0 1440 120" preserveAspectRatio="none" fill="none">
-      <path d="M0 78C210 118 380 122 620 92C860 62 1080 18 1440 44V120H0V78Z" fill="#f6faf7" />
-    </svg>
   </div>
 </section>
+
+<style>
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>

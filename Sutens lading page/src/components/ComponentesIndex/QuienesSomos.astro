@@ -12,66 +12,50 @@ const principios = [
 ];
 ---
 
-<section id="quienes-somos" class="relative overflow-hidden bg-cream px-4 py-20 sm:px-6 sm:py-24">
-  <div class="pointer-events-none absolute -right-24 top-20 h-72 w-72 rounded-full border border-brand-700/10 bg-brand-700/[0.03]" aria-hidden="true"></div>
-  <div class="pointer-events-none absolute -left-20 bottom-10 h-56 w-56 rounded-full border border-brand-700/10" aria-hidden="true"></div>
+<section id="quienes-somos" class="relative overflow-hidden bg-[#f6faf7] px-4 pt-24 pb-32 sm:px-6 sm:pb-40">
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute -right-40 top-40 h-80 w-80 rounded-full bg-brand-700/[0.08] blur-[100px]" aria-hidden="true"></div>
+    <div class="absolute -left-40 bottom-40 h-72 w-72 rounded-full bg-brand-900/[0.06] blur-[80px]" aria-hidden="true"></div>
+  </div>
 
   <div class="relative mx-auto max-w-6xl">
-    <header class="max-w-3xl reveal">
-      <p class="eyebrow text-brand-700">Quiénes somos</p>
-      <h2 class="display mt-3 text-3xl text-ink sm:text-4xl lg:text-5xl">
+    <header class="max-w-3xl mx-auto text-center reveal mb-20">
+      <p class="eyebrow inline-flex items-center gap-2 text-brand-700 mb-3">
+        <span class="h-1 w-1 rounded-full bg-brand-700"></span>
+        Quiénes somos
+      </p>
+      <h2 class="display mb-6 text-3xl tracking-tight text-ink sm:text-5xl lg:text-6xl">
         Una organización que defiende la educación pública
       </h2>
-      <p class="mt-5 text-lg leading-relaxed text-muted">
+      <p class="mt-4 text-lg leading-relaxed text-muted max-w-2xl mx-auto">
         SUTENS agrupa a docentes, directivos docentes y administrativos de Norte de Santander. Somos una organización sindical de primer grado que trabaja por la dignificación de la labor educativa y por la unidad de los trabajadores.
       </p>
     </header>
 
-    <div class="mt-14 grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+    <div class="mt-16 grid gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
       <div class="reveal">
-        <h3 class="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">Nuestra historia</h3>
-        <p class="mt-5 leading-relaxed text-muted">
-          SUTENS: Sindicato Unitario de Trabajadores de la Educación de Norte de Santander.
-        </p>
-        <p class="mt-4 leading-relaxed text-muted">
-          El Sindicato Unitario de Trabajadores de la Educación Norte de Santander (SUTENS) es una organización sindical de primer grado que agrupa a docentes, directivos docentes y administrativos que laboran en el Departamento de Norte de Santander en los diferentes niveles educativos. SUTENS se conformó el 29 de junio en 2016 cuando un grupo de docentes de los municipios de El Tarra y Teorama se unieron haciendo uso del derecho constitucional de asociación, agremiándose sindicalmente para luchar en la defensa de los derechos e intereses de los docentes.
-        </p>
-        <p class="mt-4 leading-relaxed text-muted">
-          Nuestra invitación es a crecer juntos, empuñando la bandera de lucha de clase y reivindicación de los derechos laborales qué aún son desconocidos por mucha gente.
-        </p>
-
-        <div class="mt-8 flex flex-wrap gap-3">
-          <a href="/Nosotros/" class="btn btn-outline">
-            Conoce la directiva
-            <Icono name="arrow-right" class="h-4 w-4" />
-          </a>
-          <a href="/Secretarias/" class="btn btn-outline">
-            Ver subdirectivas
-            <Icono name="arrow-right" class="h-4 w-4" />
-          </a>
-        </div>
-      </div>
-
-      <div class="relative reveal" style="--reveal-delay: 120ms">
-        <div class="absolute -inset-3 rounded-[2.4rem] bg-brand-700/[0.08] sm:-inset-5" aria-hidden="true"></div>
-        <div class="about-photo relative aspect-[4/3] overflow-hidden rounded-[2rem] border border-line bg-white p-2 shadow-[var(--ui-sombra-2)]">
-          <div class="h-full overflow-hidden rounded-[1.55rem]">
-            <Picture
-              src={aboutPhoto}
-              alt="Integrantes de SUTENS reunidos en una actividad sindical"
-              formats={['avif', 'webp']}
-              fallbackFormat="jpg"
-              widths={[420, 640, 860]}
-              sizes="(min-width: 1024px) 42vw, 92vw"
-              loading="lazy"
-              decoding="async"
-              quality={82}
-            />
+        <div class="relative group">
+          <div class="absolute -inset-3 rounded-[2.5rem] bg-brand-700/[0.08] sm:-inset-5" aria-hidden="true"></div>
+          <div class="relative aspect-[4/3] overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+            <div class="h-full overflow-hidden rounded-1.5xl">
+              <Picture
+                src={aboutPhoto}
+                alt="Integrantes de SUTENS reunidos en una actividad sindical"
+                formats={['avif', 'webp']}
+                fallbackFormat="jpg"
+                widths={[420, 640, 860]}
+                sizes="(min-width: 1024px) 42vw, 92vw"
+                loading="lazy"
+                decoding="async"
+                quality={82}
+                class="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+              />
+            </div>
           </div>
         </div>
 
-        <div class="absolute -bottom-5 left-4 flex items-center gap-3 rounded-2xl border border-line bg-white/95 px-4 py-3 shadow-[var(--ui-sombra-2)] backdrop-blur sm:left-8">
-          <span class="grid h-10 w-10 place-items-center rounded-xl bg-brand-900 text-white">
+        <div class="absolute -bottom-8 left-0 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/95 px-5 py-4 shadow-xl backdrop-blur-sm sm:left-8">
+          <span class="grid h-11 w-11 place-items-center rounded-xl bg-brand-900 text-white">
             <Icono name="book" class="h-5 w-5" />
           </span>
           <span class="leading-tight">
@@ -80,45 +64,50 @@ const principios = [
           </span>
         </div>
       </div>
+
+      <div class="reveal" style="--reveal-delay: 80ms">
+        <div class="space-y-6">
+          <div class="flex items-center gap-4">
+            <span class="h-12 w-12 shrink-0 rounded-2xl bg-brand-900/10 flex-shrink-0 grid place-items-center">
+              <Icono name="book" class="h-6 w-6 text-brand-900" />
+            </span>
+            <div>
+              <h3 class="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">Nuestra historia</h3>
+              <p class="mt-2 text-sm font-semibold text-muted">Fundado en 2016</p>
+            </div>
+          </div>
+
+          <p class="mt-6 leading-relaxed text-muted">
+            El Sindicato Unitario de Trabajadores de la Educación Norte de Santander (SUTENS) es una organización sindical de primer grado que agrupa a docentes, directivos docentes y administrativos que laboran en el Departamento de Norte de Santander en los diferentes niveles educativos.
+          </p>
+
+          <p class="mt-6 leading-relaxed text-muted">
+            SUTENS se conformó el 29 de junio de 2016 cuando un grupo de docentes de los municipios de El Tarra y Teorama se unieron haciendo uso del derecho constitucional de asociación, agremiándose sindicalmente para luchar en la defensa de los derechos e intereses de los docentes.
+          </p>
+
+          <div class="mt-10 flex flex-wrap gap-3">
+            <a href="/Nosotros/" class="group flex items-center gap-3 px-5 py-3 rounded-2xl border border-brand-900 bg-brand-900 text-white shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
+              Conoce la directiva
+              <Icono name="arrow-right" class="h-4 w-4 text-[#fbbf24]" />
+            </a>
+            <a href="/Secretarias/" class="group flex items-center gap-3 px-5 py-3 rounded-2xl border border-brand-900 bg-white text-brand-900 shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
+              Ver subdirectivas
+              <Icono name="arrow-right" class="h-4 w-4 text-brand-900" />
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="mt-16 grid gap-5 lg:grid-cols-3">
-      <article class="card card-hover reveal p-7">
-        <span class="grid h-12 w-12 place-items-center rounded-2xl bg-verde-suave text-brand-700">
-          <Icono name="target" class="h-6 w-6" />
-        </span>
-        <h3 class="mt-5 text-xl font-extrabold text-ink">Misión</h3>
-        <p class="mt-3 text-sm leading-relaxed text-muted">
-          Promover y proteger los derechos laborales, así como los intereses de nuestros miembros en materia salarial, prestaciones y condiciones de trabajo mediante la negociación colectiva, la representación activa, y la defensa de sus derechos, con el fin de garantizar un ambiente laboral, justo, equitativo y seguro para todos nuestros afiliados.
-        </p>
-      </article>
-
-      <article class="card card-hover reveal p-7" style="--reveal-delay: 80ms">
-        <span class="grid h-12 w-12 place-items-center rounded-2xl bg-[#fef3c7] text-[#b45309]">
-          <Icono name="eye" class="h-6 w-6" />
-        </span>
-        <h3 class="mt-5 text-xl font-extrabold text-ink">Visión</h3>
-        <p class="mt-3 text-sm leading-relaxed text-muted">
-          El Sindicato Unitario de Trabajadores de la Educación Norte de Santander SUTENS, para el año 2030 será reconocido como sindicato líder en la defensa del bien común, donde todos los afiliados son beneficiados de manera equitativo, estableciendo estándares y desarrollo sostenible en el ambiente laboral y social.
-        </p>
-      </article>
-
-      <article class="card card-hover reveal p-7" style="--reveal-delay: 160ms">
-        <span class="grid h-12 w-12 place-items-center rounded-2xl bg-brand-900 text-white">
-          <Icono name="scale" class="h-6 w-6" />
-        </span>
-        <h3 class="mt-5 text-xl font-extrabold text-ink">Principios sindicales</h3>
-        <ul class="mt-4 grid gap-2.5">
-          {principios.map((principio) => (
-            <li class="flex items-start gap-2.5 text-sm font-semibold text-muted">
-              <span class="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-verde-suave text-brand-700">
-                <Icono name="check" class="h-3.5 w-3.5" />
-              </span>
-              {principio}
-            </li>
-          ))}
-        </ul>
-      </article>
+    <div class="mt-24 grid gap-6 lg:grid-cols-3">
+      {principios.map((principio, index) => (
+        <article class="group p-8 rounded-2xl border border-slate-200 bg-white shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] reveal" style={`--reveal-delay: ${index * 60}ms`}>
+          <span class="grid h-14 w-14 place-items-center rounded-3xl bg-verde-suave text-brand-700 shadow-sm">
+            <Icono name="check" class="h-7 w-7" />
+          </span>
+          <h4 class="mt-6 text-lg font-extrabold text-ink">{principio}</h4>
+        </article>
+      ))}
     </div>
   </div>
 </section>
