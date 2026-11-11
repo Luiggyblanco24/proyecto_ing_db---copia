@@ -86,7 +86,11 @@ export async function autenticar(req, res, next) {
     }
     next();
   } catch (err) {
-    console.error(err);
+    if (req.originalUrl.split('?')[0].startsWith('/api/chatbot/')) {
+      console.error('Error al verificar la sesión del chatbot.');
+    } else {
+      console.error(err);
+    }
     return res.status(500).json({ error: 'Error al verificar los permisos del usuario' });
   }
 }

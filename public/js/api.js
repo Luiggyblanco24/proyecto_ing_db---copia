@@ -42,6 +42,25 @@ async function apiFetch(url, options = {}) {
   return data;
 }
 
+async function apiFetchArchivo(url, options = {}) {
+  const token = getToken();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {}),
+  };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const respuesta = await fetch(url, { ...options, headers });
+  if (!respuesta.ok) {
+    if (respuesta.status === 401 && token) {
+      localStorage.removeItem('token');
+      window.location.assign('/login.html?sesion=expirada');
+    }
+    const data = await respuesta.json().catch(() => ({}));
+    throw new Error(data.error || 'No se pudo descargar el archivo.');
+  }
+  return respuesta.blob();
+}
+
 // Si hay token, redirige al panel (evita volver a login estando logueado)
 function redirigirSiLogueado() {
   if (getToken()) window.location.href = '/dashboard.html';

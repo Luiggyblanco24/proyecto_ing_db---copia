@@ -4,6 +4,7 @@ import { pool, query } from '../config/db.js';
 import { normalizarNombre } from '../utils/nombre.js';
 import { emitirTokenSesion } from '../services/auth-session.service.js';
 import { textoAvisoDatos, versionAvisoDatos } from '../services/consentimiento.service.js';
+import { chatbotHabilitado } from '../config/chatbot.js';
 import {
   eliminarObjetoStorage,
   rutaObjetoFotoPerfil,
@@ -308,12 +309,13 @@ export async function me(req, res) {
   try {
     return res.json({
       ...rows[0],
+      chatbot_habilitado: chatbotHabilitado,
       foto_perfil_url: urlFotoPerfil(rows[0].foto_perfil_url),
     });
   } catch (error) {
     if (error.code === 'STORAGE_CONFIGURATION_MISSING' && process.env.NODE_ENV !== 'production') {
       console.warn('Sin SUPABASE_URL: el perfil se devuelve sin foto (solo desarrollo).');
-      return res.json({ ...rows[0], foto_perfil_url: null });
+      return res.json({ ...rows[0], chatbot_habilitado: chatbotHabilitado, foto_perfil_url: null });
     }
     console.error('No se pudo resolver la URL de la foto del perfil:', error);
     return res.status(503).json({ error: 'El almacenamiento de fotos no está configurado correctamente' });

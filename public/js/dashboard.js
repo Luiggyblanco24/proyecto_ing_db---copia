@@ -191,7 +191,7 @@ async function cargarPerfil() {
     actualizarEstadoCuenta();
     document.getElementById('avatar-iniciales').textContent =
       [perfil.nombre1, perfil.apellido1].filter(Boolean).map((parte) => parte[0]).join('').toLocaleUpperCase('es');
-    const avatares = [document.getElementById('avatar-topbar'), document.getElementById('avatar-cuenta')];
+    const avatares = [document.getElementById('avatar-topbar'), document.getElementById('avatar-cuenta')].filter(Boolean);
     avatares.forEach((avatar) => {
       if (perfil.foto_perfil_url) {
         avatar.src = perfil.foto_perfil_url;
@@ -236,6 +236,7 @@ async function cargarPerfil() {
     ].filter(Boolean).join(' · ') || 'Afiliado SUTENS';
 
     if (esAdmin) document.getElementById('btn-registrar').style.display = 'inline-block';
+    if (puedeGestionarAfiliados) cargarPendientesKpi();
     if (esAdmin || esDirectivaPrincipal) {
       document.getElementById('btn-crear-subdirectiva').style.display = 'inline-block';
       document.getElementById('btn-crear-institucion').style.display = 'inline-block';
@@ -253,7 +254,13 @@ async function cargarPerfil() {
     renderizarOpcionesInicio();
     InicioUI.pintarHero(perfil, [perfil.nombre1, perfil.apellido1].filter(Boolean).join(' '));
     InicioUI.cargarActividadesYDocumentos();
-    if (perfil.estado === 'aprobado') await cargarEstadisticasAfiliacion();
+    document.dispatchEvent(new CustomEvent('sutens:perfil-cargado'));
+    if (perfil.estado === 'aprobado') {
+      await cargarEstadisticasAfiliacion();
+    } else {
+      InicioUI.setIndicador('indicador-afiliados', null, { mostrar: false });
+      document.getElementById('estadisticas-afiliacion').hidden = true;
+    }
   } catch (err) {
     // Token inválido o expirado
     cerrarSesion();
@@ -264,95 +271,127 @@ async function cargarEstadisticasAfiliacion() {
   const seccion = document.getElementById('estadisticas-afiliacion');
   const contenido = document.getElementById('contenido-estadisticas-afiliacion');
   const mensaje = document.getElementById('mensaje-estadisticas-afiliacion');
+  const reintentar = document.getElementById('btn-reintentar-estadisticas');
   seccion.hidden = false;
   mensaje.textContent = '';
   mensaje.className = 'mensaje';
+  if (reintentar) reintentar.hidden = true;
+  contenido.setAttribute('aria-busy', 'true');
+  contenido.innerHTML = `
+    <div class="paneles-estadisticas">
+      <div class="panel-grafica">
+        <div class="panel-grafica__cabecera">
+          <h3 class="panel-grafica__titulo">Afiliados por subdirectiva</h3>
+        </div>
+        <div class="panel-grafica__cuerpo"><span class="skeleton bloque"></span></div>
+      </div>
+      <div class="panel-grafica">
+        <div class="panel-grafica__cabecera">
+          <h3 class="panel-grafica__titulo">Crecimiento de los últimos 6 meses</h3>
+        </div>
+        <div class="panel-grafica__cuerpo"><span class="skeleton bloque"></span></div>
+      </div>
+    </div>`;
 
   try {
     const estadisticas = await apiFetch('/api/membresia/estadisticas');
     document.getElementById('titulo-estadisticas-afiliacion').textContent =
       estadisticas.alcance === 'departamental' ? 'Afiliación departamental' : estadisticas.nombre_subdirectiva;
-    contenido.replaceChildren();
+    InicioUI.setIndicador('indicador-afiliados', estadisticas.total_afiliados, { mostrar: true });
 
-    const tarjetaTotal = document.createElement('article');
-    tarjetaTotal.className = 'estadistica-total';
-    const etiquetaTotal = document.createElement('span');
-    etiquetaTotal.className = 'sobrelinea';
-    etiquetaTotal.textContent = estadisticas.alcance === 'departamental'
-      ? 'AFILIADOS APROBADOS EN SUTENS'
-      : 'AFILIADOS APROBADOS EN TU SUBDIRECTIVA';
-    const valorTotal = document.createElement('strong');
-    valorTotal.textContent = Number(estadisticas.total_afiliados).toLocaleString('es-CO');
-    tarjetaTotal.append(etiquetaTotal, valorTotal);
-    InicioUI.setIndicador('indicador-afiliados', estadisticas.total_afiliados);
-    contenido.append(tarjetaTotal);
-
-    if (estadisticas.alcance !== 'departamental') return;
-
-    const distribucion = document.createElement('section');
-    distribucion.className = 'estadistica-panel';
-    const tituloDistribucion = document.createElement('h3');
-    tituloDistribucion.textContent = 'Afiliados por subdirectiva';
-    const listaSubdirectivas = document.createElement('div');
-    listaSubdirectivas.className = 'lista-estadisticas-subdirectivas';
-    estadisticas.subdirectivas.forEach((subdirectiva) => {
-      const fila = document.createElement('div');
-      fila.className = 'fila-estadistica-subdirectiva';
-      const nombre = document.createElement('span');
-      nombre.textContent = subdirectiva.nombre;
-      const total = document.createElement('strong');
-      total.textContent = Number(subdirectiva.total_afiliados).toLocaleString('es-CO');
-      fila.append(nombre, total);
-      listaSubdirectivas.append(fila);
-    });
-    if (estadisticas.subdirectivas.length === 0) {
-      const vacio = document.createElement('p');
-      vacio.className = 'texto-estadistica-vacia';
-      vacio.textContent = 'Aún no hay subdirectivas registradas.';
-      listaSubdirectivas.append(vacio);
+    if (estadisticas.alcance !== 'departamental') {
+      InicioUI.setIndicador('indicador-altas', null, { mostrar: false });
+      InicioUI.setIndicador('indicador-subdirectivas', null, { mostrar: false });
+      contenido.innerHTML = `
+        <article class="estadistica-panel estadistica-resumen">
+          <span class="sobrelinea">AFILIADOS APROBADOS</span>
+          <strong>${Number(estadisticas.total_afiliados).toLocaleString('es-CO')}</strong>
+          <p>${escapeHTML(estadisticas.nombre_subdirectiva || 'Tu subdirectiva')}</p>
+        </article>`;
+      return;
     }
-    distribucion.append(tituloDistribucion, listaSubdirectivas);
 
-    const crecimiento = document.createElement('section');
-    crecimiento.className = 'estadistica-panel';
-    const tituloCrecimiento = document.createElement('h3');
-    tituloCrecimiento.textContent = 'Crecimiento de los últimos 6 meses';
-    const listaCrecimiento = document.createElement('div');
-    listaCrecimiento.className = 'lista-crecimiento-mensual';
-    const maximoAltas = Math.max(1, ...estadisticas.crecimiento.map((mes) => Number(mes.nuevas_altas)));
-    estadisticas.crecimiento.forEach((mes) => {
-      const fila = document.createElement('div');
-      fila.className = 'fila-crecimiento-mensual';
-      const etiqueta = document.createElement('span');
-      etiqueta.textContent = mes.etiqueta;
-      const barraFondo = document.createElement('span');
-      barraFondo.className = 'barra-crecimiento-fondo';
-      const barra = document.createElement('span');
-      barra.className = 'barra-crecimiento';
-      barra.style.width = `${(Number(mes.nuevas_altas) / maximoAltas) * 100}%`;
-      barraFondo.append(barra);
-      const valor = document.createElement('strong');
-      valor.textContent = `+${Number(mes.nuevas_altas).toLocaleString('es-CO')}`;
-      const detalle = document.createElement('span');
-      detalle.className = 'detalle-crecimiento';
-      if (mes.porcentaje !== null) {
-        const porcentaje = Number(mes.porcentaje);
-        detalle.textContent = `${porcentaje > 0 ? '+' : ''}${porcentaje.toLocaleString('es-CO')}% vs. mes anterior`;
-      } else {
-        detalle.textContent = 'altas aprobadas';
-      }
-      fila.append(etiqueta, barraFondo, valor, detalle);
-      listaCrecimiento.append(fila);
-    });
-    crecimiento.append(tituloCrecimiento, listaCrecimiento);
-    const paneles = document.createElement('div');
-    paneles.className = 'paneles-estadisticas';
-    paneles.append(distribucion, crecimiento);
-    contenido.append(paneles);
+    const subdirectivas = Array.isArray(estadisticas.subdirectivas) ? estadisticas.subdirectivas : [];
+    const crecimiento = Array.isArray(estadisticas.crecimiento) ? estadisticas.crecimiento : [];
+    const ultimoMes = crecimiento[crecimiento.length - 1];
+    InicioUI.setIndicador('indicador-subdirectivas', subdirectivas.length, { mostrar: true });
+    InicioUI.setIndicador('indicador-altas', ultimoMes ? ultimoMes.nuevas_altas : null, { mostrar: Boolean(ultimoMes) });
+
+    const barras = subdirectivas.length
+      ? Graficas.barrasHorizontales(
+        subdirectivas.map((subdirectiva) => ({
+          etiqueta: subdirectiva.nombre,
+          valor: subdirectiva.total_afiliados,
+        })),
+        {
+          titulo: 'Afiliados por subdirectiva',
+          descripcion: subdirectivas
+            .map((subdirectiva) => `${subdirectiva.nombre}: ${Number(subdirectiva.total_afiliados).toLocaleString('es-CO')} afiliados`)
+            .join('. '),
+        },
+      )
+      : UI.estadoVacio({ icono: 'red', mensaje: 'Aún no hay subdirectivas registradas.' });
+
+    const linea = crecimiento.length
+      ? Graficas.lineaCrecimiento(
+        crecimiento.map((mes) => ({
+          etiqueta: mes.etiqueta,
+          valor: mes.nuevas_altas,
+        })),
+        {
+          titulo: 'Crecimiento de los últimos 6 meses',
+          descripcion: crecimiento
+            .map((mes) => `${mes.etiqueta}: ${Number(mes.nuevas_altas).toLocaleString('es-CO')} altas`)
+            .join('. '),
+        },
+      )
+      : UI.estadoVacio({ icono: 'calendario', mensaje: 'Aún no hay altas registradas en este periodo.' });
+
+    const notaCrecimiento = ultimoMes
+      ? `${Number(ultimoMes.nuevas_altas).toLocaleString('es-CO')} altas este mes`
+      : 'Sin altas este mes';
+
+    contenido.innerHTML = `
+      <div class="paneles-estadisticas">
+        <article class="panel-grafica">
+          <div class="panel-grafica__cabecera">
+            <h3 class="panel-grafica__titulo">Afiliados por subdirectiva</h3>
+            <span class="panel-grafica__nota">${subdirectivas.length} subdirectivas</span>
+          </div>
+          <div class="panel-grafica__cuerpo">${barras}</div>
+        </article>
+        <article class="panel-grafica">
+          <div class="panel-grafica__cabecera">
+            <h3 class="panel-grafica__titulo">Crecimiento de los últimos 6 meses</h3>
+            <span class="panel-grafica__nota">${escapeHTML(notaCrecimiento)}</span>
+          </div>
+          <div class="panel-grafica__cuerpo">${linea}</div>
+        </article>
+      </div>`;
   } catch (error) {
     contenido.replaceChildren();
     mensaje.textContent = error.message;
     mensaje.className = 'mensaje error visible';
+    if (reintentar) reintentar.hidden = false;
+    InicioUI.setIndicador('indicador-afiliados', null, { mostrar: true });
+    InicioUI.setIndicador('indicador-altas', null, { mostrar: false });
+    InicioUI.setIndicador('indicador-subdirectivas', null, { mostrar: false });
+  } finally {
+    contenido.setAttribute('aria-busy', 'false');
+    document.getElementById('hero-indicadores')?.setAttribute('aria-busy', 'false');
+  }
+}
+
+async function cargarPendientesKpi() {
+  try {
+    const pendientes = await apiFetch('/api/afiliados?estado=pendiente');
+    InicioUI.setIndicador(
+      'indicador-pendientes',
+      Array.isArray(pendientes) ? pendientes.length : null,
+      { mostrar: true },
+    );
+  } catch {
+    InicioUI.setIndicador('indicador-pendientes', null, { mostrar: false });
   }
 }
 
@@ -386,11 +425,15 @@ async function mostrarVista(idVista) {
     vista.hidden = vista.id !== idVista;
   });
   document.querySelectorAll('.nav-vista').forEach((boton) => {
-    boton.classList.toggle('activo', boton.dataset.vista === idVista);
+    const esActivo = boton.dataset.vista === idVista;
+    boton.classList.toggle('activo', esActivo);
+    if (esActivo) {
+      boton.setAttribute('aria-current', 'page');
+    } else {
+      boton.removeAttribute('aria-current');
+    }
   });
-  document.getElementById('nav-vistas').classList.remove('abierto');
-  document.getElementById('btn-menu-movil').setAttribute('aria-expanded', 'false');
-  document.getElementById('btn-menu-movil').setAttribute('aria-label', 'Abrir menú de navegación');
+  cerrarSidebarMovil(true);
 
   if (idVista === 'vista-directorio') await cargarDirectorio();
   if (idVista === 'vista-calendario') await cargarEventos();
@@ -399,6 +442,32 @@ async function mostrarVista(idVista) {
   if (idVista === 'vista-afiliados') await cargarAfiliadosVisibles();
   if (idVista === 'vista-administracion' && puedeGestionarAfiliados) await cargarUsuarios();
 }
+
+window.SUTENSChatbotDashboard = {
+  navegarA: (destino) => {
+    const vistas = {
+      inicio: 'vista-inicio',
+      calendario: 'vista-calendario',
+      'mi-cuenta': 'vista-cuenta',
+      estructura: 'vista-directorio',
+      biblioteca: 'vista-biblioteca',
+      afiliados: 'vista-afiliados',
+      administracion: 'vista-administracion',
+    };
+    if (!Object.hasOwn(vistas, destino)) return false;
+    if (destino === 'afiliados' && !puedeVerAfiliados) return false;
+    if (destino === 'administracion' && !puedeGestionarAfiliados) return false;
+    void mostrarVista(vistas[destino]);
+    return true;
+  },
+  obtenerCapacidades: () => ({
+    // Esto filtra opciones de interfaz; las API mantienen su autorización RBAC en el servidor.
+    manageAffiliates: puedeGestionarAfiliados,
+    resetUserPassword: esAdmin,
+    viewReports: esAdmin,
+  }),
+  chatbotHabilitado: () => perfilActual?.chatbot_habilitado === true,
+};
 
 function puedeMarcarEventoRealizado(evento) {
   if (esAdmin || esDirectivaPrincipal) return true;
@@ -2212,35 +2281,128 @@ document.querySelectorAll('[data-accion-seleccion]').forEach((boton) => {
   });
 });
 
+const SIDEBAR_CLAVE = 'sutens-sidebar-colapsada';
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+const sidebarTooltip = document.getElementById('sidebar-tooltip');
+const btnColapsarSidebar = document.getElementById('btn-colapsar-sidebar');
+const btnMenuMovil = document.getElementById('btn-menu-movil');
+const consultaMovil = window.matchMedia('(max-width: 1023.98px)');
+
+function esSidebarColapsada() {
+  return document.documentElement.classList.contains('sidebar-colapsada');
+}
+
+function ocultarTooltipSidebar() {
+  sidebarTooltip.hidden = true;
+  sidebarTooltip.textContent = '';
+}
+
+function actualizarBotonColapsar() {
+  const colapsada = esSidebarColapsada();
+  const etiqueta = colapsada ? 'Expandir menú lateral' : 'Colapsar menú lateral';
+  btnColapsarSidebar.setAttribute('aria-expanded', String(!colapsada));
+  btnColapsarSidebar.setAttribute('aria-label', etiqueta);
+  btnColapsarSidebar.title = etiqueta;
+}
+
+function aplicarEstadoSidebar(colapsada) {
+  document.documentElement.classList.toggle('sidebar-colapsada', colapsada);
+  actualizarBotonColapsar();
+  if (colapsada) ocultarTooltipSidebar();
+}
+
+function guardarEstadoSidebar(colapsada) {
+  try {
+    localStorage.setItem(SIDEBAR_CLAVE, colapsada ? '1' : '0');
+  } catch (error) {}
+}
+
+function mostrarTooltipSidebar(item) {
+  if (!esSidebarColapsada() || consultaMovil.matches) {
+    ocultarTooltipSidebar();
+    return;
+  }
+  const texto = item.dataset.tooltip;
+  if (!texto) return;
+  const rect = item.getBoundingClientRect();
+  sidebarTooltip.textContent = texto;
+  sidebarTooltip.hidden = false;
+  const alto = sidebarTooltip.offsetHeight;
+  const centro = Math.min(
+    Math.max(rect.top + rect.height / 2, alto / 2 + 8),
+    window.innerHeight - alto / 2 - 8
+  );
+  sidebarTooltip.style.top = `${centro}px`;
+  sidebarTooltip.style.left = `${rect.right + 10}px`;
+}
+
+function abrirSidebarMovil() {
+  if (!consultaMovil.matches) return;
+  sidebar.classList.add('abierta');
+  sidebarOverlay.hidden = false;
+  document.body.classList.add('drawer-abierto');
+  btnMenuMovil.setAttribute('aria-expanded', 'true');
+  btnMenuMovil.setAttribute('aria-label', 'Cerrar menú de navegación');
+  const primerItem = sidebar.querySelector('.nav-vista:not([hidden])');
+  if (primerItem) primerItem.focus({ preventScroll: true });
+}
+
+function cerrarSidebarMovil(devolverFoco = false) {
+  const estabaAbierta = sidebar.classList.contains('abierta');
+  sidebar.classList.remove('abierta');
+  sidebarOverlay.hidden = true;
+  document.body.classList.remove('drawer-abierto');
+  btnMenuMovil.setAttribute('aria-expanded', 'false');
+  btnMenuMovil.setAttribute('aria-label', 'Abrir menú de navegación');
+  ocultarTooltipSidebar();
+  if (devolverFoco && estabaAbierta) btnMenuMovil.focus({ preventScroll: true });
+}
+
 document.querySelectorAll('.nav-vista').forEach((boton) => {
   boton.addEventListener('click', () => mostrarVista(boton.dataset.vista));
 });
-document.getElementById('btn-menu-movil').addEventListener('click', () => {
-  const nav = document.getElementById('nav-vistas');
-  const abierto = nav.classList.toggle('abierto');
-  document.getElementById('btn-menu-movil').setAttribute('aria-expanded', String(abierto));
-  document.getElementById('btn-menu-movil').setAttribute(
-    'aria-label', abierto ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'
-  );
-});
-document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') mostrarVistaMenuCerrado();
-});
-document.addEventListener('click', (event) => {
-  const nav = document.getElementById('nav-vistas');
-  const boton = document.getElementById('btn-menu-movil');
-  if (!nav.contains(event.target) && !boton.contains(event.target)) mostrarVistaMenuCerrado();
+
+document.querySelectorAll('#sidebar .nav-vista').forEach((item) => {
+  item.addEventListener('mouseenter', () => mostrarTooltipSidebar(item));
+  item.addEventListener('mouseleave', ocultarTooltipSidebar);
+  item.addEventListener('focus', () => mostrarTooltipSidebar(item));
+  item.addEventListener('blur', ocultarTooltipSidebar);
 });
 
-function mostrarVistaMenuCerrado() {
-  document.getElementById('nav-vistas').classList.remove('abierto');
-  document.getElementById('btn-menu-movil').setAttribute('aria-expanded', 'false');
-  document.getElementById('btn-menu-movil').setAttribute('aria-label', 'Abrir menú de navegación');
-}
+btnColapsarSidebar.addEventListener('click', () => {
+  const colapsada = !esSidebarColapsada();
+  aplicarEstadoSidebar(colapsada);
+  guardarEstadoSidebar(colapsada);
+});
+
+btnMenuMovil.addEventListener('click', () => {
+  if (sidebar.classList.contains('abierta')) {
+    cerrarSidebarMovil();
+  } else {
+    abrirSidebarMovil();
+  }
+});
+
+sidebarOverlay.addEventListener('click', () => cerrarSidebarMovil(true));
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && sidebar.classList.contains('abierta')) {
+    cerrarSidebarMovil(true);
+  }
+});
+
+consultaMovil.addEventListener('change', (event) => {
+  if (!event.matches) cerrarSidebarMovil();
+});
+
+window.addEventListener('resize', ocultarTooltipSidebar);
+actualizarBotonColapsar();
 
 document.getElementById('btn-recargar-directorio').addEventListener('click', cargarDirectorio);
 document.getElementById('btn-recargar-afiliados').addEventListener('click', cargarAfiliadosVisibles);
 document.getElementById('btn-recargar-calendario').addEventListener('click', cargarEventos);
+document.getElementById('btn-reintentar-estadisticas').addEventListener('click', cargarEstadisticasAfiliacion);
 document.querySelector('[data-abrir-calendario]').addEventListener('click', abrirEventoRecordado);
 document.getElementById('btn-crear-evento').addEventListener('click', () => {
   const formulario = document.getElementById('form-crear-evento');

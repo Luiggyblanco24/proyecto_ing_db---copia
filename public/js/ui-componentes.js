@@ -640,9 +640,62 @@ const UI = (() => {
     if (cabecera) document.documentElement.style.setProperty('--topbar-h', `${cabecera.offsetHeight}px`);
   }
 
+  // ---------- Tema claro / oscuro ----------
+  const TEMA_CLAVE = 'sutens-tema';
+
+  function temaGuardado() {
+    try {
+      const valor = localStorage.getItem(TEMA_CLAVE);
+      return valor === 'oscuro' || valor === 'claro' ? valor : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function temaActual() {
+    return document.documentElement.dataset.tema === 'oscuro' ? 'oscuro' : 'claro';
+  }
+
+  function actualizarBotonTema() {
+    const boton = document.getElementById('btn-tema');
+    if (!boton) return;
+    const oscuro = temaActual() === 'oscuro';
+    const etiqueta = oscuro ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro';
+    boton.setAttribute('aria-pressed', String(oscuro));
+    boton.setAttribute('aria-label', etiqueta);
+    boton.title = etiqueta;
+  }
+
+  function aplicarTema(tema, guardar = false) {
+    if (tema === 'oscuro') document.documentElement.dataset.tema = 'oscuro';
+    else delete document.documentElement.dataset.tema;
+    actualizarBotonTema();
+    if (!guardar) return;
+    try {
+      localStorage.setItem(TEMA_CLAVE, tema === 'oscuro' ? 'oscuro' : 'claro');
+    } catch {
+      // Si el almacenamiento no está disponible, el tema sigue funcionando en la sesión.
+    }
+  }
+
+  function iniciarTema() {
+    const boton = document.getElementById('btn-tema');
+    if (!boton) return;
+    aplicarTema(temaActual());
+    boton.addEventListener('click', () => {
+      aplicarTema(temaActual() === 'oscuro' ? 'claro' : 'oscuro', true);
+    });
+    const consulta = window.matchMedia('(prefers-color-scheme: dark)');
+    consulta.addEventListener?.('change', (evento) => {
+      if (temaGuardado()) return;
+      aplicarTema(evento.matches ? 'oscuro' : 'claro');
+    });
+  }
+
   function iniciar() {
     decorarBanners();
     ajustarAlturaCabecera();
+    iniciarTema();
     window.addEventListener('resize', ajustarAlturaCabecera);
     document.addEventListener('click', (evento) => {
       const accion = evento.target.closest('[data-ui-accion]');

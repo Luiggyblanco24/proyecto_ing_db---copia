@@ -6,6 +6,7 @@ import membresiaRoutes from './membresia.routes.js';
 import calendarioRoutes from './calendario.routes.js';
 import bibliotecaRoutes from './biblioteca.routes.js';
 import publicRoutes from './public.routes.js';
+import chatbotRoutes from './chatbot.routes.js';
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use('/subdirectivas', subdirectivaRoutes);
 router.use('/membresia', membresiaRoutes);
 router.use('/calendario', calendarioRoutes);
 router.use('/biblioteca', bibliotecaRoutes);
+router.use('/chatbot', chatbotRoutes);
 
 export default router;

@@ -180,6 +180,76 @@ Al abrir `http://localhost:3000` verás el sitio público de SUTENS:
 | POST | `/api/subdirectivas/cargos` | Administrador | Agrega una opción de cargo sindical |
 | POST | `/api/subdirectivas/roles-laborales` | Administrador | Agrega una opción de rol docente |
 | POST | `/api/subdirectivas` | Administrador o Directiva Principal | Crear subdirectiva (`{"nombre":"..."}`) |
+| POST | `/api/chatbot/informes` | Administrador SUTENS | Genera informes agregados predefinidos; no devuelve datos personales |
+| POST | `/api/chatbot/informes/exportar` | Administrador SUTENS | Descarga afiliados de grupos visibles en PDF/Excel o solo sus correos en Excel, si está habilitada |
+
+Los informes del asistente solo aceptan códigos y filtros estructurados del catálogo. La
+autorización se valida en el servidor; los resultados son de alcance global para
+Administración, suprimen grupos con menos de cinco afiliados y se ejecutan en una transacción
+de solo lectura. `CHATBOT_ENABLED=false` por defecto oculta el widget y bloquea
+`/api/chatbot/*` con 404; con `true` explícito se habilitan la ayuda y los informes autorizados.
+La visibilidad se obtiene del perfil autenticado; una pestaña abierta debe recargarse tras
+cambiar la bandera, pero el servidor actualizado sigue bloqueando las peticiones.
+Los límites configurables son 30 solicitudes por usuario cada 60 segundos,
+5 segundos de timeout y 200 filas máximas. Ajusta `CHATBOT_REPORT_RATE_LIMIT`,
+`CHATBOT_REPORT_RATE_WINDOW_MS`, `CHATBOT_REPORT_TIMEOUT_MS`,
+`CHATBOT_REPORT_MAX_ROWS` y `CHATBOT_REPORT_MIN_GROUP_SIZE` en el entorno del servidor.
+Los límites de frecuencia de informes y descargas, sus contadores y las alertas de volumen
+se mantienen en memoria por proceso y se reinician al reiniciarlo. Con varias instancias,
+cada una mantiene su propia ventana: el mismo usuario puede acumular solicitudes en distintas
+instancias y la alerta puede no detectar el volumen conjunto. Para aplicar límites y alertas
+globales haría falta un almacenamiento compartido con operaciones atómicas y expiración de
+ventanas, además de definir su disponibilidad y tratamiento de fallos; no está implementado.
+La exportación vuelve a consultar los datos en una transacción de lectura con una instantánea
+consistente, por lo que puede diferir del informe mostrado si los datos cambiaron. Los PDF y
+Excel incluyen datos individuales con el formato del padrón; la alternativa de correos incluye
+únicamente direcciones. Solo se incluyen personas de grupos visibles, nunca de grupos
+suprimidos exclusivamente; una persona presente en varios grupos puede aparecer si al menos
+uno de ellos es visible. Se incluye una fila por persona: para informes por estructura se
+muestra una asignación que cumple los filtros y pertenece a un grupo visible; en informes por
+estado o fecha se muestra una asignación disponible, si existe. Estas descargas requieren una
+finalidad y autorización de tratamiento aprobadas por SUTENS y no preservan la privacidad de
+los informes agregados frente a consultas repetidas o solapadas. El acceso es solo para
+Administrador SUTENS. Las descargas están apagadas por defecto: para habilitarlas se debe
+establecer explícitamente `CHATBOT_DOWNLOADS_ENABLED=true`, previa revisión de seguridad y legal.
+La respuesta del informe indica su disponibilidad y el servidor verifica la bandera en cada
+descarga. Los eventos de descargas incluyen tipo de archivo, informe, nombres de filtros sin
+valores y cantidad cuando esté disponible. Los eventos del chatbot no incluyen IDs de usuario:
+esto elimina la trazabilidad individual previamente existente. Los logs deben mantenerse
+restringidos; los datos operativos restantes aún pueden ser sensibles por contexto.
+El límite independiente es de 5 intentos por usuario cada 10 minutos y 1.000 registros por
+archivo. Se configuran con `CHATBOT_DOWNLOAD_RATE_LIMIT`, `CHATBOT_DOWNLOAD_RATE_WINDOW_MS`
+y `CHATBOT_DOWNLOAD_MAX_RECORDS` (máximo 9.999); un exceso devuelve 422 sin truncar.
+`CHATBOT_DOWNLOAD_ALERT_RECORDS` define el umbral de alerta de volumen acumulado (2.000 por
+ventana). Los contadores y alertas son por proceso, se reinician y no bloquean la extracción
+distribuida ni garantizan que no haya inferencias entre consultas. Véase
+[descargas del chatbot](docs/chatbot-descargas.md).
+Los informes pueden aplicar supresión complementaria cuando solo un grupo queda por debajo
+del umbral para dificultar la inferencia por resta dentro de una respuesta. **La supresión por
+consulta no garantiza anonimato frente a consultas solapadas**: por ejemplo, 40 personas en
+total menos 39 activas revela una inactiva aunque el grupo de inactivas se haya suprimido.
+Por este riesgo, los informes del chatbot solo están habilitados para Administrador SUTENS;
+habilitar a Directiva u otros roles requiere resolver y validar primero esta limitación,
+incluidas otras vías de acceso a estadísticas. La prueba de integración marcada
+`LIMITACIÓN CONOCIDA` reproduce el caso con datos sintéticos; que pase confirma que el riesgo
+existe, no que esté mitigado. La propuesta sin implementar se describe en
+[descargas del chatbot](docs/chatbot-descargas.md).
+El aviso de supresión solo aparece cuando se aplica.
+Los conteos por subdirectiva pueden solaparse cuando una persona tiene más de una asignación;
+la respuesta advierte cuando esto ocurre entre grupos visibles. El informe mensual
+avisa si existen aprobaciones sin fecha, que no se cuentan.
+
+Las pruebas unitarias se ejecutan con `node --test tests/chatbot-reports.test.js`. Para la
+integración en Windows, ejecuta `.\tests\run-chatbot-reports-integration.ps1`; requiere
+PostgreSQL instalado (por defecto busca `C:\Program Files\PostgreSQL\18\bin`). El script
+inicia un clúster temporal local, crea una base desechable, carga `database/schema.sql` y
+10.000 registros sintéticos, ejecuta las pruebas/mediciones y elimina la base y el clúster.
+No se conecta a `DATABASE_URL`, a la base local habitual ni a producción.
+La visibilidad del widget se comprueba con `node --test tests/chatbot-download-ui.test.js`;
+requiere el navegador Chromium de Playwright instalado y simula las respuestas del servidor.
+Las pruebas de la bandera global se ejecutan con `node --test tests/chatbot-feature.test.js`.
+El procedimiento de despliegue, monitoreo y rollback está en
+[operación del chatbot](docs/chatbot-operacion.md).
 
 ### Ejemplo de uso
 

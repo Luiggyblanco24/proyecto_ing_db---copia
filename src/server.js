@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import routes from './routes/index.js';
+import { auditarIntentoDescarga, manejarCuerpoInvalidoDescarga } from './middleware/chatbot-download-policy.js';
+import { exigirChatbotHabilitado, manejarCuerpoInvalidoChatbot } from './config/chatbot.js';
 
 dotenv.config();
 
@@ -27,7 +29,11 @@ app.use(cors({
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+app.use('/api/chatbot', exigirChatbotHabilitado);
+app.use('/api/chatbot/informes/exportar', auditarIntentoDescarga);
 app.use(express.json());
+app.use('/api/chatbot/informes/exportar', manejarCuerpoInvalidoDescarga);
+app.use('/api/chatbot', manejarCuerpoInvalidoChatbot);
 
 // La landing de Astro es la entrada pública; login y panel permanecen en public.
 // public va primero: dist contiene una copia de public que quedaría desactualizada.

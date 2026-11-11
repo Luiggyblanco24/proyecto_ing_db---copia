@@ -178,7 +178,7 @@ body {
   overflow: hidden;
   border: 3px solid rgba(255, 255, 255, 0.55);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(8, 42, 24, 0.35);
   color: #fff;
   font-size: 26px;
   font-weight: 800;
@@ -209,8 +209,8 @@ body {
 
 .hero-roles .badge {
   padding: 5px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(8, 42, 24, 0.3);
   color: #fff;
   font-size: 12px;
   letter-spacing: 0.02em;
@@ -746,6 +746,85 @@ body {
     -webkit-box-orient: vertical;
     white-space: normal;
   }
+}
+
+/* ---------- Inicio: héroe compacto, KPIs y estadísticas ---------- */
+.bienvenida.hero {
+  gap: 20px;
+  padding: 28px 32px;
+  margin-bottom: 20px;
+}
+
+.bienvenida.hero h1 {
+  font-size: clamp(24px, 3vw, 32px);
+}
+
+.hero-avatar {
+  width: 64px;
+  height: 64px;
+  font-size: 22px;
+}
+
+.hero-identidad {
+  gap: 16px;
+}
+
+@media (min-width: 900px) {
+  .bienvenida.hero {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+    align-items: center;
+  }
+}
+
+.panel-kpis .kpi {
+  animation: ui-entrada 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+
+.estadisticas-encabezado {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.estadisticas-acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.estadisticas-acciones .mensaje {
+  margin: 0;
+}
+
+.estadistica-resumen {
+  display: grid;
+  gap: 6px;
+  width: min(100%, 380px);
+  border-left: 4px solid var(--ui-verde-600);
+}
+
+.estadistica-resumen .sobrelinea {
+  margin: 0;
+}
+
+.estadistica-resumen strong {
+  color: var(--ui-verde-900);
+  font-size: clamp(34px, 5vw, 46px);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.estadistica-resumen p {
+  color: var(--ui-muted);
+  font-size: var(--texto-base);
+}
+
+.inicio-vacio--error {
+  border: 1px solid color-mix(in srgb, var(--ui-peligro) 30%, transparent);
+  background: var(--ui-peligro-suave);
+  color: var(--ui-peligro);
 }
 
 /* ---------- Movimiento reducido ---------- */

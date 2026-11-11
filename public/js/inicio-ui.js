@@ -15,6 +15,8 @@ const InicioUI = (() => {
     salir: trazo('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>'),
     casa: trazo('<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'),
     chat: trazo('<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/>'),
+    tendencia: trazo('<path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/>'),
+    reloj: trazo('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
   };
 
   const TARJETAS = {
@@ -38,12 +40,16 @@ const InicioUI = (() => {
       </button>`;
   }
 
-  function statCard(id, etiqueta, indice) {
+  function statCard(id, etiqueta, indice, { icono = 'red', tono = 'verde', meta = '', oculto = false } = {}) {
     return `
-      <div class="stat-card" style="--i:${indice}">
-        <dt>${etiqueta}</dt>
-        <dd id="${id}">—</dd>
-      </div>`;
+      <article class="kpi" role="listitem" style="--i:${indice}" data-tono="${tono}" ${oculto ? 'hidden' : ''}>
+        <span class="kpi__icono" aria-hidden="true">${ICONOS[icono] || ICONOS.red}</span>
+        <div class="kpi__cuerpo">
+          <p class="kpi__etiqueta">${etiqueta}</p>
+          <p class="kpi__valor" id="${id}"><span class="skeleton kpi__skeleton"></span></p>
+          <p class="kpi__meta">${meta}</p>
+        </div>
+      </article>`;
   }
 
   function eventItem(evento, indice) {
@@ -96,9 +102,11 @@ const InicioUI = (() => {
     requestAnimationFrame(paso);
   }
 
-  function setIndicador(id, valor) {
+  function setIndicador(id, valor, opciones = {}) {
     const elemento = document.getElementById(id);
     if (!elemento) return;
+    const tarjeta = elemento.closest('.kpi');
+    if (tarjeta && typeof opciones.mostrar === 'boolean') tarjeta.hidden = !opciones.mostrar;
     const numero = Number(valor);
     if (valor === null || valor === undefined || Number.isNaN(numero)) {
       elemento.textContent = '—';
@@ -107,13 +115,32 @@ const InicioUI = (() => {
     animarNumero(elemento, numero);
   }
 
+  function marcarIndicadoresListos() {
+    document.getElementById('hero-indicadores')?.setAttribute('aria-busy', 'false');
+  }
+
   function renderizarIndicadores() {
     const contenedor = document.getElementById('hero-indicadores');
     if (!contenedor) return;
     contenedor.innerHTML = [
-      statCard('indicador-afiliados', 'Total de afiliados', 1),
-      statCard('indicador-eventos', 'Próximas actividades', 2),
-      statCard('indicador-documentos', 'Documentos nuevos', 3),
+      statCard('indicador-afiliados', 'Afiliados aprobados', 1, {
+        icono: 'usuarios', tono: 'verde', meta: 'Padrón sindical',
+      }),
+      statCard('indicador-pendientes', 'Solicitudes pendientes', 2, {
+        icono: 'reloj', tono: 'aviso', meta: 'Por revisar', oculto: true,
+      }),
+      statCard('indicador-altas', 'Altas del mes', 3, {
+        icono: 'tendencia', tono: 'acento', meta: 'Nuevas aprobaciones', oculto: true,
+      }),
+      statCard('indicador-subdirectivas', 'Subdirectivas', 4, {
+        icono: 'red', tono: 'info', meta: 'Con presencia sindical', oculto: true,
+      }),
+      statCard('indicador-eventos', 'Próximas actividades', 5, {
+        icono: 'calendario', tono: 'acento', meta: 'Agenda sindical',
+      }),
+      statCard('indicador-documentos', 'Documentos nuevos', 6, {
+        icono: 'archivo', tono: 'info', meta: 'Últimos 30 días',
+      }),
     ].join('');
   }
 
@@ -143,10 +170,12 @@ const InicioUI = (() => {
     });
   }
 
-  function pintarLista(id, items, vacio) {
+  function pintarLista(id, items, vacio, esError = false) {
     const lista = document.getElementById(id);
     if (!lista) return;
-    lista.innerHTML = items.length ? items.join('') : `<li class="inicio-vacio">${escapeHTML(vacio)}</li>`;
+    lista.innerHTML = items.length
+      ? items.join('')
+      : `<li class="inicio-vacio${esError ? ' inicio-vacio--error' : ''}">${escapeHTML(vacio)}</li>`;
     enlazarNavegacion(lista);
   }
 
@@ -157,33 +186,47 @@ const InicioUI = (() => {
     ]);
 
     const ahora = new Date();
-    const proximos = eventos.status === 'fulfilled'
+    const eventosValidos = eventos.status === 'fulfilled' && Array.isArray(eventos.value)
       ? eventos.value
+      : null;
+    const proximos = eventosValidos
+      ? eventosValidos
         .filter((evento) => evento.estado === 'programado' && new Date(evento.fecha_inicio) >= ahora)
         .sort((a, b) => new Date(a.fecha_inicio) - new Date(b.fecha_inicio))
       : [];
     pintarLista(
       'lista-inicio-eventos',
       proximos.slice(0, 3).map(eventItem),
-      'No hay actividades programadas para tu alcance.',
+      eventosValidos
+        ? 'No hay actividades programadas para tu alcance.'
+        : 'No se pudieron cargar las próximas actividades.',
+      !eventosValidos,
     );
-    setIndicador('indicador-eventos', eventos.status === 'fulfilled' ? proximos.length : null);
+    setIndicador('indicador-eventos', eventosValidos ? proximos.length : null, { mostrar: true });
 
-    const recientes = documentos.status === 'fulfilled'
-      ? [...documentos.value].sort((a, b) => new Date(b.fecha_publicacion) - new Date(a.fecha_publicacion))
+    const documentosValidos = documentos.status === 'fulfilled' && Array.isArray(documentos.value)
+      ? documentos.value
+      : null;
+    const recientes = documentosValidos
+      ? [...documentosValidos].sort((a, b) => new Date(b.fecha_publicacion) - new Date(a.fecha_publicacion))
       : [];
     pintarLista(
       'lista-inicio-documentos',
       recientes.slice(0, 3).map(documentItem),
-      'No hay documentos disponibles.',
+      documentosValidos
+        ? 'No hay documentos disponibles.'
+        : 'No se pudieron cargar los documentos.',
+      !documentosValidos,
     );
     const hace30Dias = ahora.getTime() - 30 * 24 * 3600 * 1000;
     setIndicador(
       'indicador-documentos',
-      documentos.status === 'fulfilled'
+      documentosValidos
         ? recientes.filter((documento) => new Date(documento.fecha_publicacion).getTime() >= hace30Dias).length
         : null,
+      { mostrar: true },
     );
+    marcarIndicadoresListos();
   }
 
   renderizarIndicadores();

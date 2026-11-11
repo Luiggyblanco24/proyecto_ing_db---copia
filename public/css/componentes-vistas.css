@@ -288,8 +288,9 @@
 }
 
 .tabla-wrapper.tabla-afiliados {
-  max-height: 70vh;
-  overflow: auto;
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .tabla-afiliados table {
@@ -300,7 +301,7 @@
 .tabla-afiliados th {
   position: sticky;
   z-index: 2;
-  top: 0;
+  top: var(--topbar-h, 72px);
   box-shadow: 0 1px 0 var(--ui-border);
 }
 

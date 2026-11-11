@@ -17,7 +17,7 @@ const columnas = [
   ['Estado sindical', 'estado_sindical', 18],
 ];
 
-function datosExportacion(afiliados) {
+export function datosExportacion(afiliados) {
   return afiliados.map((afiliado) => ({
     nombre_completo: [afiliado.nombre1, afiliado.nombre2, afiliado.apellido1, afiliado.apellido2]
       .filter(Boolean).join(' '),
@@ -38,7 +38,7 @@ export function protegerTextoExcel(valor) {
   return /^[=+@\-]/.test(texto) ? `'${texto}` : texto;
 }
 
-async function exportarExcel(res, registros) {
+export async function crearExcelAfiliados(registros, { titulo = 'Padrón de afiliados SUTENS', metadatos = [] } = {}) {
   const libro = new ExcelJS.Workbook();
   const hoja = libro.addWorksheet('Afiliados');
   hoja.columns = columnas.map(([, key, width]) => ({ key, width }));
@@ -48,14 +48,14 @@ async function exportarExcel(res, registros) {
   });
   hoja.mergeCells('C1:J1');
   hoja.mergeCells('C2:J2');
-  hoja.getCell('C1').value = 'Padrón de afiliados SUTENS';
+  hoja.getCell('C1').value = protegerTextoExcel(titulo);
   hoja.getCell('C1').font = { bold: true, size: 16, color: { argb: 'FF1B7A38' } };
   hoja.getCell('C2').value = `Generado: ${new Date().toLocaleDateString('es-CO')} · ${registros.length} afiliados`;
   hoja.getCell('C2').font = { size: 10, color: { argb: 'FF475569' } };
   hoja.getRow(1).height = 30;
   hoja.getRow(2).height = 26;
   hoja.getRow(3).height = 8;
-  hoja.getRow(4).values = [undefined, ...columnas.map(([header]) => header)];
+  hoja.getRow(4).values = columnas.map(([header]) => header);
   hoja.getRow(4).font = { bold: true, color: { argb: 'FFFFFFFF' } };
   hoja.getRow(4).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1B7A38' } };
   hoja.getRow(4).height = 24;
@@ -65,18 +65,29 @@ async function exportarExcel(res, registros) {
   hoja.views = [{ state: 'frozen', ySplit: 4 }];
   hoja.autoFilter = { from: 'A4', to: `${String.fromCharCode(64 + columnas.length)}4` };
 
+  if (metadatos.length) {
+    const detalles = libro.addWorksheet('Detalles del informe');
+    detalles.columns = [{ width: 120 }];
+    metadatos.forEach((linea) => detalles.addRow([protegerTextoExcel(linea)]));
+  }
   const buffer = await libro.xlsx.writeBuffer();
-  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  res.setHeader('Content-Disposition', 'attachment; filename="afiliados-sutens.xlsx"');
-  return res.send(Buffer.from(buffer));
+  return Buffer.from(buffer);
 }
 
-async function exportarPdf(res, registros) {
+export async function crearPdfAfiliados(registros, { titulo = 'Padrón de afiliados SUTENS', metadatos = [], destino = null } = {}) {
   const documento = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 28, bufferPages: false });
   const logo = await obtenerLogoPng();
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', 'attachment; filename="afiliados-sutens.pdf"');
-  documento.pipe(res);
+  const fragmentos = [];
+  let terminado;
+  if (destino) {
+    documento.pipe(destino);
+  } else {
+    terminado = new Promise((resolve, reject) => {
+      documento.on('data', (fragmento) => fragmentos.push(fragmento));
+      documento.on('end', () => resolve(Buffer.concat(fragmentos)));
+      documento.on('error', reject);
+    });
+  }
 
   const anchos = [90, 56, 104, 86, 88, 72, 76, 72, 58, 66];
   const margen = 28;
@@ -87,7 +98,7 @@ async function exportarPdf(res, registros) {
   const dibujarMarca = () => {
     documento.image(logo, margen, 16, { width: 126 });
     documento.font('Helvetica-Bold').fontSize(15).fillColor('#1b7a38')
-      .text('Padrón de afiliados SUTENS', 170, 23, { width: documento.page.width - 198, lineBreak: false });
+      .text(titulo, 170, 23, { width: documento.page.width - 198, lineBreak: false });
     documento.font('Helvetica').fontSize(8).fillColor('#475569')
       .text(`Generado: ${new Date().toLocaleDateString('es-CO')} · ${registros.length} afiliados`, 170, 44);
   };
@@ -104,6 +115,12 @@ async function exportarPdf(res, registros) {
   };
 
   dibujarMarca();
+  if (metadatos.length) {
+    documento.font('Helvetica').fontSize(8).fillColor('#475569');
+    documento.y = y;
+    for (const linea of metadatos) documento.text(linea, margen, documento.y, { width: anchoTotal });
+    y = documento.y + 8;
+  }
   dibujarEncabezadoTabla();
 
   for (const registro of registros) {
@@ -129,13 +146,23 @@ async function exportarPdf(res, registros) {
   }
 
   documento.end();
+  return terminado;
 }
 
 async function enviarExportacion(req, res, afiliados) {
   const formato = req.query.formato;
   const registros = datosExportacion(afiliados);
-  if (formato === 'excel') return exportarExcel(res, registros);
-  if (formato === 'pdf') return exportarPdf(res, registros);
+  if (formato === 'excel') {
+    const archivo = await crearExcelAfiliados(registros);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="afiliados-sutens.xlsx"');
+    return res.send(archivo);
+  }
+  if (formato === 'pdf') {
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="afiliados-sutens.pdf"');
+    return crearPdfAfiliados(registros, { destino: res });
+  }
   return res.status(400).json({ error: 'El formato debe ser excel o pdf' });
 }
 

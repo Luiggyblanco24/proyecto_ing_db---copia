@@ -4,59 +4,135 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SUTENS - Sindicato Unitario de Trabajadores de la Educación de Norte de Santander</title>
+  <script>
+    try {
+      if (localStorage.getItem('sutens-sidebar-colapsada') === '1') {
+        document.documentElement.classList.add('sidebar-colapsada');
+      }
+      const temaGuardado = localStorage.getItem('sutens-tema');
+      const prefiereOscuro = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const tema = temaGuardado === 'oscuro' || temaGuardado === 'claro'
+        ? temaGuardado
+        : (prefiereOscuro ? 'oscuro' : 'claro');
+      if (tema === 'oscuro') document.documentElement.dataset.tema = 'oscuro';
+    } catch (error) {}
+  </script>
   <link rel="icon" type="image/svg+xml" href="/brand/sutens-icono.svg" />
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="stylesheet" href="/css/inicio.css" />
   <link rel="stylesheet" href="/css/componentes.css" />
   <link rel="stylesheet" href="/css/componentes-vistas.css" />
   <link rel="stylesheet" href="/css/dialogos.css" />
+  <link rel="stylesheet" href="/css/navegacion-sidebar.css" />
+  <link rel="stylesheet" href="/css/sistema.css" />
 </head>
-<body>
-  <header class="topbar">
-    <a class="marca" href="/dashboard.html" aria-label="SUTENS, inicio">
-      <img src="/brand/sutens-logo-horizontal.svg" alt="SUTENS" />
-    </a>
-    <button id="btn-menu-movil" class="boton-menu-movil" type="button" aria-label="Abrir menú de navegación" aria-controls="nav-vistas" aria-expanded="false">
-      <span class="icono-menu" aria-hidden="true"><span></span><span></span><span></span></span>
-      <span class="texto-menu">Menú</span>
-    </button>
-    <nav id="nav-vistas" class="nav-vistas" aria-label="Navegación principal">
-      <button class="nav-vista activo" data-vista="vista-inicio">Inicio</button>
-      <button class="nav-vista" data-vista="vista-calendario">Calendario</button>
-      <button class="nav-vista" data-vista="vista-biblioteca">Biblioteca sindical</button>
-      <button class="nav-vista" data-vista="vista-biblioteca-educativa">Biblioteca educativa</button>
-      <button class="nav-vista" data-vista="vista-directorio">Estructura sindical</button>
-      <button id="nav-afiliados" class="nav-vista" data-vista="vista-afiliados" hidden>Afiliados</button>
-      <button id="nav-administracion" class="nav-vista" data-vista="vista-administracion" hidden>Administración</button>
-      <button class="nav-vista" data-vista="vista-cuenta">Mi cuenta</button>
-    </nav>
-    <div class="usuario-info">
-      <div class="notificaciones">
-        <button id="btn-notificaciones" class="btn-campana" type="button" aria-label="Notificaciones" aria-haspopup="true" aria-expanded="false" aria-controls="panel-notificaciones">
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
-          <span id="contador-notificaciones" class="contador-notificaciones" hidden>0</span>
-        </button>
-        <div id="panel-notificaciones" class="panel-notificaciones" hidden>
-          <div class="panel-notificaciones-encabezado">
-            <strong>Actividades pendientes</strong>
-            <button id="btn-leer-notificaciones" class="btn-enlace" type="button">Marcar leídas</button>
-          </div>
-          <ul id="lista-notificaciones"></ul>
-        </div>
-      </div>
-      <img id="avatar-topbar" class="avatar avatar-pequeno" alt="Foto de perfil" hidden />
-      <span id="nombre-usuario"></span>
-      <span id="roles-usuario"></span>
-      <a class="btn btn-secundario btn-sm btn-principal" href="/" aria-label="Volver a la página principal de SUTENS">
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
-        Página principal
+<body class="pagina-panel">
+  <aside id="sidebar" class="sidebar" aria-label="Navegación principal">
+    <div class="sidebar-cabecera">
+      <a class="sidebar-marca" href="/dashboard.html" aria-label="SUTENS, inicio">
+        <img class="sidebar-marca-icono" src="/brand/sutens-icono.svg" alt="" aria-hidden="true" />
+        <span class="sidebar-marca-texto">SUTENS</span>
       </a>
-      <button class="btn btn-secundario btn-sm btn-salir" type="button" onclick="cerrarSesion()">
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-        Cerrar sesión
+      <button id="btn-colapsar-sidebar" class="sidebar-colapsar" type="button" aria-controls="sidebar" aria-expanded="true" aria-label="Colapsar menú lateral" title="Colapsar menú lateral">
+        <svg class="sidebar-colapsar-icono" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m15 18-6-6 6-6"/></svg>
       </button>
     </div>
-  </header>
+
+    <div class="sidebar-cuerpo">
+      <nav class="sidebar-grupo" aria-labelledby="sidebar-seccion-principal">
+        <p id="sidebar-seccion-principal" class="sidebar-titulo">Principal</p>
+        <button class="nav-vista sidebar-item activo" data-vista="vista-inicio" data-tooltip="Inicio" aria-current="page">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+          <span class="sidebar-etiqueta">Inicio</span>
+        </button>
+        <button class="nav-vista sidebar-item" data-vista="vista-calendario" data-tooltip="Calendario">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          <span class="sidebar-etiqueta">Calendario</span>
+        </button>
+      </nav>
+
+      <nav class="sidebar-grupo" aria-labelledby="sidebar-seccion-recursos">
+        <p id="sidebar-seccion-recursos" class="sidebar-titulo">Recursos</p>
+        <button class="nav-vista sidebar-item" data-vista="vista-biblioteca" data-tooltip="Biblioteca sindical">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 3 3 4 4 0 0 1 3-3h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+          <span class="sidebar-etiqueta">Biblioteca sindical</span>
+        </button>
+        <button class="nav-vista sidebar-item" data-vista="vista-biblioteca-educativa" data-tooltip="Biblioteca educativa">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/><path d="M22 10v6"/></svg>
+          <span class="sidebar-etiqueta">Biblioteca educativa</span>
+        </button>
+      </nav>
+
+      <nav class="sidebar-grupo" aria-labelledby="sidebar-seccion-gestion">
+        <p id="sidebar-seccion-gestion" class="sidebar-titulo">Gestión</p>
+        <button class="nav-vista sidebar-item" data-vista="vista-directorio" data-tooltip="Estructura sindical">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="2" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="16" y="16" width="6" height="6" rx="1"/><path d="M12 8v4M5 16v-2h14v2"/></svg>
+          <span class="sidebar-etiqueta">Estructura sindical</span>
+        </button>
+        <button id="nav-afiliados" class="nav-vista sidebar-item" data-vista="vista-afiliados" data-tooltip="Afiliados" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span class="sidebar-etiqueta">Afiliados</span>
+        </button>
+        <button id="nav-administracion" class="nav-vista sidebar-item" data-vista="vista-administracion" data-tooltip="Administración" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 13c0 5-3.5 7.5-8 9-4.5-1.5-8-4-8-9V5l8-3 8 3Z"/><path d="m9 12 2 2 4-4"/></svg>
+          <span class="sidebar-etiqueta">Administración</span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="sidebar-pie">
+      <nav class="sidebar-grupo" aria-labelledby="sidebar-seccion-cuenta">
+        <p id="sidebar-seccion-cuenta" class="sidebar-titulo">Cuenta</p>
+        <button class="nav-vista sidebar-item" data-vista="vista-cuenta" data-tooltip="Mi cuenta">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.7a8 8 0 0 1 10 0"/></svg>
+          <span class="sidebar-etiqueta">Mi cuenta</span>
+        </button>
+      </nav>
+    </div>
+  </aside>
+  <div id="sidebar-overlay" class="sidebar-overlay" hidden></div>
+  <div id="sidebar-tooltip" class="sidebar-tooltip" role="tooltip" hidden></div>
+
+  <div class="app-main">
+    <header class="topbar">
+      <button id="btn-menu-movil" class="boton-menu-movil" type="button" aria-label="Abrir menú de navegación" aria-controls="sidebar" aria-expanded="false">
+        <span class="icono-menu" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="texto-menu">Menú</span>
+      </button>
+      <div class="usuario-info">
+        <div class="topbar-identidad">
+          <span id="nombre-usuario"></span>
+          <span id="roles-usuario"></span>
+        </div>
+        <div class="topbar-acciones">
+          <button id="btn-tema" class="boton-tema" type="button" aria-label="Cambiar a tema oscuro" aria-pressed="false" title="Cambiar tema">
+            <svg class="icono-tema icono-tema--claro" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+            <svg class="icono-tema icono-tema--oscuro" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          </button>
+          <div class="notificaciones">
+            <button id="btn-notificaciones" class="btn-campana" type="button" aria-label="Notificaciones" aria-haspopup="true" aria-expanded="false" aria-controls="panel-notificaciones">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+              <span id="contador-notificaciones" class="contador-notificaciones" hidden>0</span>
+            </button>
+            <div id="panel-notificaciones" class="panel-notificaciones" hidden>
+              <div class="panel-notificaciones-encabezado">
+                <strong>Actividades pendientes</strong>
+                <button id="btn-leer-notificaciones" class="btn-enlace" type="button">Marcar leídas</button>
+              </div>
+              <ul id="lista-notificaciones"></ul>
+            </div>
+          </div>
+          <a class="btn btn-secundario btn-sm btn-principal" href="/" aria-label="Volver a la página principal de SUTENS">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+            Página principal
+          </a>
+          <button class="btn btn-secundario btn-sm btn-salir" type="button" onclick="cerrarSesion()">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+    </header>
 
   <main id="vista-inicio" class="contenido vista">
     <section class="bienvenida hero">
@@ -74,7 +150,10 @@
         <p class="eslogan-institucional">“Defensa de la Educación, Unidad de los Trabajadores”</p>
         <p id="detalle-bienvenida"></p>
       </div>
-      <dl id="hero-indicadores" class="hero-indicadores"></dl>
+    </section>
+    <section class="panel-kpis" aria-labelledby="titulo-kpis">
+      <h2 id="titulo-kpis" class="sr-only">Indicadores del sindicato</h2>
+      <div id="hero-indicadores" class="kpis" role="list" aria-live="polite" aria-busy="true"></div>
     </section>
     <section id="estadisticas-afiliacion" class="estadisticas-afiliacion" aria-live="polite" hidden>
       <div class="estadisticas-encabezado">
@@ -82,7 +161,10 @@
           <p class="sobrelinea">PADRÓN SINDICAL</p>
           <h2 id="titulo-estadisticas-afiliacion">Afiliación SUTENS</h2>
         </div>
-        <p id="mensaje-estadisticas-afiliacion" class="mensaje"></p>
+        <div class="estadisticas-acciones">
+          <p id="mensaje-estadisticas-afiliacion" class="mensaje"></p>
+          <button id="btn-reintentar-estadisticas" class="btn btn-secundario btn-sm" type="button" hidden>Reintentar</button>
+        </div>
       </div>
       <div id="contenido-estadisticas-afiliacion"></div>
     </section>
@@ -567,6 +649,7 @@
       </div>
     </section>
   </main>
+  </div>
 
   <!-- Modal para registrar usuario (solo admin) -->
   <div class="modal-fondo" id="modal-registrar">
@@ -760,8 +843,9 @@
   <script src="/js/api.js"></script>
   <script src="/js/inicio-ui.js"></script>
   <script src="/js/ui-componentes.js"></script>
+  <script src="/js/graficas.js"></script>
   <script src="/js/calendario-ui.js"></script>
   <script src="/js/dashboard.js"></script>
-  <script src="/js/chatbot.js"></script>
+  <script type="module" src="/js/chatbot.js"></script>
 </body>
 </html>
