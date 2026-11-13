@@ -2409,3 +2409,400 @@ td select {
     gap: 0;
   }
 }
+
+/* ---------- Presentación de acceso y afiliación ---------- */
+.auth-container {
+  min-height: 100svh;
+  gap: clamp(20px, 3vw, 40px);
+  padding: clamp(24px, 5vw, 56px) 24px;
+  background:
+    radial-gradient(ellipse at 14% 8%, rgba(22, 163, 74, 0.2), transparent 34rem),
+    radial-gradient(ellipse at 90% 92%, rgba(20, 83, 45, 0.34), transparent 38rem),
+    #091c13;
+}
+
+.auth-container .auth-brand {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(26px, 3vw, 38px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--ui-r-xl);
+  background: linear-gradient(145deg, #166534 0%, #14532d 58%, #102f1e 100%);
+  box-shadow: var(--ui-sombra-3);
+}
+
+.auth-container .auth-logo {
+  width: min(100%, 205px);
+  margin-bottom: 30px;
+  padding: 12px;
+  border-radius: var(--ui-r-md);
+  box-shadow: var(--ui-sombra-1);
+}
+
+.auth-container .auth-sobrelinea {
+  max-width: 34ch;
+  margin-bottom: 14px;
+  color: #e5f5e9;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.auth-container .auth-brand h2 {
+  margin-bottom: 14px;
+  font-size: clamp(23px, 2.2vw, 29px);
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.auth-container .auth-brand > p:last-child {
+  max-width: 36ch;
+  color: #e5f5e9;
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.auth-container .card {
+  padding: clamp(26px, 4vw, 42px);
+  border: 1px solid var(--ui-border);
+  border-top: 4px solid var(--verde-institucional);
+  border-left: 1px solid var(--ui-border);
+  border-radius: var(--ui-r-xl);
+  box-shadow: var(--ui-sombra-2);
+}
+
+.auth-container .card h1 {
+  margin-bottom: 8px;
+  color: var(--ui-text);
+  font-family: var(--ui-fuente);
+  font-size: clamp(25px, 3vw, 32px);
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+}
+
+.auth-container .card .subtitulo {
+  margin-bottom: 28px;
+  color: var(--ui-muted);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.auth-container .card-registro {
+  max-width: 660px;
+}
+
+.auth-container label {
+  margin-bottom: 7px;
+  color: #263c30;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.auth-container input:not([type="checkbox"]) {
+  min-height: 46px;
+  margin-bottom: 18px;
+  padding: 11px 13px;
+  border-color: #cbd9cf;
+  border-radius: var(--ui-r-sm);
+  background: #fff;
+  color: var(--ui-text);
+  font: inherit;
+  font-size: 15px;
+}
+
+.auth-container input:not([type="checkbox"]):hover {
+  border-color: #9db7a5;
+}
+
+.auth-container input:not([type="checkbox"]):focus-visible {
+  border-color: var(--ui-verde-600);
+  outline: 3px solid rgba(22, 163, 74, 0.16);
+  outline-offset: 1px;
+  box-shadow: none;
+}
+
+.auth-container .formulario-seccion + .formulario-seccion {
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid #e9f0eb;
+}
+
+.auth-container .formulario-seccion h2 {
+  margin: 0 0 16px;
+  color: var(--ui-verde-900);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.auth-container .consentimiento {
+  margin: 6px 0 20px;
+  padding: 16px;
+  border: 1px solid #d8e9dc;
+  border-radius: var(--ui-r-md);
+  background: #f4faf5;
+  color: #33463c;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.auth-container .consentimiento input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  accent-color: var(--verde-institucional);
+}
+
+.auth-container .btn-primario {
+  min-height: 48px;
+  border-radius: var(--ui-r-sm);
+  font-size: 15px;
+  font-weight: 800;
+  box-shadow: 0 5px 14px rgba(20, 83, 45, 0.18);
+  transition: background var(--ui-t), transform var(--ui-t), box-shadow var(--ui-t);
+}
+
+.auth-container .btn-primario:hover {
+  background: #104523;
+  box-shadow: 0 8px 18px rgba(20, 83, 45, 0.22);
+  transform: translateY(-1px);
+}
+
+.auth-container .mensaje {
+  padding: 13px 15px;
+  border: 1px solid transparent;
+  border-left-width: 4px;
+  border-radius: var(--ui-r-sm);
+  line-height: 1.5;
+}
+
+.auth-container .mensaje.error {
+  border-color: #fecaca;
+  border-left-color: #b91c1c;
+}
+
+.auth-container .mensaje.exito {
+  border-color: #bbf7d0;
+  border-left-color: #15803d;
+}
+
+.auth-container .link {
+  margin-top: 20px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.auth-container .link a {
+  font-weight: 800;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 820px) {
+  .auth-container {
+    grid-template-columns: minmax(0, 660px);
+    align-content: start;
+    gap: 16px;
+    padding: 24px 16px;
+  }
+
+  .auth-container .auth-brand {
+    display: grid;
+    grid-template-columns: minmax(76px, 104px) minmax(0, 1fr);
+    align-items: center;
+    column-gap: 18px;
+    padding: 20px;
+    border-radius: var(--ui-r-lg);
+  }
+
+  .auth-container .auth-brand > a,
+  .auth-container .auth-brand > .auth-logo {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    align-self: center;
+  }
+
+  .auth-container .auth-brand > a {
+    display: block;
+  }
+
+  .auth-container .auth-logo {
+    width: 100%;
+    margin: 0;
+    padding: 6px;
+    border-radius: 9px;
+  }
+
+  .auth-container .auth-sobrelinea,
+  .auth-container .auth-brand h2,
+  .auth-container .auth-brand > p:last-child {
+    grid-column: 2;
+  }
+
+  .auth-container .auth-sobrelinea {
+    align-self: end;
+    margin: 0 0 5px;
+    font-size: 12px;
+  }
+
+  .auth-container .auth-brand h2 {
+    align-self: center;
+    margin: 0 0 5px;
+    font-size: clamp(18px, 3vw, 22px);
+  }
+
+  .auth-container .auth-brand > p:last-child {
+    align-self: start;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .auth-container .card {
+    padding: 28px;
+  }
+
+  .auth-container .fila {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-container {
+    gap: 12px;
+    padding: 14px 12px 24px;
+  }
+
+  .auth-container .auth-brand {
+    grid-template-columns: 68px minmax(0, 1fr);
+    column-gap: 13px;
+    padding: 16px;
+  }
+
+  .auth-container .auth-brand h2 {
+    font-size: 17px;
+  }
+
+  .auth-container .auth-brand > p:last-child {
+    font-size: 12px;
+  }
+
+  .auth-container .card {
+    padding: 22px 18px;
+    border-radius: var(--ui-r-lg);
+  }
+
+  .auth-container .card .subtitulo {
+    margin-bottom: 22px;
+  }
+
+  .auth-container .consentimiento {
+    padding: 13px;
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 1024px) and (min-height: 680px) {
+  body.pagina-registro {
+    height: 100vh;
+    height: 100svh;
+    overflow: hidden;
+  }
+
+  .pagina-registro .auth-container {
+    grid-template-columns: minmax(230px, 290px) minmax(0, 660px);
+    gap: 20px;
+    height: 100vh;
+    height: 100svh;
+    min-height: 0;
+    padding: 12px 20px;
+  }
+
+  .pagina-registro .auth-container .auth-brand {
+    padding: 24px;
+  }
+
+  .pagina-registro .auth-container .auth-logo {
+    width: min(100%, 175px);
+    margin-bottom: 22px;
+  }
+
+  .pagina-registro .auth-container .card-registro {
+    padding: 18px 24px;
+  }
+
+  .pagina-registro .card-registro h1 {
+    font-size: 27px;
+  }
+
+  .pagina-registro .card-registro .subtitulo {
+    margin-bottom: 14px;
+    font-size: 14px;
+  }
+
+  .pagina-registro .card-registro form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 14px;
+  }
+
+  .pagina-registro .card-registro .formulario-seccion {
+    display: contents;
+  }
+
+  .pagina-registro .card-registro .formulario-seccion h2 {
+    grid-column: 1 / -1;
+    margin: 0 0 6px;
+    font-size: 14px;
+  }
+
+  .pagina-registro .card-registro [aria-labelledby="contacto-cuenta-titulo"] h2 {
+    margin-top: 1px;
+    padding-top: 7px;
+    border-top: 1px solid #e9f0eb;
+  }
+
+  .pagina-registro .card-registro .fila {
+    display: contents;
+  }
+
+  .pagina-registro .card-registro .fila > div {
+    min-width: 0;
+  }
+
+  .pagina-registro .card-registro label {
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+
+  .pagina-registro .card-registro input:not([type="checkbox"]) {
+    min-height: 38px;
+    margin-bottom: 9px;
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+
+  .pagina-registro .card-registro .consentimiento,
+  .pagina-registro .card-registro .btn-primario {
+    grid-column: 1 / -1;
+  }
+
+  .pagina-registro .card-registro .consentimiento {
+    margin: 3px 0 10px;
+    padding: 9px 11px;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .pagina-registro .card-registro .consentimiento input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+  }
+
+  .pagina-registro .card-registro .btn-primario {
+    min-height: 42px;
+  }
+
+  .pagina-registro .card-registro > .link {
+    margin-top: 10px;
+    font-size: 13px;
+  }
+}

@@ -56,7 +56,7 @@ import {
                 download={paso.enlace.download}
                 target={paso.enlace.external ? '_blank' : undefined}
                 rel={paso.enlace.external ? 'noopener noreferrer' : undefined}
-                class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-amber-300 transition hover:underline"
+                class="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-amber-200 transition hover:underline"
               >
                 {paso.enlace.texto}
                 <Icono name="arrow-right" class="h-3.5 w-3.5" />
@@ -112,7 +112,7 @@ import {
               </span>
               <div class="min-w-0">
                 <h4 class="text-sm font-bold text-white">{doc.nombre}</h4>
-                <p class="mt-0.5 text-xs text-white/65">{doc.detalle}</p>
+                <p class="mt-0.5 text-sm text-white/85">{doc.detalle}</p>
               </div>
             </div>
           ))}
@@ -124,7 +124,7 @@ import {
           </p>
         )}
 
-        <div class="mt-6 flex flex-col gap-3 border-t border-white/10 pt-4 text-xs text-white/70 sm:flex-row sm:items-center sm:justify-between">
+        <div class="mt-6 flex flex-col gap-3 border-t border-white/10 pt-4 text-sm text-white/85 sm:flex-row sm:items-center sm:justify-between">
           <p class="flex items-center gap-1.5">
             <Icono name="map-pin" class="h-4 w-4 shrink-0 text-amber-300" />
             <span>Entrega física en: <strong class="text-white">{informacionAfiliacion.sedeFisica}</strong> o con tu delegado municipal.</span>

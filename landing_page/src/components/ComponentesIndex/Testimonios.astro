@@ -7,7 +7,7 @@ const tieneTestimonios = Array.isArray(testimonios) && testimonios.length > 0;
 ---
 
 {tieneTestimonios && (
-  <section id="testimonios" class="bg-white px-4 py-20 sm:px-6 sm:py-24" aria-labelledby="testimonios-titulo">
+  <section id="testimonios" class="bg-white px-4 py-16 sm:px-6 sm:py-20" aria-labelledby="testimonios-titulo">
     <div class="mx-auto max-w-6xl">
       <header class="max-w-3xl mb-12 reveal">
         <p class="eyebrow text-brand-700">Voces de nuestros afiliados</p>
@@ -20,7 +20,7 @@ const tieneTestimonios = Array.isArray(testimonios) && testimonios.length > 0;
       </header>
 
       <!-- Grid en escritorio y carrusel con snap horizontal en móviles -->
-      <div class="flex gap-6 overflow-x-auto pb-4 pt-2 snap-x snap-mandatory sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-visible sm:pb-0">
+      <div class="relative -mx-4 flex gap-4 overflow-x-auto px-4 pb-5 pt-2 snap-x snap-mandatory after:pointer-events-none after:absolute after:bottom-0 after:right-0 after:top-0 after:w-8 after:bg-gradient-to-l after:from-white after:to-transparent after:content-[''] sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 sm:after:hidden lg:grid-cols-3">
         {testimonios.map((t, index) => (
           <article class="flex w-[85vw] max-w-sm shrink-0 flex-col justify-between rounded-2xl border border-line bg-cream p-6 shadow-sm snap-start sm:w-auto sm:max-w-none">
             <div>
@@ -52,7 +52,7 @@ const tieneTestimonios = Array.isArray(testimonios) && testimonios.length > 0;
               <div class="min-w-0">
                 <h3 class="truncate text-sm font-extrabold text-ink">{t.nombre}</h3>
                 <p class="truncate text-xs font-semibold text-muted">{t.rol}</p>
-                <p class="truncate text-[0.7rem] text-brand-700">{t.municipio}</p>
+                <p class="truncate text-xs text-brand-700">{t.municipio}</p>
               </div>
             </div>
           </article>

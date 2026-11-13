@@ -61,11 +61,11 @@ const grupos = [
       <!-- Columnas 2 y 3: Enlaces rápidos -->
       {grupos.map((grupo) => (
         <div>
-          <h2 class="text-xs font-extrabold uppercase tracking-[0.16em] text-amber-300">{grupo.titulo}</h2>
+          <h2 class="text-sm font-extrabold uppercase tracking-[0.12em] text-amber-300">{grupo.titulo}</h2>
           <ul class="mt-4 grid gap-2.5">
             {grupo.enlaces.map((enlace) => (
               <li>
-                <a href={enlace.href} class="text-sm font-semibold text-white/65 transition hover:text-white">{enlace.label}</a>
+                <a href={enlace.href} class="text-sm font-semibold text-white/85 transition hover:text-white">{enlace.label}</a>
               </li>
             ))}
           </ul>
@@ -74,22 +74,22 @@ const grupos = [
 
       <!-- Columna 4: Sede física, Google Maps y Redes oficiales -->
       <div>
-        <h2 class="text-xs font-extrabold uppercase tracking-[0.16em] text-amber-300">Sede principal</h2>
-        <p class="mt-4 text-xs leading-relaxed text-white/75">
+        <h2 class="text-sm font-extrabold uppercase tracking-[0.12em] text-amber-300">Sede principal</h2>
+        <p class="mt-4 text-sm leading-relaxed text-white/85">
           {datosContacto.sede.direccionCompleta}
         </p>
         <a
           href={datosContacto.sede.googleMapsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          class="mt-2.5 inline-flex items-center gap-1.5 text-xs font-bold text-amber-300 hover:underline"
+          class="mt-2.5 inline-flex items-center gap-1.5 text-sm font-bold text-amber-300 hover:underline"
         >
           <Icono name="map-pin" class="h-3.5 w-3.5" />
           Ver ubicación en Google Maps
         </a>
 
         <div class="mt-6">
-          <h3 class="text-xs font-extrabold uppercase tracking-[0.16em] text-amber-300">Canales oficiales</h3>
+          <h3 class="text-sm font-extrabold uppercase tracking-[0.12em] text-amber-300">Canales oficiales</h3>
           <div class="mt-3 flex items-center gap-3">
             <a
               href={datosContacto.canales.whatsapp.url}
@@ -115,12 +115,12 @@ const grupos = [
     </div>
 
     <!-- Barra inferior legal -->
-    <div class="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-white/60 sm:flex-row sm:items-center sm:justify-between">
+    <div class="mt-10 flex flex-col gap-3 border-t border-white/10 pt-6 text-sm text-white/80 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <p>© {anio} {datosContacto.sindicato} ({datosContacto.sigla})</p>
-        <p class="mt-1 text-white/50">NIT: {datosContacto.legal.nit} · Registro MinTrabajo {datosContacto.legal.registroMinTrabajo}</p>
+        <p class="mt-1 text-white/80">NIT: {datosContacto.legal.nit} · Registro MinTrabajo {datosContacto.legal.registroMinTrabajo}</p>
       </div>
-      <p class="text-amber-300/80 font-medium">{datosContacto.lema}</p>
+          <p class="text-amber-200 font-medium">{datosContacto.lema}</p>
     </div>
   </div>
 </footer>

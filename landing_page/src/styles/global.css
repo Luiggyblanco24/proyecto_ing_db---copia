@@ -286,14 +286,14 @@ div[id] {
 }
 
 .btn-accent {
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
-  color: #422006;
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+  background: linear-gradient(135deg, var(--ui-verde-700), var(--ui-verde-900));
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(21, 128, 61, 0.25);
 }
 
 .btn-accent:hover {
-  background: linear-gradient(135deg, #fcd34d, #fbbf24);
-  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.38);
+  background: linear-gradient(135deg, var(--ui-verde-600), var(--ui-verde-700));
+  box-shadow: 0 8px 18px rgba(21, 128, 61, 0.32);
 }
 
 .btn-outline {
@@ -387,7 +387,7 @@ div[id] {
 .display {
   font-weight: 800;
   letter-spacing: -0.03em;
-  line-height: 1.04;
+  line-height: 1.08;
 }
 
 /* ---------- Revelado al hacer scroll ---------- */

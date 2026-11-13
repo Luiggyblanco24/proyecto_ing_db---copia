@@ -1,28 +1,17 @@
 ---
 import NewsList from "../../components/Noticias/NewsList.astro";
+import Layout from "../../layouts/Layout.astro";
 ---
 
-<html lang="es">
-    <head>
-        <title>Ultimas noticias</title>
-        <meta name="description" content="Últimas noticias y actualizaciones" />
-    </head>
-    <body class="bg-gray-50">
-        <header class="bg-white shadow-sm">
-            <div class="container mx-auto px-4 py-6">
-                <h1 class="text-3xl font-bold text-gray-800">
-                    Lo mas nuevo    
-                </h1>
-            </div>
-        </header>
-
-        <main class="container mx-auto px-4 py-8">
-            <section>
-                <h2 class="text-2xl font-bold mb-6 text-gray-700">
-                    Últimas Noticias
-                </h2>
-                <NewsList />
-            </section>
-        </main>
-    </body>
-</html>
+<Layout title="Últimas noticias | SUTENS" description="Noticias y actualizaciones de SUTENS, Sindicato Unitario de Trabajadores de la Educación de Norte de Santander.">
+    <section class="bg-cream px-4 py-16 sm:px-6 sm:py-20">
+        <div class="mx-auto max-w-6xl">
+            <header class="mb-10 max-w-3xl">
+                <p class="eyebrow text-brand-700">Comunicaciones</p>
+                <h1 class="display mt-3 text-3xl text-ink sm:text-4xl lg:text-5xl">Últimas noticias</h1>
+                <p class="mt-4 text-base leading-relaxed text-muted sm:text-lg">Novedades y actualizaciones de la organización para la comunidad educativa de Norte de Santander.</p>
+            </header>
+            <NewsList />
+        </div>
+    </section>
+</Layout>
