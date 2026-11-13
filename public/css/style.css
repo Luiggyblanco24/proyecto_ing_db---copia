@@ -2016,6 +2016,10 @@ input:focus, select:focus {
   display: none;
 }
 
+.seleccion-afiliados [hidden] {
+  display: none;
+}
+
 .seleccion-afiliados span {
   margin-right: auto;
   color: var(--gris-texto);

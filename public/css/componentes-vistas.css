@@ -767,6 +767,12 @@
 }
 
 .evento-item.estado-realizado { border-left-color: #16a34a; }
+.evento-item:has(.menu-acciones[open]),
+.evento-item:focus-within {
+  position: relative;
+  z-index: 60;
+}
+
 .lista-eventos > .evento-item {
   animation: ui-entrada 380ms var(--ui-t) both;
   animation-delay: calc(var(--i, 0) * 60ms);
@@ -883,6 +889,10 @@
   .segmentado button {
     padding: 0 12px;
   }
+}
+
+.evento-botones .menu-acciones__lista {
+  z-index: 90;
 }
 
 /* ---------- Biblioteca ---------- */

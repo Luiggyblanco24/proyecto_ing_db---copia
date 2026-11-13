@@ -110,8 +110,13 @@ function actualizarSeleccion(scope) {
   const contador = document.getElementById(`contador-${scope}`);
   if (!toolbar || !contador) return;
   const cantidad = [...afiliadosSeleccionados.values()].filter((seleccion) => seleccion.scope === scope).length;
-  toolbar.hidden = cantidad === 0;
-  contador.textContent = `${cantidad} seleccionados`;
+  toolbar.hidden = false;
+  contador.textContent = cantidad
+    ? `${cantidad} seleccionados · Se exportarán solo los elegidos`
+    : 'Sin selección · Se exportarán todos los resultados filtrados';
+  toolbar.querySelectorAll('[data-accion-seleccion="copiar"], [data-accion-seleccion^="correo-"]').forEach((boton) => {
+    boton.hidden = cantidad === 0;
+  });
 }
 
 function limpiarSeleccion(scope) {
@@ -152,9 +157,17 @@ function redactarCorreoSeleccionados(scope) {
 
 async function descargarAfiliados(formato, scope) {
   const ruta = scope === 'global' ? '/api/afiliados/exportar' : '/api/membresia/exportar';
-  const queryString = parametrosFiltros(scope).toString();
-  const respuesta = await fetch(`${ruta}?${queryString}${queryString ? '&' : ''}formato=${formato}`, {
-    headers: { Authorization: `Bearer ${getToken()}` },
+  const seleccionados = [...afiliadosSeleccionados.values()]
+    .filter((seleccion) => seleccion.scope === scope)
+    .map((seleccion) => String(seleccion.afiliado.id_afiliado));
+  const queryString = seleccionados.length ? '' : parametrosFiltros(scope).toString();
+  const respuesta = await fetch(`${ruta}?${queryString}${queryString ? '&' : ''}${seleccionados.length ? '' : `formato=${formato}`}`, {
+    method: seleccionados.length ? 'POST' : 'GET',
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+      ...(seleccionados.length ? { 'Content-Type': 'application/json' } : {}),
+    },
+    ...(seleccionados.length ? { body: JSON.stringify({ ids: seleccionados, formato }) } : {}),
   });
   if (!respuesta.ok) {
     const error = await respuesta.json().catch(() => ({}));
@@ -1398,6 +1411,7 @@ async function cargarDirectorio() {
 async function cargarAfiliadosVisibles() {
   const tbody = document.getElementById('cuerpo-afiliados');
   const mensaje = document.getElementById('mensaje-afiliados');
+  actualizarSeleccion('local');
   document.getElementById('titulo-afiliados').textContent = esAdmin || esDirectivaPrincipal
     ? 'Afiliados del sindicato'
     : `Afiliados de ${perfilActual?.subdirectiva || 'mi subdirectiva'}`;

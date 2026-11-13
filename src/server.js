@@ -36,7 +36,7 @@ app.use(cors({
 }));
 app.use('/api/chatbot', exigirChatbotHabilitado);
 app.use('/api/chatbot/informes/exportar', auditarIntentoDescarga);
-app.use(express.json());
+app.use(express.json({ limit: '256kb' }));
 app.use('/api/chatbot/informes/exportar', manejarCuerpoInvalidoDescarga);
 app.use('/api/chatbot', manejarCuerpoInvalidoChatbot);
 

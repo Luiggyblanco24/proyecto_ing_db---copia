@@ -9,6 +9,7 @@ const router = Router();
 router.use(autenticar);
 router.get('/estadisticas', obtenerEstadisticasAfiliacion);
 router.get('/exportar', exportarAfiliadosVisibles);
+router.post('/exportar', exportarAfiliadosVisibles);
 router.get('/afiliados', listarAfiliadosVisibles);
 
 export default router;

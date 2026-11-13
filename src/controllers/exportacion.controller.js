@@ -215,8 +215,33 @@ export async function crearPdfAfiliados(registros, { titulo = 'Padrón de afilia
   return terminado;
 }
 
-async function enviarExportacion(req, res, afiliados) {
-  const formato = req.query.formato;
+function obtenerIdsSeleccionados(req, res) {
+  if (req.method !== 'POST') return null;
+  const { ids } = req.body || {};
+  if (!Array.isArray(ids) || ids.length === 0 || ids.length > 5000) {
+    res.status(400).json({ error: 'Selecciona entre 1 y 5000 afiliados para exportar' });
+    return false;
+  }
+  const normalizados = new Set();
+  for (const id of ids) {
+    const valor = String(id);
+    if (!/^[1-9]\d*$/.test(valor) || BigInt(valor) > 9223372036854775807n) {
+      res.status(400).json({ error: 'La selección contiene identificadores no válidos' });
+      return false;
+    }
+    normalizados.add(valor);
+  }
+  return [...normalizados];
+}
+
+async function enviarExportacion(req, res, afiliados, idsAfiliados = null) {
+  const formato = req.method === 'POST' ? req.body?.formato : req.query.formato;
+  if (!['excel', 'pdf'].includes(formato)) {
+    return res.status(400).json({ error: 'El formato debe ser excel o pdf' });
+  }
+  if (idsAfiliados && afiliados.length !== idsAfiliados.length) {
+    return res.status(404).json({ error: 'Uno o más afiliados seleccionados no están disponibles para exportar' });
+  }
   const registros = datosExportacion(afiliados);
   if (formato === 'excel') {
     const archivo = await crearExcelAfiliados(registros);
@@ -234,15 +259,20 @@ async function enviarExportacion(req, res, afiliados) {
 
 export async function exportarAfiliados(req, res) {
   if (!validarFiltroSubdirectiva(req, res)) return;
-  const afiliados = await consultarAfiliados(req);
-  return enviarExportacion(req, res, afiliados);
+  const idsAfiliados = obtenerIdsSeleccionados(req, res);
+  if (idsAfiliados === false) return;
+  const consultaReq = idsAfiliados ? { ...req, query: {} } : req;
+  const afiliados = await consultarAfiliados(consultaReq, null, idsAfiliados);
+  return enviarExportacion(req, res, afiliados, idsAfiliados);
 }
 
 export async function exportarAfiliadosVisibles(req, res) {
   if (!validarFiltroSubdirectiva(req, res)) return;
-  const afiliados = await obtenerAfiliadosVisibles(req);
+  const idsAfiliados = obtenerIdsSeleccionados(req, res);
+  if (idsAfiliados === false) return;
+  const afiliados = await obtenerAfiliadosVisibles(req, idsAfiliados);
   if (!afiliados) {
     return res.status(403).json({ error: 'Tu rol no permite exportar este padrón' });
   }
-  return enviarExportacion(req, res, afiliados);
+  return enviarExportacion(req, res, afiliados, idsAfiliados);
 }

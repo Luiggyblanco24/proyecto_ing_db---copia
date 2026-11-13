@@ -5,11 +5,15 @@ import { normalizarNombre } from '../utils/nombre.js';
 import { textoAvisoDatos, versionAvisoDatos } from '../services/consentimiento.service.js';
 
 // Lista de afiliados (con filtro opcional por estado). Solo Administrador.
-export async function consultarAfiliados(req, idSubdirectiva = null) {
+export async function consultarAfiliados(req, idSubdirectiva = null, idsAfiliados = null) {
   const params = [];
   const condiciones = [];
   const condicionesAsignacion = [];
   let filtraAsignacion = false;
+  if (idsAfiliados) {
+    params.push(idsAfiliados);
+    condiciones.push(`a.id_afiliado = ANY($${params.length}::bigint[])`);
+  }
   if (idSubdirectiva) {
     params.push(idSubdirectiva);
     condicionesAsignacion.push(`sa0.id_subdirectiva = $${params.length}`);

@@ -1,9 +1,10 @@
 import { query } from '../config/db.js';
 import { consultarAfiliados, validarFiltroSubdirectiva } from './afiliado.controller.js';
 
-export async function obtenerAfiliadosVisibles(req) {
+export async function obtenerAfiliadosVisibles(req, idsAfiliados = null) {
+  const consultaReq = idsAfiliados ? { ...req, query: {} } : req;
   if (req.user.roles.includes('Administrador SUTENS')) {
-    return consultarAfiliados(req);
+    return consultarAfiliados(consultaReq, null, idsAfiliados);
   }
 
   const { rows: asignaciones } = await query(
@@ -28,10 +29,10 @@ export async function obtenerAfiliadosVisibles(req) {
 
   const asignacion = asignaciones[0];
   if (asignacion.es_principal && asignacion.cargo.endsWith(' General')) {
-    return consultarAfiliados(req);
+    return consultarAfiliados(consultaReq, null, idsAfiliados);
   }
 
-  return consultarAfiliados(req, asignacion.id_subdirectiva);
+  return consultarAfiliados(consultaReq, asignacion.id_subdirectiva, idsAfiliados);
 }
 
 export async function listarAfiliadosVisibles(req, res) {

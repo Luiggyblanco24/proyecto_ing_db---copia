@@ -28,6 +28,7 @@ router.use(autenticar);
 router.get('/', autorizarDirectivaPrincipal(), listarAfiliados);
 router.get('/roles', autorizar('Administrador SUTENS'), listarRoles);
 router.get('/exportar', autorizarDirectivaPrincipal(), exportarAfiliados);
+router.post('/exportar', autorizarDirectivaPrincipal(), exportarAfiliados);
 
 // POST /api/afiliados  -> registrar usuario (admin)
 router.post('/', autorizar('Administrador SUTENS'), registrarPorAdmin);

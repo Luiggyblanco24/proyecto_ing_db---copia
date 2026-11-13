@@ -36,7 +36,7 @@ function crearPortadaPdf(titulo, categoria, logo) {
     const alto = documento.page.height;
     const margen = 52;
     const anchoContenido = ancho - margen * 2;
-    const pieY = alto - 74;
+    const pieY = alto - 112;
 
     documento.rect(0, 0, ancho, alto).fill('#fff');
     documento.rect(0, 0, ancho, 10).fill('#1b7a38');
@@ -78,19 +78,24 @@ function crearPortadaPdf(titulo, categoria, logo) {
       .lineWidth(3).strokeColor('#f59e0b').stroke();
 
     const tituloY = panelY + 119;
-    const tituloTamano = titulo.length > 105 ? 25 : titulo.length > 62 ? 29 : 34;
+    let tituloTamano = titulo.length > 105 ? 25 : titulo.length > 62 ? 29 : 34;
+    let tituloAlto;
+    do {
+      documento.font('Helvetica-Bold').fontSize(tituloTamano);
+      tituloAlto = documento.heightOfString(titulo, {
+        width: anchoContenido - 56,
+        lineGap: 4,
+        paragraphGap: 3,
+      });
+      if (tituloAlto <= 226 || tituloTamano <= 18) break;
+      tituloTamano = Math.max(18, tituloTamano - 2);
+    } while (tituloTamano > 18);
     documento.font('Helvetica-Bold').fontSize(tituloTamano).fillColor('#1e293b')
       .text(titulo, margen + 28, tituloY, {
         width: anchoContenido - 56,
-        lineGap: 5,
-        paragraphGap: 4,
+        lineGap: 4,
+        paragraphGap: 3,
       });
-
-    const tituloAlto = documento.heightOfString(titulo, {
-      width: anchoContenido - 56,
-      lineGap: 5,
-      paragraphGap: 4,
-    });
     const categoriaY = Math.min(tituloY + tituloAlto + 28, panelY + panelAlto - 94);
     documento.font('Helvetica').fontSize(10).fillColor('#64748b')
       .text('CATEGORÍA', margen + 28, categoriaY, {
