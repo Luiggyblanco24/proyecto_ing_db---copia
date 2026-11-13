@@ -32,22 +32,86 @@ function crearPortadaPdf(titulo, categoria, logo) {
     documento.on('end', () => resolve(Buffer.concat(fragmentos)));
     documento.on('error', reject);
 
-    documento.rect(0, 0, documento.page.width, 12).fill('#1b7a38');
-    documento.image(logo, 48, 56, { width: 250 });
-    documento.moveTo(48, 150).lineTo(documento.page.width - 48, 150).lineWidth(1).strokeColor('#e5e1d6').stroke();
-    documento.font('Helvetica-Bold').fontSize(24).fillColor('#1e293b')
-      .text('Documento SUTENS', 48, 190, { width: documento.page.width - 96 });
-    documento.font('Helvetica').fontSize(18).fillColor('#1b7a38')
-      .text(titulo, 48, 240, { width: documento.page.width - 96 });
-    documento.fontSize(12).fillColor('#475569')
-      .text(categoria, 48, 274, { width: documento.page.width - 96 });
-    documento.moveTo(48, documento.page.height - 90)
-      .lineTo(documento.page.width - 48, documento.page.height - 90)
-      .lineWidth(1).strokeColor('#e5e1d6').stroke();
-    documento.fontSize(10).fillColor('#475569')
-      .text('Copia de consulta generada por la plataforma SUTENS.', 48, documento.page.height - 76, {
-        width: documento.page.width - 96,
-        align: 'center',
+    const ancho = documento.page.width;
+    const alto = documento.page.height;
+    const margen = 52;
+    const anchoContenido = ancho - margen * 2;
+    const pieY = alto - 74;
+
+    documento.rect(0, 0, ancho, alto).fill('#fff');
+    documento.rect(0, 0, ancho, 10).fill('#1b7a38');
+    documento.rect(0, 10, 128, 3).fill('#f59e0b');
+    documento.image(logo, margen, 42, { width: 226 });
+
+    documento.font('Helvetica-Bold').fontSize(9).fillColor('#1b7a38')
+      .text('BIBLIOTECA DOCUMENTAL', ancho - margen - 190, 60, {
+        width: 190,
+        align: 'right',
+        characterSpacing: 1.1,
+      });
+    documento.font('Helvetica').fontSize(9).fillColor('#64748b')
+      .text('SINDICATO UNITARIO · NORTE DE SANTANDER', ancho - margen - 220, 77, {
+        width: 220,
+        align: 'right',
+        characterSpacing: 0.35,
+      });
+
+    const panelY = 150;
+    const panelAlto = 476;
+    documento.roundedRect(margen, panelY, anchoContenido, panelAlto, 18).fill('#f5f8f3');
+    documento.rect(margen, panelY + 20, 4, panelAlto - 40).fill('#1b7a38');
+
+    documento.save();
+    documento.fillOpacity(0.08).circle(ancho - 8, panelY + panelAlto - 6, 118).fill('#1b7a38');
+    documento.fillOpacity(0.12).circle(ancho - 20, panelY + panelAlto - 4, 76).fill('#f59e0b');
+    documento.restore();
+
+    documento.roundedRect(margen + 28, panelY + 38, 152, 27, 13.5).fill('#e4f1e6');
+    documento.font('Helvetica-Bold').fontSize(9).fillColor('#17652f')
+      .text('DOCUMENTO SUTENS', margen + 41, panelY + 47, {
+        width: 132,
+        characterSpacing: 0.8,
+      });
+
+    documento.moveTo(margen + 28, panelY + 91)
+      .lineTo(margen + 72, panelY + 91)
+      .lineWidth(3).strokeColor('#f59e0b').stroke();
+
+    const tituloY = panelY + 119;
+    const tituloTamano = titulo.length > 105 ? 25 : titulo.length > 62 ? 29 : 34;
+    documento.font('Helvetica-Bold').fontSize(tituloTamano).fillColor('#1e293b')
+      .text(titulo, margen + 28, tituloY, {
+        width: anchoContenido - 56,
+        lineGap: 5,
+        paragraphGap: 4,
+      });
+
+    const tituloAlto = documento.heightOfString(titulo, {
+      width: anchoContenido - 56,
+      lineGap: 5,
+      paragraphGap: 4,
+    });
+    const categoriaY = Math.min(tituloY + tituloAlto + 28, panelY + panelAlto - 94);
+    documento.font('Helvetica').fontSize(10).fillColor('#64748b')
+      .text('CATEGORÍA', margen + 28, categoriaY, {
+        width: anchoContenido - 56,
+        characterSpacing: 1,
+      });
+    documento.font('Helvetica-Bold').fontSize(15).fillColor('#17652f')
+      .text(categoria, margen + 28, categoriaY + 18, {
+        width: anchoContenido - 56,
+        lineGap: 3,
+      });
+
+    documento.moveTo(margen, pieY)
+      .lineTo(ancho - margen, pieY)
+      .lineWidth(1).strokeColor('#e5e7df').stroke();
+    documento.font('Helvetica-Bold').fontSize(9).fillColor('#334155')
+      .text('SUTENS', margen, pieY + 18, { width: 90, characterSpacing: 1 });
+    documento.font('Helvetica').fontSize(9).fillColor('#64748b')
+      .text('Copia de consulta generada por la plataforma SUTENS.', margen + 90, pieY + 18, {
+        width: anchoContenido - 90,
+        align: 'right',
       });
     documento.end();
   });

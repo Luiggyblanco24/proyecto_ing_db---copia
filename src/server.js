@@ -12,6 +12,11 @@ dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
+const saltosProxyConfiables = Number(process.env.TRUST_PROXY_HOPS || 0);
+if (!Number.isInteger(saltosProxyConfiables) || saltosProxyConfiables < 0) {
+  throw new Error('TRUST_PROXY_HOPS debe ser un entero no negativo');
+}
+app.set('trust proxy', saltosProxyConfiables);
 const raizProyecto = path.join(__dirname, '..');
 const directorioLanding = path.join(raizProyecto, 'landing_page', 'dist');
 const origenesPermitidos = (process.env.CORS_ORIGINS || 'http://localhost:3000')

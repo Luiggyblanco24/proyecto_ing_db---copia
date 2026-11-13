@@ -986,6 +986,141 @@ html[data-tema='oscuro'] .pagina-panel .topbar .btn-salir:hover {
   color: #fecdd3;
 }
 
+/* Refinamiento visual global del panel: identidad SUTENS y componentes coherentes. */
+.pagina-panel {
+  --ui-bg: #f8f6f0;
+  --ui-surface: #fff;
+  --ui-surface-2: #f4f5ef;
+  --ui-text: #1e293b;
+  --ui-muted: #596579;
+  --ui-border: #e5e5dc;
+  --ui-verde-50: #edf7ef;
+  --ui-verde-100: #dcefe0;
+  --ui-verde-500: #2c914b;
+  --ui-verde-600: #237f3d;
+  --ui-verde-700: #1b7a38;
+  --ui-verde-800: #17652f;
+  --ui-verde-900: #124d27;
+  --ui-foco: #237f3d;
+  --verde-institucional: #1b7a38;
+  --verde-oscuro: #124d27;
+  --crema: #f8f6f0;
+  --carbón: #1e293b;
+  --gris-texto: #596579;
+  --borde: #e5e5dc;
+  --ui-sombra-1: 0 2px 5px rgba(30, 41, 59, 0.045), 0 8px 20px rgba(30, 41, 59, 0.045);
+  --ui-sombra-2: 0 8px 20px rgba(30, 41, 59, 0.08), 0 18px 42px rgba(30, 41, 59, 0.08);
+  background:
+    radial-gradient(ellipse at 88% 0%, rgba(27, 122, 56, 0.045), transparent 34rem),
+    var(--ui-bg);
+}
+
+/* Una sola jerarquía de cabecera en todas las vistas. */
+.pagina-panel .vista > .panel-header {
+  padding: 25px 30px 24px 34px;
+  border-color: var(--ui-border);
+  border-radius: 20px;
+  background: var(--ui-surface);
+  box-shadow: var(--ui-sombra-1);
+}
+
+.pagina-panel .vista > .panel-header::before {
+  width: 5px;
+  background: linear-gradient(180deg, #f5b335, var(--ui-verde-700) 42%, var(--ui-verde-900));
+}
+
+.pagina-panel .vista > .panel-header .sobrelinea {
+  color: var(--ui-verde-700);
+}
+
+.pagina-panel .vista > .panel-header h2 {
+  letter-spacing: -0.035em;
+}
+
+.pagina-panel .vista > .panel-header > .panel-icono {
+  color: var(--ui-verde-700);
+  opacity: 0.11;
+}
+
+.pagina-panel :is(.card, .tabla-wrapper, .filtros-afiliados, .form-evento, .evento-item, .documento-item, .cuenta-layout, .grupo-biblioteca-educativa, .recordatorio-evento, .modal) {
+  border-radius: 16px;
+  box-shadow: var(--ui-sombra-1);
+}
+
+.pagina-panel :is(input, select, textarea) {
+  border-color: var(--ui-border);
+  border-radius: 10px;
+  background-color: var(--ui-surface);
+  transition: border-color var(--ui-t), box-shadow var(--ui-t), background-color var(--ui-t);
+}
+
+.pagina-panel :is(input, select, textarea):hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--ui-verde-700) 48%, var(--ui-border));
+}
+
+.pagina-panel :is(input, select, textarea):focus-visible {
+  border-color: var(--ui-foco);
+  box-shadow: var(--ui-anillo);
+}
+
+.pagina-panel :is(.vista, .modal-fondo) .btn {
+  border-radius: 10px;
+  letter-spacing: 0.005em;
+}
+
+.pagina-panel :is(.vista, .modal-fondo) .btn-primario,
+.pagina-panel :is(.vista, .modal-fondo) .btn-verde {
+  background: linear-gradient(135deg, #237f3d, #124d27);
+  box-shadow: 0 5px 14px rgba(27, 122, 56, 0.2);
+}
+
+.pagina-panel .contenido {
+  max-width: 1360px;
+  padding-right: clamp(20px, 3vw, 36px);
+  padding-left: clamp(20px, 3vw, 36px);
+}
+
+html[data-tema='oscuro'] .pagina-panel {
+  --ui-bg: #0a1410;
+  --ui-surface: #101d17;
+  --ui-surface-2: #16261e;
+  --ui-text: #eaf5ee;
+  --ui-muted: #9db3a6;
+  --ui-border: #294034;
+  --ui-verde-50: #0f2a1c;
+  --ui-verde-100: #133a25;
+  --ui-verde-500: #4ade80;
+  --ui-verde-600: #22c55e;
+  --ui-verde-700: #4ade80;
+  --ui-verde-800: #166534;
+  --ui-verde-900: #14532d;
+  --ui-foco: #4ade80;
+  --verde-institucional: #4ade80;
+  --verde-oscuro: #14532d;
+  --crema: #0a1410;
+  --carbón: #eaf5ee;
+  --gris-texto: #9db3a6;
+  --borde: #294034;
+  --ui-sombra-1: 0 2px 6px rgba(0, 0, 0, 0.18), 0 10px 24px rgba(0, 0, 0, 0.14);
+  --ui-sombra-2: 0 10px 24px rgba(0, 0, 0, 0.24), 0 20px 44px rgba(0, 0, 0, 0.2);
+  background:
+    radial-gradient(ellipse at 88% 0%, rgba(74, 222, 128, 0.045), transparent 34rem),
+    var(--ui-bg);
+}
+
+html[data-tema='oscuro'] .pagina-panel .vista > .panel-header {
+  border-color: #294034;
+  background: #101d17;
+}
+
+html[data-tema='oscuro'] .pagina-panel :is(input, select, textarea) {
+  background-color: #0d1912;
+}
+
+html[data-tema='oscuro'] .pagina-panel .vista > .panel-header .sobrelinea {
+  color: #86efac;
+}
+
 /* ---------- Tablas: una sola barra vertical (la de la página) ---------- */
 .pagina-panel .contenido {
   padding-bottom: 88px;

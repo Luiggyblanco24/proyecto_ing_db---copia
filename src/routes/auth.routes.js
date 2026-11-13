@@ -9,6 +9,7 @@ import {
 	actualizarPerfil,
 } from '../controllers/auth.controller.js';
 import { autenticar } from '../middleware/auth.js';
+import { limitarAutenticacion } from '../middleware/auth-rate-limit.js';
 
 const router = Router();
 const cargarFotoPerfil = multer({
@@ -32,10 +33,10 @@ function manejarFotoPerfil(req, res, next) {
 }
 
 // POST /api/auth/registrar  -> registro público de afiliación
-router.post('/registrar', registrar);
+router.post('/registrar', limitarAutenticacion('registro'), registrar);
 
 // POST /api/auth/login      -> inicio de sesión (devuelve JWT)
-router.post('/login', login);
+router.post('/login', limitarAutenticacion('login'), login);
 router.post('/logout', autenticar, cerrarSesion);
 router.post('/cambiar-contrasena-temporal', autenticar, cambiarContrasenaTemporal);
 

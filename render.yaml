@@ -9,6 +9,8 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: TRUST_PROXY_HOPS
+        value: "1"
       - key: CORS_ORIGINS
         value: https://tu-proyecto.vercel.app
       - key: DATABASE_URL

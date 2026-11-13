@@ -13,6 +13,8 @@ import {
   urlPublicaStorage,
 } from '../services/supabase-storage.service.js';
 
+const hashComparacionInvalida = bcrypt.hashSync(randomUUID(), 10);
+
 function detectarTipoImagen(buffer) {
   if (buffer.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff]))) return 'jpg';
   if (buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return 'png';
@@ -153,7 +155,7 @@ export async function login(req, res) {
        LEFT JOIN rol_sistema rs ON rs.id_rol_sistema = ur.id_rol_sistema
        WHERE u.usuario = $1
        GROUP BY u.id_usuario, a.estado`,
-      [usuario]
+      [usuario.trim()]
     ));
   } catch (error) {
     console.error('No se pudo consultar la cuenta para iniciar sesión:', error);
@@ -161,27 +163,15 @@ export async function login(req, res) {
   }
 
   const user = rows[0];
-  if (!user) {
-    return res.status(401).json({ error: 'Credenciales inválidas' });
-  }
-
-  if (!user.activo) {
-    return res.status(403).json({ error: 'Usuario inactivo' });
-  }
-
-  if (user.estado_afiliado !== 'aprobado') {
-    return res.status(403).json({ error: 'Tu afiliación aún no ha sido aprobada' });
-  }
-
   let valido;
   try {
-    valido = await bcrypt.compare(password, user.password_hash);
+    valido = await bcrypt.compare(password, user?.password_hash || hashComparacionInvalida);
   } catch (error) {
     console.error('No se pudo verificar la contraseña de la cuenta:', error);
     return res.status(500).json({ error: 'No se pudo iniciar sesión' });
   }
-  if (!valido) {
-    return res.status(401).json({ error: 'Credenciales inválidas' });
+  if (!user || !valido || !user.activo || user.estado_afiliado !== 'aprobado') {
+    return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
   }
 
   let token;
