@@ -180,12 +180,12 @@ Al abrir `http://localhost:3000` verás el sitio público de SUTENS:
 | POST | `/api/subdirectivas/cargos` | Administrador | Agrega una opción de cargo sindical |
 | POST | `/api/subdirectivas/roles-laborales` | Administrador | Agrega una opción de rol docente |
 | POST | `/api/subdirectivas` | Administrador o Directiva Principal | Crear subdirectiva (`{"nombre":"..."}`) |
-| POST | `/api/chatbot/informes` | Administrador SUTENS | Genera informes agregados predefinidos; no devuelve datos personales |
-| POST | `/api/chatbot/informes/exportar` | Administrador SUTENS | Descarga afiliados de grupos visibles en PDF/Excel o solo sus correos en Excel, si está habilitada |
+| POST | `/api/chatbot/informes` | Administrador SUTENS o Directiva Departamental activa | Genera informes agregados predefinidos; no devuelve datos personales |
+| POST | `/api/chatbot/informes/exportar` | Administrador SUTENS o Directiva Departamental activa | Descarga afiliados de grupos visibles en PDF/Excel o solo sus correos en Excel, si está habilitada |
 
 Los informes del asistente solo aceptan códigos y filtros estructurados del catálogo. La
-autorización se valida en el servidor; los resultados son de alcance global para
-Administración, suprimen grupos con menos de cinco afiliados y se ejecutan en una transacción
+autorización se valida en el servidor; los resultados son de alcance global para Administración
+y Directiva Departamental activa, suprimen grupos con menos de cinco afiliados y se ejecutan en una transacción
 de solo lectura. `CHATBOT_ENABLED=false` por defecto oculta el widget y bloquea
 `/api/chatbot/*` con 404; con `true` explícito se habilitan la ayuda y los informes autorizados.
 La visibilidad se obtiene del perfil autenticado; una pestaña abierta debe recargarse tras
@@ -209,14 +209,19 @@ uno de ellos es visible. Se incluye una fila por persona: para informes por estr
 muestra una asignación que cumple los filtros y pertenece a un grupo visible; en informes por
 estado o fecha se muestra una asignación disponible, si existe. Estas descargas requieren una
 finalidad y autorización de tratamiento aprobadas por SUTENS y no preservan la privacidad de
-los informes agregados frente a consultas repetidas o solapadas. El acceso es solo para
-Administrador SUTENS. Las descargas están apagadas por defecto: para habilitarlas se debe
+los informes agregados frente a consultas repetidas o solapadas. El acceso es para Administrador
+SUTENS y Directiva Departamental activa. Las descargas están apagadas por defecto: para habilitarlas se debe
 establecer explícitamente `CHATBOT_DOWNLOADS_ENABLED=true`, previa revisión de seguridad y legal.
 La respuesta del informe indica su disponibilidad y el servidor verifica la bandera en cada
 descarga. Los eventos de descargas incluyen tipo de archivo, informe, nombres de filtros sin
-valores y cantidad cuando esté disponible. Los eventos del chatbot no incluyen IDs de usuario:
-esto elimina la trazabilidad individual previamente existente. Los logs deben mantenerse
-restringidos; los datos operativos restantes aún pueden ser sensibles por contexto.
+valores y cantidad cuando esté disponible. Los eventos autenticados de informes, exportaciones
+y rechazos de autorización incluyen una referencia seudónima HMAC derivada del ID autenticado
+y `JWT_SECRET`, no el ID directo; rotar el secreto cambia la referencia. Los logs deben
+mantenerse restringidos y tener retención definida; los metadatos pueden ser sensibles por
+contexto.
+Los PDF generados desde el chatbot incluyen la leyenda `Informe generado con chatbot SUTENS` en
+el pie de la primera página. El panel también ofrece “Mis datos” para consultar únicamente los
+campos básicos del perfil autenticado.
 El límite independiente es de 5 intentos por usuario cada 10 minutos y 1.000 registros por
 archivo. Se configuran con `CHATBOT_DOWNLOAD_RATE_LIMIT`, `CHATBOT_DOWNLOAD_RATE_WINDOW_MS`
 y `CHATBOT_DOWNLOAD_MAX_RECORDS` (máximo 9.999); un exceso devuelve 422 sin truncar.
@@ -228,11 +233,12 @@ Los informes pueden aplicar supresión complementaria cuando solo un grupo queda
 del umbral para dificultar la inferencia por resta dentro de una respuesta. **La supresión por
 consulta no garantiza anonimato frente a consultas solapadas**: por ejemplo, 40 personas en
 total menos 39 activas revela una inactiva aunque el grupo de inactivas se haya suprimido.
-Por este riesgo, los informes del chatbot solo están habilitados para Administrador SUTENS;
-habilitar a Directiva u otros roles requiere resolver y validar primero esta limitación,
-incluidas otras vías de acceso a estadísticas. La prueba de integración marcada
+El acceso autorizado de Directiva Departamental no vuelve anónimos estos informes; sus titulares
+activos también pueden consultar datos personales mediante el padrón y las descargas autorizadas.
+Afiliados y otros roles no reciben este acceso. La prueba de integración marcada
 `LIMITACIÓN CONOCIDA` reproduce el caso con datos sintéticos; que pase confirma que el riesgo
-existe, no que esté mitigado. La propuesta sin implementar se describe en
+existe, no que esté mitigado. La evaluación de consultas combinadas con otras estadísticas sigue
+pendiente y forma parte de la revisión de operación descrita en
 [descargas del chatbot](docs/chatbot-descargas.md).
 El aviso de supresión solo aparece cuando se aplica.
 Los conteos por subdirectiva pueden solaparse cuando una persona tiene más de una asignación;

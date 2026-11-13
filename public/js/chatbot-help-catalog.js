@@ -1,4 +1,4 @@
-export const CANAL_SOPORTE = 'SOPORTE_PENDIENTE';
+export const CANAL_SOPORTE = '';
 
 export const CATALOGO_AYUDA_CHATBOT = [
   {
@@ -11,7 +11,6 @@ export const CATALOGO_AYUDA_CHATBOT = [
     respuesta: 'En la página de inicio de sesión ingresa tu usuario y contraseña.',
     destino: { tipo: 'ruta', ruta: '/login.html' },
     contentVerified: true,
-    reviewed: false,
   },
   {
     id: 'recuperar-contrasena',
@@ -23,7 +22,6 @@ export const CATALOGO_AYUDA_CHATBOT = [
     respuesta: 'El sistema no tiene recuperación de contraseña autoservicio. El administrador puede restablecerla desde Afiliados. Después de iniciar sesión con la contraseña temporal, debes cambiarla en la página de cambio de contraseña.',
     destino: { tipo: 'ruta', ruta: '/change-password.html' },
     contentVerified: true,
-    reviewed: false,
   },
   {
     id: 'restablecer-contrasena-usuario',
@@ -36,7 +34,6 @@ export const CATALOGO_AYUDA_CHATBOT = [
     destino: { tipo: 'vista', id: 'afiliados' },
     capabilities: ['resetUserPassword'],
     contentVerified: true,
-    reviewed: false,
   },
   {
     id: 'actualizar-mis-datos',
@@ -48,7 +45,6 @@ export const CATALOGO_AYUDA_CHATBOT = [
     respuesta: 'Abre Mi cuenta para actualizar tus nombres, apellidos, correo o foto de perfil. Allí también puedes cambiar tu contraseña proporcionando la actual. La pantalla no permite editar la cédula ni el celular.',
     destino: { tipo: 'vista', id: 'mi-cuenta' },
     contentVerified: true,
-    reviewed: false,
   },
   {
     id: 'biblioteca',
@@ -60,7 +56,6 @@ export const CATALOGO_AYUDA_CHATBOT = [
     respuesta: 'En Biblioteca sindical puedes buscar documentos y filtrar por categoría. Abre el archivo con la opción Descargar.',
     destino: { tipo: 'vista', id: 'biblioteca' },
     contentVerified: true,
-    reviewed: false,
   },
   {
     id: 'biblioteca-educativa',
@@ -72,7 +67,6 @@ export const CATALOGO_AYUDA_CHATBOT = [
     respuesta: 'En Biblioteca educativa puedes buscar materiales y filtrarlos por grado o materia. Abre el archivo con la opción Descargar.',
     destino: { tipo: 'vista', id: 'biblioteca' },
     contentVerified: true,
-    reviewed: false,
   },
   {
     id: 'calendario',
@@ -84,7 +78,6 @@ export const CATALOGO_AYUDA_CHATBOT = [
     respuesta: 'Abre Calendario para consultar las actividades en lista o vista mensual. En una actividad puedes confirmar o retirar tu asistencia mientras la confirmación esté abierta.',
     destino: { tipo: 'vista', id: 'calendario' },
     contentVerified: true,
-    reviewed: false,
   },
   {
     id: 'canal-soporte',
@@ -95,6 +88,5 @@ export const CATALOGO_AYUDA_CHATBOT = [
     palabrasClave: ['soporte', 'contactar', 'ayuda', 'problema', 'asistencia técnica'],
     respuesta: 'PENDIENTE DE REVISIÓN',
     contentVerified: false,
-    reviewed: false,
   },
 ];

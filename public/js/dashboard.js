@@ -477,8 +477,22 @@ window.SUTENSChatbotDashboard = {
     // Esto filtra opciones de interfaz; las API mantienen su autorización RBAC en el servidor.
     manageAffiliates: puedeGestionarAfiliados,
     resetUserPassword: esAdmin,
-    viewReports: esAdmin,
+    viewReports: esAdmin || esDirectivaPrincipal,
   }),
+  obtenerDatosPropios: () => {
+    if (!perfilActual) return null;
+    return {
+      nombre: [perfilActual.nombre1, perfilActual.nombre2, perfilActual.apellido1, perfilActual.apellido2]
+        .filter(Boolean).join(' '),
+      correo: perfilActual.correo,
+      estadoAfiliacion: perfilActual.estado,
+      estadoSindical: perfilActual.estado_sindical,
+      subdirectiva: perfilActual.subdirectiva,
+      institucion: perfilActual.institucion,
+      sede: perfilActual.sede,
+      cargo: perfilActual.cargo_departamental || perfilActual.cargo_sindical,
+    };
+  },
   chatbotHabilitado: () => perfilActual?.chatbot_habilitado === true,
 };
 

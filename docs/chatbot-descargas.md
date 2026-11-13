@@ -16,10 +16,12 @@ facultad legal ni una aprobación jurídica formal.
 
 ## Datos y controles
 
-Únicamente Administrador SUTENS tiene acceso global. PDF/Excel del padrón incluyen nombre completo,
-cédula, correo, subdirectiva, institución educativa, cargo sindical, sede, rol laboral, estado de
-solicitud y estado sindical. El Excel de correos contiene direcciones, sin otras columnas personales.
-Cada archivo contiene el aviso de datos de uso restringido.
+Administrador SUTENS y titulares activos de la Directiva Departamental tienen acceso global en
+el chatbot. La Directiva se autoriza mediante los cargos departamentales activos validados por el
+servidor. PDF/Excel del padrón incluyen nombre completo, cédula, correo, subdirectiva, institución
+educativa, cargo sindical, sede, rol laboral, estado de solicitud y estado sindical. El Excel de
+correos contiene direcciones, sin otras columnas personales. Cada archivo contiene el aviso de
+datos de uso restringido.
 
 La aplicación genera el archivo en memoria y lo entrega con `Cache-Control: no-store`; no lo guarda
 deliberadamente en el servidor. No controla las copias guardadas por el destinatario, navegador,
@@ -34,37 +36,29 @@ consultas o descargas solapadas; una persona en grupos visibles y ocultos puede 
 El mecanismo limita el tamaño de cada archivo pero no implementa paginación de consultas individuales.
 
 Los eventos operativos registran fecha, informe, formato, nombres de filtros, cantidad cuando se
-conoce y resultado, sin identidad de usuario, valores de filtros ni contenido de archivos. Por
-decisión del solicitante esto elimina la trazabilidad individual previamente existente; debe
-evaluarse su suficiencia legal y operativa antes de habilitar descargas. La autenticación existente
-actualiza la actividad de sesión; las consultas del informe son de solo lectura.
+conoce, resultado y una referencia seudónima HMAC para usuarios autenticados; no guardan el ID
+directo, valores de filtros ni contenido de archivos. La referencia deriva de `JWT_SECRET`, por
+lo que su rotación cambia los valores. Los logs requieren acceso restringido y retención definida.
+La autenticación actualiza la actividad de sesión; las consultas del informe son de solo lectura.
 
-## Limitación conocida y propuesta para Directiva
+## Limitación conocida de privacidad
 
 La supresión, incluida la complementaria, se aplica a cada respuesta y **no garantiza anonimato
 frente a consultas solapadas**. Por ejemplo, si un corte devuelve 40 personas y otro, dentro del
 mismo corte, devuelve 39 activas, la resta revela una inactiva aunque el grupo de inactivas se
-suprima. Por este riesgo, los informes del chatbot solo están habilitados para Administrador
-SUTENS; habilitar Directiva u otros roles requiere resolver y validar primero esta limitación.
+suprima. El acceso global de la Directiva Departamental es intencional y corresponde a un grupo
+con acceso autorizado a la gestión del padrón; los informes no deben presentarse como anónimos.
+Afiliados y demás roles no reciben acceso a informes o exportaciones de terceros.
 
 La subprueba `LIMITACIÓN CONOCIDA` de
 [`chatbot-reports.integration.test.js`](../tests/chatbot-reports.integration.test.js) reproduce
 el caso 40 − 39 = 1 con datos sintéticos en PostgreSQL aislado. Es una prueba que documenta el
 riesgo existente: pasarla no significa que la protección contra inferencias esté resuelta.
 
-**Propuesta, no implementada:** antes de dar acceso a Directiva, definir en el servidor una
-partición fija de cortes mutuamente excluyentes por persona y por periodo cerrado, con celdas
-aprobadas y umbral mínimo. Permitir únicamente esas celdas; no ofrecer totales que contengan
-esas celdas, filtros adicionales, agrupaciones alternativas ni descargas individuales que
-permitan comparaciones reveladoras. El alcance se calcularía en el servidor. Las asignaciones
-en varias subdirectivas requieren una regla de pertenencia única o impedir el corte que las
-solape. Deben evaluarse también cambios entre periodos, revisiones de datos y estadísticas de
-otros endpoints antes de aprobar el diseño.
-
-Como medida complementaria, se propone detectar y alertar consultas casi idénticas o repetidas
-mediante metadatos estructurados mínimos y un contador compartido entre instancias, con retención
-y responsables definidos. La alerta por sí sola no bloquea la inferencia ni garantiza anonimato;
-no sustituye la restricción de cortes ni las pruebas adversariales entre consultas y endpoints.
+La autorización global no resuelve el riesgo de inferencia ni limita las copias de datos
+personales. Se mantiene la supresión como protección adicional para resultados agregados, pero no
+como garantía de anonimato. Revisar el riesgo al combinar estos informes con otros endpoints y
+mantener controles de frecuencia/volumen; sus límites actuales son por proceso y no globales.
 
 ## Pendientes antes de producción
 
@@ -72,7 +66,7 @@ no sustituye la restricción de cortes ni las pruebas adversariales entre consul
   acceso, retención y eliminación conforme a la Ley 1581 de 2012 y demás normativa aplicable.
 - Definir responsables, destino de logs, plazo de conservación, revisión de alertas y respuesta.
 - Definir controles compartidos entre instancias y evaluar el riesgo de consultas o extracciones
-  repetitivas y las inferencias por diferencia antes de habilitar descargas.
+  repetitivas y las inferencias por diferencia en monitoreo y operación.
 - Revisar `/api/membresia/estadisticas`, que es una vía independiente de estadísticas: sus
   permisos, grupos pequeños, alcance y posibilidad de combinarlos con informes del chatbot.
   Actualmente no está sometida a la supresión del chatbot.

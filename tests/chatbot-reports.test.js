@@ -260,11 +260,14 @@ test('el RBAC ignora roles y alcance manipulados en el body', () => {
   assert.equal(nextCalled, false);
 });
 
-test('audita denegaciones RBAC sin registrar filtros manipulables', () => {
+test('audita denegaciones RBAC sin registrar filtros manipulables', async () => {
   const eventos = [];
-  const middleware = crearAutorizadorInformesChatbot({ info: (evento) => eventos.push(JSON.parse(evento)) });
+  const middleware = crearAutorizadorInformesChatbot(
+    { info: (evento) => eventos.push(JSON.parse(evento)) },
+    async (req, res) => res.status(403).json({ error: 'No autorizado' })
+  );
   const res = respuestaFalsa();
-  middleware({
+  await middleware({
     body: { informe: 'afiliados_por_estado', filtros: { cedula: 'no-registrar' } },
     user: { id_usuario: 7, roles: ['Directiva'] },
   }, res, () => assert.fail('No debe autorizar a un rol no habilitado'));

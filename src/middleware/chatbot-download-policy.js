@@ -1,3 +1,5 @@
+import { referenciaAuditoriaChatbot } from '../utils/chatbot-audit.js';
+
 const enteroConfigurado = (nombre, defecto, minimo, maximo) => {
   const valor = process.env[nombre] === undefined ? defecto : Number(process.env[nombre]);
   if (!Number.isInteger(valor) || valor < minimo || valor > maximo) {
@@ -48,6 +50,7 @@ export function registrarAuditoriaDescarga(req, resultado, cantidad = null, logg
   const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
   const nombresFiltros = body.filtros && typeof body.filtros === 'object' && !Array.isArray(body.filtros)
     ? Object.keys(body.filtros).filter((nombre) => filtros.has(nombre)) : [];
+  const actorRef = referenciaAuditoriaChatbot(req);
   logger.info(JSON.stringify({
     evento: 'chatbot_exportacion',
     ocurrido_at: new Date().toISOString(),
@@ -56,6 +59,7 @@ export function registrarAuditoriaDescarga(req, resultado, cantidad = null, logg
     filtros: nombresFiltros,
     cantidad,
     resultado: String(resultado),
+    ...(actorRef ? { actor_ref: actorRef } : {}),
   }));
   req.chatbotExportAuditado = true;
 }

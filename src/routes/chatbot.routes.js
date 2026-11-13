@@ -26,7 +26,7 @@ router.use('/informes', (req, res, next) => {
   next();
 });
 router.use(autenticar);
-router.post('/informes', autorizarInformesChatbot, limitarInformesChatbot, consultarInformeChatbot);
-router.post('/informes/exportar', exigirDescargasHabilitadas, autorizarInformesChatbot, limitarDescargasChatbot, exportarInformeChatbot);
+router.post('/informes', limitarInformesChatbot, autorizarInformesChatbot, consultarInformeChatbot);
+router.post('/informes/exportar', exigirDescargasHabilitadas, limitarDescargasChatbot, autorizarInformesChatbot, exportarInformeChatbot);
 
 export default router;

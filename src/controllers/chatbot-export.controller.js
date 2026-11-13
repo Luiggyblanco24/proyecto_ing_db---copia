@@ -118,6 +118,7 @@ export function crearControladorExportacionChatbot({ dbPool = pool, logger = con
       const opciones = {
         titulo: resultado.titulo,
         metadatos: ['Datos personales de uso restringido (Ley 1581 de 2012)', ...lineasInforme(resultado, filtros)],
+        leyendaPortada: formato === 'pdf' ? 'Informe generado con chatbot SUTENS' : '',
       };
       const archivo = formato === 'correos'
         ? await crearExcelCorreos(opciones.metadatos, datos)

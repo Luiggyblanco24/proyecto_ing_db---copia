@@ -2,9 +2,11 @@
 
 ## Alcance y configuración inicial
 
-La salida inicial prevista admite informes agregados únicamente para Administrador SUTENS.
-Directiva y otros roles no tienen acceso a informes; las descargas individuales permanecen
-apagadas. Sin IA externa ni historial de conversación. Las consultas de informes son de solo
+Los informes se autorizan para Administrador SUTENS y titulares activos de los cargos de la
+Directiva Departamental reconocidos por el servidor (`Presidente General`, `Vicepresidente
+General`, `Secretario General`, `Fiscal General` y `Tesorero General`). Su alcance es todo SUTENS.
+Afiliados y demás roles no tienen acceso a estos informes. Las descargas individuales permanecen
+apagadas por defecto. Sin IA externa ni historial de conversación. Las consultas son de solo
 lectura; la autenticación actualiza la actividad de sesión.
 
 - `CHATBOT_ENABLED=false` por defecto bloquea todas las rutas `/api/chatbot/*` con 404 y oculta
@@ -27,15 +29,16 @@ No usar una previsualización conectada a producción ni copiar datos reales.
 - [ ] Con ambas banderas en `false`, verificar por HTTP que todas las rutas del chatbot
       responden 404, incluso sin sesión y con cuerpo JSON inválido, y que no aparece el widget.
 - [ ] Activar solo `CHATBOT_ENABLED`; reiniciar todas las instancias y recargar el panel.
-      Verificar ayuda, sesión ausente/vencida, informes de administrador y rechazo por backend
-      de Directiva y Afiliado, incluidos roles y filtros manipulados.
+      Verificar ayuda, sesión ausente/vencida, informes de administrador y Directiva activa,
+      y rechazo por backend de afiliados/otros roles, incluidos roles y filtros manipulados.
 - [ ] Con `CHATBOT_DOWNLOADS_ENABLED=false`, comprobar que el botón no aparece y el endpoint
-      de descarga devuelve 404 para administrador autenticado.
+      de descarga devuelve 404 para administrador y Directiva Departamental autenticados.
 - [ ] Comparar los cuatro informes con consultas de referencia; probar límites, timeout,
-      escritura rechazada, mensajes genéricos, XSS, teclado, lector de pantalla y móvil.
+      escritura rechazada, PDF con leyenda exacta de chatbot en portada, formato Excel, mensajes
+      genéricos, consulta del perfil propio, XSS, teclado, lector de pantalla y móvil.
 - [ ] Generar eventos sintéticos de éxito, 400, 401, 403, 429, timeout y errores; comprobar
-      que no contienen identidad, tokens, valores de filtros, SQL, datos personales ni texto
-      libre. Confirmar que los logs de aplicación y proveedor no son accesibles a usuarios
+      que no contienen IDs directos, tokens, valores de filtros, SQL, datos personales ni texto
+      libre; verificar el uso esperado de `actor_ref` seudónimo. Confirmar que los logs de aplicación y proveedor no son accesibles a usuarios
       normales; revisar también proxies, exportadores y errores de infraestructura.
 - [ ] Ejecutar el build Astro real y verificar que se copian dashboard, scripts y estilos del
       chatbot a `dist`, sin copiar `uploads`. Comprobar el resultado servido por staging.
@@ -61,10 +64,12 @@ No usar una previsualización conectada a producción ni copiar datos reales.
    ninguna alerta de volumen es global entre procesos. Definir responsables y umbrales antes
    de producción; no existe una integración de alertas externa configurada en el repositorio.
 
-Los eventos de chatbot no incluyen identidad de usuario. Esto impide atribución individual y
-requiere una decisión legal y operativa sobre suficiencia de trazabilidad. Los metadatos pueden
-seguir siendo sensibles por contexto. No se ha comprobado el acceso, la retención ni el
-contenido de logs de Render, Vercel, Supabase u otros componentes de infraestructura.
+Los eventos autenticados de informes, exportaciones y rechazos de autorización incluyen
+`actor_ref`: HMAC truncado derivado del ID autenticado y `JWT_SECRET`, no el identificador
+directo. Permite relacionar esos eventos mientras se mantenga la clave; rotarla cambia las
+referencias. Sigue siendo dato seudónimo sensible: restringir acceso y definir retención. No se
+ha comprobado el acceso, la retención ni el contenido de logs de Render, Vercel, Supabase u otros
+componentes de infraestructura.
 
 ## Incidente y rollback
 

@@ -49,7 +49,7 @@ titulo.id = 'chatbot-titulo';
 titulo.textContent = 'Asistente SUTENS';
 const subtitulo = document.createElement('p');
 subtitulo.className = 'chatbot-subtitulo';
-subtitulo.textContent = 'Ayuda del sistema y reportes';
+subtitulo.textContent = 'Ayuda del sistema · consultas e informes';
 identidadTexto.append(titulo, subtitulo);
 identidad.append(avatarAsistente, identidadTexto);
 const cerrar = document.createElement('button');
@@ -66,7 +66,7 @@ acciones.setAttribute('aria-label', 'Acciones de ayuda');
 const accionBuscar = document.createElement('button');
 accionBuscar.type = 'button';
 accionBuscar.className = 'chatbot-accion';
-accionBuscar.textContent = 'Buscar ayuda del sistema';
+accionBuscar.textContent = 'Ayuda del sistema';
 const verSugerencias = document.createElement('button');
 verSugerencias.type = 'button';
 verSugerencias.className = 'chatbot-accion';
@@ -74,11 +74,17 @@ verSugerencias.textContent = 'Ver preguntas sugeridas';
 const consultarInformes = document.createElement('button');
 consultarInformes.type = 'button';
 consultarInformes.className = 'chatbot-accion';
-consultarInformes.textContent = 'Consultar informes';
+consultarInformes.textContent = 'Informes';
+consultarInformes.setAttribute('aria-label', 'Consultar informes');
 consultarInformes.hidden = true;
 consultarInformes.setAttribute('aria-expanded', 'false');
 consultarInformes.setAttribute('aria-controls', 'chatbot-panel-informes');
-acciones.append(accionBuscar, verSugerencias, consultarInformes);
+const consultarDatosPropios = document.createElement('button');
+consultarDatosPropios.type = 'button';
+consultarDatosPropios.className = 'chatbot-accion';
+consultarDatosPropios.textContent = 'Mis datos';
+consultarDatosPropios.setAttribute('aria-label', 'Consultar mis datos');
+acciones.append(accionBuscar, verSugerencias, consultarInformes, consultarDatosPropios);
 
 const panelInformes = document.createElement('section');
 panelInformes.className = 'chatbot-informes';
@@ -165,6 +171,11 @@ ejecutarInforme.type = 'submit';
 ejecutarInforme.className = 'btn btn-primario';
 ejecutarInforme.textContent = 'Generar informe';
 formularioInforme.append(ayudaInforme, ejecutarInforme);
+const restablecerFiltros = document.createElement('button');
+restablecerFiltros.type = 'button';
+restablecerFiltros.className = 'chatbot-filtros-limpiar';
+restablecerFiltros.textContent = 'Limpiar filtros';
+formularioInforme.append(restablecerFiltros);
 let estructuraInformes = [];
 
 const mensajes = document.createElement('div');
@@ -183,7 +194,7 @@ formulario.className = 'chatbot-form';
 const campo = document.createElement('input');
 campo.type = 'text';
 campo.maxLength = 500;
-campo.placeholder = 'Escribe tu pregunta...';
+campo.placeholder = 'Pregunta sobre el sistema o el sindicato…';
 campo.setAttribute('aria-label', 'Escribe tu pregunta');
 campo.autocomplete = 'off';
 campo.required = true;
@@ -259,8 +270,44 @@ function mostrarSugerencias(entradas) {
   contenido.scrollTop = contenido.scrollHeight;
 }
 
+function mostrarDatosPropios() {
+  const datos = window.SUTENSChatbotDashboard?.obtenerDatosPropios?.();
+  if (!datos) {
+    agregarMensaje('No pude cargar tu perfil. Inténtalo de nuevo o consulta con el equipo administrador.', 'bot');
+    return;
+  }
+
+  const tarjeta = document.createElement('dl');
+  tarjeta.className = 'chatbot-datos-propios';
+  const etiquetas = {
+    nombre: 'Nombre',
+    correo: 'Correo',
+    estadoAfiliacion: 'Estado de afiliación',
+    estadoSindical: 'Estado sindical',
+    subdirectiva: 'Subdirectiva',
+    institucion: 'Institución',
+    sede: 'Sede',
+    cargo: 'Cargo sindical',
+  };
+  Object.entries(etiquetas).forEach(([clave, etiqueta]) => {
+    if (!datos[clave]) return;
+    const termino = document.createElement('dt');
+    termino.textContent = etiqueta;
+    const definicion = document.createElement('dd');
+    definicion.textContent = String(datos[clave]);
+    tarjeta.append(termino, definicion);
+  });
+  agregarMensaje('Estos son los datos de tu perfil:', 'bot');
+  mensajes.append(tarjeta);
+  contenido.scrollTop = contenido.scrollHeight;
+}
+
 function mostrarCanalSoporte(prefijo) {
-  agregarMensaje(`${prefijo} Canal de soporte: ${CANAL_SOPORTE}.`, 'bot');
+  const canal = CANAL_SOPORTE.trim();
+  const mensaje = canal
+    ? `${prefijo} Canal de soporte: ${canal}.`
+    : `${prefijo} El canal de soporte aún no está configurado. Contacta al equipo administrador de SUTENS.`;
+  agregarMensaje(mensaje, 'bot');
 }
 
 function actualizarVisibilidadInformes() {
@@ -440,7 +487,7 @@ function mostrarOpcionesDescarga(solicitud) {
   opciones.setAttribute('role', 'group');
   opciones.setAttribute('aria-label', 'Opciones para descargar el informe');
   const pregunta = document.createElement('p');
-  pregunta.textContent = '¿Deseas descargar los datos de las personas de los grupos visibles o solo sus correos?';
+  pregunta.textContent = 'Descarga el informe y, si lo necesitas, sus datos asociados.';
   const nota = document.createElement('p');
   nota.className = 'chatbot-informes-ayuda';
   nota.textContent = 'La descarga vuelve a consultar los datos; los resultados pueden cambiar. Datos personales de uso restringido (Ley 1581 de 2012).';
@@ -450,9 +497,9 @@ function mostrarOpcionesDescarga(solicitud) {
   opciones.append(pregunta, nota);
 
   for (const [formato, etiqueta] of [
-    ['pdf', 'Afiliados PDF'],
-    ['excel', 'Afiliados Excel'],
-    ['correos', 'Solo correos Excel'],
+    ['pdf', 'PDF · Informe y afiliados'],
+    ['excel', 'Excel · Informe y afiliados'],
+    ['correos', 'Excel · Solo correos'],
   ]) {
     const descargar = document.createElement('button');
     descargar.type = 'button';
@@ -527,7 +574,9 @@ async function enviarInforme(evento) {
     consultarInformes.setAttribute('aria-expanded', 'false');
     const encabezado = agregarMensaje(resultado.titulo, 'bot');
     crearTablaInforme(resultado);
-    if (resultado.descargas_habilitadas === true) mostrarOpcionesDescarga(solicitud);
+    if (resultado.descargas_habilitadas === true && resultado.filas.length > 0) {
+      mostrarOpcionesDescarga(solicitud);
+    }
     encabezado.tabIndex = -1;
     encabezado.focus({ preventScroll: true });
     contenido.scrollTop += encabezado.getBoundingClientRect().top - contenido.getBoundingClientRect().top;
@@ -541,6 +590,10 @@ async function enviarInforme(evento) {
 
 function responder(texto) {
   agregarMensaje(texto, 'usuario');
+  if (/\b(mi|mis)\s+(datos|información|perfil|estado|correo|nombre|afiliación|subdirectiva)\b/i.test(texto)) {
+    mostrarDatosPropios();
+    return;
+  }
   const resultado = buscarAyuda(texto, CATALOGO_AYUDA_CHATBOT, capacidadesVisibles());
 
   if (resultado.estado === 'demasiado-largo') {
@@ -565,7 +618,7 @@ function responder(texto) {
     mostrarSugerencias(resultado.entradas);
     return;
   }
-  mostrarCanalSoporte('No encuentro una respuesta confirmada en la ayuda.');
+  agregarMensaje('Lo siento, mis funciones se limitan al sistema de gestión y a la organización sindical. No encuentro una respuesta confirmada para esa consulta. Para información oficial sobre un proceso interno, contacta al equipo administrador. ¿Puedo ayudarte con algo del sistema o del sindicato?', 'bot');
 }
 
 function mostrarPreguntasSugeridas() {
@@ -585,13 +638,14 @@ function limpiarConversacion() {
   mensajes.replaceChildren();
   panelInformes.hidden = true;
   consultarInformes.setAttribute('aria-expanded', 'false');
-  agregarMensaje('Hola, soy el asistente de SUTENS. Puedo ayudarte a encontrar información del sistema.', 'bot');
+  agregarMensaje('Hola, soy el asistente virtual de SUTENS. Puedo orientarte sobre el sistema y la organización sindical. Escribe una pregunta o elige una opción.', 'bot');
 }
 
 boton.addEventListener('click', () => alternar(panel.hidden));
 cerrar.addEventListener('click', () => alternar(false));
 accionBuscar.addEventListener('click', () => campo.focus());
 verSugerencias.addEventListener('click', mostrarPreguntasSugeridas);
+consultarDatosPropios.addEventListener('click', mostrarDatosPropios);
 limpiar.addEventListener('click', limpiarConversacion);
 consultarInformes.addEventListener('click', async () => {
   if (!capacidadesVisibles().viewReports) return;
@@ -610,6 +664,20 @@ consultarInformes.addEventListener('click', async () => {
 });
 informeSelect.addEventListener('change', actualizarFiltrosInforme);
 agrupacionSelect.addEventListener('change', actualizarFiltrosInforme);
+restablecerFiltros.addEventListener('click', () => {
+  informeSelect.selectedIndex = 0;
+  estadoSelect.selectedIndex = 0;
+  estadoSindicalSelect.selectedIndex = 0;
+  agrupacionSelect.selectedIndex = 0;
+  subdirectivaSelect.selectedIndex = 0;
+  institucionSelect.selectedIndex = 0;
+  sedeSelect.selectedIndex = 0;
+  desdeInput.value = '';
+  hastaInput.value = '';
+  actualizarInstituciones();
+  actualizarFiltrosInforme();
+  informeSelect.focus();
+});
 subdirectivaSelect.addEventListener('change', actualizarInstituciones);
 institucionSelect.addEventListener('change', actualizarSedes);
 formularioInforme.addEventListener('submit', enviarInforme);

@@ -112,7 +112,12 @@ export async function crearExcelAfiliados(registros, { titulo = 'Padrón de afil
   return Buffer.from(buffer);
 }
 
-export async function crearPdfAfiliados(registros, { titulo = 'Padrón de afiliados SUTENS', metadatos = [], destino = null } = {}) {
+export async function crearPdfAfiliados(registros, {
+  titulo = 'Padrón de afiliados SUTENS',
+  metadatos = [],
+  destino = null,
+  leyendaPortada = '',
+} = {}) {
   const documento = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 28, bufferPages: false });
   const logo = await obtenerLogoPng();
   const fragmentos = [];
@@ -181,9 +186,26 @@ export async function crearPdfAfiliados(registros, { titulo = 'Padrón de afilia
   }
   dibujarEncabezadoTabla();
 
+  if (leyendaPortada) {
+    const pieY = documento.page.height - 44;
+    documento.moveTo(margen, pieY)
+      .lineTo(documento.page.width - margen, pieY)
+      .lineWidth(0.6).strokeColor('#dbe7df').stroke();
+    documento.font('Helvetica-Bold').fontSize(8).fillColor('#17652f')
+      .text(leyendaPortada, margen, pieY + 7, {
+        width: documento.page.width - margen * 2,
+        height: 12,
+        align: 'right',
+        lineBreak: false,
+      });
+  }
+
+  let primeraPagina = true;
   for (const [indiceRegistro, registro] of registros.entries()) {
-    if (y + alturaFila > documento.page.height - margen - 15) {
+    const reservaInferior = primeraPagina && leyendaPortada ? 44 : 15;
+    if (y + alturaFila > documento.page.height - margen - reservaInferior) {
       documento.addPage();
+      primeraPagina = false;
       y = 92;
       dibujarMarca();
       dibujarEncabezadoTabla();
