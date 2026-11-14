@@ -424,18 +424,71 @@ async function buscarDocumentosSindicales(consulta = '') {
   const normalizarBusqueda = (valor) => String(valor || '').normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es');
   const termino = normalizarBusqueda(consulta.trim());
+  const palabrasIgnoradas = new Set([
+    'a', 'al', 'algun', 'alguna', 'algunas', 'algunos', 'algun', 'archivo', 'archivos', 'ayuda',
+    'buscar', 'busca', 'con', 'cual', 'cuales', 'de', 'del', 'dime', 'documento', 'documentos',
+    'el', 'en', 'encuentra', 'es', 'esta', 'hay', 'la', 'las', 'lo', 'los', 'me', 'muestra',
+    'necesito', 'para', 'por', 'puede', 'puedes', 'quiero', 'que', 'resumen', 'resume', 'sobre',
+    'un', 'una', 'unas', 'uno', 'unos', 'ver', 'mostrar', 'solicitada', 'solicitado', 'cualquier',
+    'grado', 'grados', 'materia', 'materias', 'biblioteca', 'sindical', 'sindicato',
+    'educativo', 'educativa', 'educativos', 'educativas',
+  ]);
+  const terminos = termino.split(/[^\p{L}\p{N}]+/u)
+    .filter((palabra) => palabra.length > 1 && !palabrasIgnoradas.has(palabra));
+  const educativoSolicitado = /\b(educativ[oa]s?|grado|materia|guia|ingles|matematicas|ciencias|espanol|escolar)\b/i.test(termino);
+  const sindicalSolicitado = /\b(sindical|sindicato|acta|asamblea|estatutos|directiva|comunicado)\b/i.test(termino);
   try {
-    const [sindicales, educativas] = await Promise.all([
+    const respuestas = await Promise.allSettled([
       apiFetch('/api/biblioteca'),
       apiFetch('/api/biblioteca/educativa'),
     ]);
+    if (educativoSolicitado && !sindicalSolicitado && respuestas[1].status === 'rejected') {
+      throw respuestas[1].reason;
+    }
+    if (sindicalSolicitado && !educativoSolicitado && respuestas[0].status === 'rejected') {
+      throw respuestas[0].reason;
+    }
+    const sindicales = respuestas[0].status === 'fulfilled' && Array.isArray(respuestas[0].value)
+      ? respuestas[0].value : [];
+    const educativas = respuestas[1].status === 'fulfilled' && Array.isArray(respuestas[1].value)
+      ? respuestas[1].value : [];
+    if (!sindicales.length && !educativas.length && respuestas.every((respuesta) => respuesta.status === 'rejected')) {
+      throw respuestas[0].reason || respuestas[1].reason || new Error('No se pudieron consultar las bibliotecas.');
+    }
     const documentos = [
       ...sindicales.map((documento) => ({ ...documento, tipoBiblioteca: 'Sindical' })),
       ...educativas.map((documento) => ({ ...documento, tipoBiblioteca: 'Educativa' })),
     ];
-    const resultados = documentos.filter((documento) => !termino ||
-      normalizarBusqueda(`${documento.titulo || ''} ${documento.descripcion || ''} ${documento.categoria || ''} ${documento.materia || ''} ${documento.tipo_recurso || ''}`)
-        .includes(termino)).slice(0, 5);
+    const documentosVisibles = educativoSolicitado && !sindicalSolicitado
+      ? documentos.filter((documento) => documento.tipoBiblioteca === 'Educativa')
+      : sindicalSolicitado && !educativoSolicitado
+        ? documentos.filter((documento) => documento.tipoBiblioteca === 'Sindical')
+        : documentos;
+    const resultados = documentosVisibles.map((documento) => {
+      const titulo = normalizarBusqueda(documento.titulo);
+      const clasificacion = normalizarBusqueda([
+        documento.descripcion,
+        documento.categoria,
+        documento.materia,
+        documento.tipo_recurso,
+        documento.grado,
+      ].filter(Boolean).join(' '));
+      const texto = `${titulo} ${clasificacion}`;
+      const gradoSolicitado = terminos.find((palabra) => /^\d{1,2}$/.test(palabra));
+      if (gradoSolicitado && !normalizarBusqueda(documento.grado).match(new RegExp(`\\b${gradoSolicitado}\\b`))) {
+        return { documento, puntaje: 0 };
+      }
+      const puntaje = terminos.reduce((total, palabra) => {
+        if (titulo.includes(palabra)) return total + 4;
+        if (normalizarBusqueda(`${documento.materia || ''} ${documento.categoria || ''} ${documento.tipo_recurso || ''} ${documento.grado || ''}`).includes(palabra)) return total + 3;
+        if (clasificacion.includes(palabra)) return total + 1;
+        return total;
+      }, 0);
+      return { documento, puntaje: terminos.length ? puntaje : 1 };
+    }).filter(({ puntaje }) => puntaje > 0)
+      .sort((a, b) => b.puntaje - a.puntaje)
+      .slice(0, 5)
+      .map(({ documento }) => documento);
     agregarMensaje(resultados.length
       ? `Encontré ${resultados.length} documento${resultados.length === 1 ? '' : 's'}${termino ? ` relacionado${resultados.length === 1 ? '' : 's'} con “${consulta.trim()}”` : ' reciente' + (resultados.length === 1 ? '' : 's')}:`
       : 'No encontré documentos con ese título o tema en las bibliotecas disponibles para tu cuenta.', 'bot');
@@ -452,11 +505,42 @@ async function buscarDocumentosSindicales(consulta = '') {
       resumen.textContent = documento.descripcion?.trim()
         ? `Resumen de la ficha: ${documento.descripcion.trim().slice(0, 500)}${documento.descripcion.trim().length > 500 ? '…' : ''}`
         : 'La ficha no incluye una descripción; el asistente solo puede mostrar el título y la clasificación del documento.';
-      tarjeta.append(encabezado, tipo, resumen);
+      const extension = String(documento.archivo_url || '').match(/\.(pdf|doc|docx)$/i)?.[0]?.toLowerCase();
+      const abrir = document.createElement('button');
+      abrir.type = 'button';
+      abrir.className = 'chatbot-documento-abrir';
+      abrir.textContent = extension === '.pdf' ? 'Ver documento' : extension ? `Descargar ${extension.slice(1).toUpperCase()}` : 'Archivo no disponible';
+      abrir.disabled = !extension;
+      if (extension) {
+        abrir.addEventListener('click', async () => {
+          abrir.disabled = true;
+          try {
+            const ruta = documento.tipoBiblioteca === 'Educativa'
+              ? `/api/biblioteca/educativa/${documento.id_documento}/archivo`
+              : `/api/biblioteca/${documento.id_documento}/archivo`;
+            if (extension === '.pdf' && window.UI?.vistaPrevia) {
+              await window.UI.vistaPrevia(ruta, documento.titulo || 'Documento');
+            } else {
+              const archivo = await apiFetchArchivo(ruta);
+              const url = URL.createObjectURL(archivo);
+              const enlace = document.createElement('a');
+              enlace.href = url;
+              enlace.download = `${documento.titulo || 'documento'}${extension}`;
+              enlace.click();
+              setTimeout(() => URL.revokeObjectURL(url), 1000);
+            }
+          } catch (error) {
+            agregarMensaje(error.message || 'No se pudo abrir el archivo solicitado.', 'bot');
+          } finally {
+            abrir.disabled = false;
+          }
+        });
+      }
+      tarjeta.append(encabezado, tipo, resumen, abrir);
       mensajes.append(tarjeta);
     });
-    if (!termino && documentos.length > resultados.length) {
-      agregarMensaje('Escribe palabras del título o tema para buscar entre los documentos disponibles.', 'bot');
+    if (!termino && documentosVisibles.length > resultados.length) {
+      agregarMensaje('Escribe el tema, el nombre de la materia, el grado o el tipo de documento para afinar la búsqueda.', 'bot');
     }
   } catch (error) {
     agregarMensaje(error.message || 'No pude consultar las bibliotecas de documentos. Inténtalo de nuevo.', 'bot');
@@ -1010,8 +1094,8 @@ function responder(texto) {
     agregarFormularioCuenta('foto');
     return;
   }
-  if (/\b(documento|documentos|biblioteca|archivo|resumen)\b/i.test(texto)) {
-    const busqueda = texto.replace(/\b(busca|buscar|encuentra|encontrar|documento|documentos|biblioteca|archivo|archivos|resumen|resume|resumir|resumes|de|del|la|el|un|una|sobre|acerca|por favor|mi sindicato|me|puedes|puede|quiero|necesito|dime|muestra|cual|que|hay|en)\b/gi, ' ').trim();
+  if (/\b(documento|documentos|biblioteca|archivo|acta|actas|resumen|grado|materia|gu[ií]a|ingl[eé]s|educativ[oa]s?)\b/i.test(texto)) {
+    const busqueda = texto.replace(/\b(busca|buscar|encuentra|encontrar|documento|documentos|biblioteca|archivo|archivos|resumen|resume|resumir|resumes|de|del|la|el|un|una|sobre|acerca|por favor|mi sindicato|me|puedes|puede|quiero|necesito|dime|muestra|cual|que|hay|en|existe|educativo|educativa)\b/gi, ' ').trim();
     void buscarDocumentosSindicales(busqueda);
     return;
   }
