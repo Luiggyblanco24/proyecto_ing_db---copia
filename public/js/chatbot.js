@@ -102,6 +102,17 @@ gestionarAfiliados.className = 'chatbot-accion';
 gestionarAfiliados.textContent = 'Gestionar afiliados';
 gestionarAfiliados.hidden = true;
 acciones.append(accionBuscar, verSugerencias, consultarInformes, consultarDatosPropios, buscarDocumentos, cambiarContrasena, cambiarFoto, gestionarAfiliados);
+acciones.hidden = true;
+const herramientas = document.createElement('div');
+herramientas.className = 'chatbot-herramientas';
+const alternarAcciones = document.createElement('button');
+alternarAcciones.type = 'button';
+alternarAcciones.className = 'chatbot-herramientas-toggle';
+alternarAcciones.textContent = 'Acciones';
+alternarAcciones.setAttribute('aria-expanded', 'false');
+alternarAcciones.setAttribute('aria-controls', 'chatbot-acciones');
+acciones.id = 'chatbot-acciones';
+herramientas.append(alternarAcciones, acciones);
 
 const panelInformes = document.createElement('section');
 panelInformes.className = 'chatbot-informes';
@@ -208,8 +219,8 @@ contenido.append(panelInformes, mensajes);
 
 const formulario = document.createElement('form');
 formulario.className = 'chatbot-form';
-const campo = document.createElement('input');
-campo.type = 'text';
+const campo = document.createElement('textarea');
+campo.rows = 1;
 campo.maxLength = 500;
 campo.placeholder = 'Pregunta sobre el sistema o el sindicato…';
 campo.setAttribute('aria-label', 'Escribe tu pregunta');
@@ -225,7 +236,7 @@ limpiar.className = 'chatbot-limpiar';
 limpiar.textContent = 'Borrar conversación';
 formulario.append(campo, enviar, limpiar);
 
-panel.append(cabecera, acciones, contenido, formulario);
+panel.append(cabecera, herramientas, contenido, formulario);
 
 let historialModelo = [];
 
@@ -1008,7 +1019,59 @@ function responder(texto) {
     mostrarDatosPropios();
     return;
   }
+  if (/\b(actividad|actividades|evento|eventos|asistencia|asistentes|confirmaron|confirmada)\b/i.test(texto)) {
+    void responderConsultaActividades(texto);
+    return;
+  }
   void responderConIA(texto);
+}
+
+async function responderConsultaActividades(texto) {
+  const pensando = document.createElement('p');
+  pensando.className = 'chatbot-escribiendo';
+  pensando.textContent = 'Revisando el calendario…';
+  mensajes.append(pensando);
+  contenido.scrollTop = contenido.scrollHeight;
+  try {
+    const eventos = await apiFetch('/api/calendario/eventos');
+    const ahora = Date.now();
+    const preguntaPasado = /\b(realizad[ao]s?|pasad[ao]s?|anteriores|ya se hicieron|ya se realizaron)\b/i.test(texto);
+    const preguntaProxima = /\b(próxim[ao]s?|siguiente|por realizar|se aproxima|pronto)\b/i.test(texto);
+    let visibles = (Array.isArray(eventos) ? eventos : []).filter((evento) => {
+      const fecha = new Date(evento.fecha_inicio).getTime();
+      if (preguntaPasado) return evento.estado === 'realizado' || fecha < ahora;
+      if (preguntaProxima) return evento.estado === 'programado' && fecha >= ahora;
+      return true;
+    });
+    if (preguntaProxima) visibles = visibles.slice(0, 1);
+    else visibles = visibles.slice(0, 5);
+    pensando.remove();
+    if (!visibles.length) {
+      agregarMensaje(preguntaProxima
+        ? 'No encontré actividades próximas disponibles para tu perfil en el calendario.'
+        : 'No encontré actividades disponibles para tu perfil en el calendario.', 'bot');
+      return;
+    }
+    agregarMensaje(`Encontré ${visibles.length} actividad${visibles.length === 1 ? '' : 'es'} en el calendario:`, 'bot');
+    visibles.forEach((evento) => {
+      const fecha = new Date(evento.fecha_inicio);
+      const fechaTexto = Number.isNaN(fecha.getTime()) ? 'Fecha por confirmar' : fecha.toLocaleString('es-CO', {
+        dateStyle: 'medium', timeStyle: 'short',
+      });
+      const asistentes = Array.isArray(evento.asistentes) ? evento.asistentes.map((persona) => persona.nombre).filter(Boolean) : [];
+      let detalle = `${evento.titulo} · ${fechaTexto}${evento.lugar ? ` · ${evento.lugar}` : ''}.`;
+      if (/\b(quién(?:es)?|quienes|asistencia|asistentes|confirmaron|confirmada)\b/i.test(texto)) {
+        detalle += asistentes.length
+          ? ` Confirmaron asistencia: ${asistentes.join(', ')}.`
+          : ' Aún no hay asistentes confirmados.';
+      }
+      agregarMensaje(detalle, 'bot');
+    });
+  } catch (error) {
+    pensando.remove();
+    agregarMensaje(error.message || 'No pude consultar el calendario en este momento.', 'bot');
+  }
+  contenido.scrollTop = contenido.scrollHeight;
 }
 
 async function responderConIA(texto) {
@@ -1126,8 +1189,23 @@ formulario.addEventListener('submit', (evento) => {
     return;
   }
   campo.value = '';
+  campo.style.height = 'auto';
   responder(texto);
   campo.focus();
+});
+campo.addEventListener('input', () => {
+  campo.style.height = 'auto';
+  campo.style.height = `${Math.min(campo.scrollHeight, 144)}px`;
+});
+campo.addEventListener('keydown', (evento) => {
+  if (evento.key === 'Enter' && !evento.shiftKey) {
+    evento.preventDefault();
+    formulario.requestSubmit();
+  }
+});
+alternarAcciones.addEventListener('click', () => {
+  acciones.hidden = !acciones.hidden;
+  alternarAcciones.setAttribute('aria-expanded', String(!acciones.hidden));
 });
 document.addEventListener('keydown', (evento) => {
   if (evento.key === 'Escape' && !panel.hidden) {
