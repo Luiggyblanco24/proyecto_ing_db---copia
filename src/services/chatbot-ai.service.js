@@ -89,7 +89,7 @@ export async function responderConChatbotIa({ mensaje, historial = [], rol = 'af
           Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ model: modelo, messages, temperature: 0.25, max_tokens: 450 }),
+        body: JSON.stringify({ model: modelo, messages: mensajes, temperature: 0.25, max_tokens: 450 }),
         signal: controlador.signal,
       }
     );
