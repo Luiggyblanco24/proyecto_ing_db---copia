@@ -1,4 +1,6 @@
 import { pool, query } from '../config/db.js';
+import { createHmac } from 'node:crypto';
+import { referenciaAuditoriaChatbot } from '../utils/chatbot-audit.js';
 
 const idValido = (valor) => /^\d+$/.test(String(valor));
 
@@ -481,6 +483,17 @@ export async function asignarAfiliado(req, res) {
     );
 
     await client.query('COMMIT');
+    const secretoAuditoria = process.env.JWT_SECRET;
+    console.info(JSON.stringify({
+      evento: 'asignacion_afiliado',
+      ocurrido_at: new Date().toISOString(),
+      resultado: '200',
+      actor_ref: referenciaAuditoriaChatbot(req),
+      afiliado_ref: secretoAuditoria
+        ? createHmac('sha256', secretoAuditoria).update(`afiliado:${id}`).digest('hex').slice(0, 16)
+        : undefined,
+      id_subdirectiva: Number(id_subdirectiva),
+    }));
     return res.json({ mensaje: 'Afiliación y asignaciones locales actualizadas' });
   } catch (err) {
     await client.query('ROLLBACK').catch(() => {});

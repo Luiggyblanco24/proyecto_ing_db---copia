@@ -11,6 +11,20 @@ services:
         value: production
       - key: TRUST_PROXY_HOPS
         value: "1"
+      - key: CHATBOT_ENABLED
+        value: "true"
+      - key: CHATBOT_DOWNLOADS_ENABLED
+        value: "true"
+      - key: CLOUDFLARE_ACCOUNT_ID
+        sync: false
+      - key: CLOUDFLARE_API_TOKEN
+        sync: false
+      - key: CLOUDFLARE_AI_MODEL
+        value: "@cf/qwen/qwen3-30b-a3b-fp8"
+      - key: CHATBOT_CONVERSATION_RATE_LIMIT
+        value: "20"
+      - key: CHATBOT_CONVERSATION_RATE_WINDOW_MS
+        value: "60000"
       - key: CORS_ORIGINS
         value: https://tu-proyecto.vercel.app
       - key: DATABASE_URL

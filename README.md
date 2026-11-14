@@ -77,7 +77,7 @@ La migración 020 instala índices trigram concurrentes para acelerar las búsqu
 | Gestión documental | `tipo_documento`, `documento`, `documento_sindical`, `categoria`, `documento_educativo`, `materia` |
 | Calendario | `evento` |
 
-La migración 005 marca `Directiva Departamental` como Directiva Principal y crea los cargos Presidente General, Vicepresidente General, Secretario General, Fiscal General y Tesorero General. Sus titulares tienen acceso al padrón y gestión global de afiliados; la aprobación/rechazo de solicitudes está limitada al administrador y al Secretario General. La migración 009 agrega instituciones educativas debajo de cada subdirectiva y organiza las sedes existentes en una institución temporal llamada `Institución por clasificar`, que puedes renombrar después. La migración 010 permite conservar el cargo departamental junto con una afiliación en otra subdirectiva; esa afiliación puede no tener cargo sindical y puede quedar sin sede ni rol laboral.
+La migración 005 marca `Directiva Departamental` como Directiva Principal y crea los cargos Presidente General, Vicepresidente General, Secretario General, Fiscal General y Tesorero General. Sus titulares tienen acceso al padrón y gestión global de afiliados; la aprobación de solicitudes está autorizada para Administración SUTENS y los titulares activos de la Directiva Departamental, mientras que el rechazo se mantiene limitado a Administración y Secretaría General. La migración 009 agrega instituciones educativas debajo de cada subdirectiva y organiza las sedes existentes en una institución temporal llamada `Institución por clasificar`, que puedes renombrar después. La migración 010 permite conservar el cargo departamental junto con una afiliación en otra subdirectiva; esa afiliación puede no tener cargo sindical y puede quedar sin sede ni rol laboral.
 
 ## 2. Instalar y compilar la landing pública
 
@@ -200,6 +200,13 @@ cada una mantiene su propia ventana: el mismo usuario puede acumular solicitudes
 instancias y la alerta puede no detectar el volumen conjunto. Para aplicar límites y alertas
 globales haría falta un almacenamiento compartido con operaciones atómicas y expiración de
 ventanas, además de definir su disponibilidad y tratamiento de fallos; no está implementado.
+La conversación libre usa Cloudflare Workers AI desde el backend. Para habilitarla configura
+`CLOUDFLARE_ACCOUNT_ID` y `CLOUDFLARE_API_TOKEN` como secretos, más `CLOUDFLARE_AI_MODEL` si
+quieres elegir otro modelo. El token solo requiere `Account > Workers AI > Read`; no lo incluyas
+en el frontend ni en Git. El límite inicial es de 20 mensajes por usuario cada 60 segundos.
+Antes de procesar datos personales con un proveedor externo, revisa la política institucional de
+tratamiento de datos. El chatbot redacta correos, teléfonos y secuencias numéricas en el backend,
+y no envía cédulas en el flujo de gestión de afiliados.
 La exportación vuelve a consultar los datos en una transacción de lectura con una instantánea
 consistente, por lo que puede diferir del informe mostrado si los datos cambiaron. Los PDF y
 Excel incluyen datos individuales con el formato del padrón; la alternativa de correos incluye
@@ -312,6 +319,14 @@ los documentos Word. Render solicita las variables marcadas como secretas; confi
 - `DATABASE_SSL_CA`: certificado raíz PEM descargado desde Database Settings → SSL Configuration en Supabase. Es necesario si el runtime no confía en la cadena del servidor; el backend conserva la verificación TLS.
 - `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`: credenciales privadas del proyecto.
 - `CORS_ORIGINS`: origen exacto del sitio Vercel, sin rutas ni barra final.
+- `CHATBOT_ENABLED=true` y `CHATBOT_DOWNLOADS_ENABLED=true`: el blueprint habilita el widget,
+  los informes autorizados y sus descargas en Render. Para staging, cambia ambas a `false` hasta
+  completar la validación; al sincronizar cambios del blueprint, confirma los valores efectivos
+  en el servicio y reinícialo/redespliega para cargarlos.
+- `CLOUDFLARE_ACCOUNT_ID` y `CLOUDFLARE_API_TOKEN`: credenciales del proveedor IA, solo en el
+  entorno del servidor. El Account ID no es secreto, pero también se configura fuera del código.
+- `CLOUDFLARE_AI_MODEL`: modelo de Workers AI; la configuración inicial usa `@cf/qwen/qwen3-30b-a3b-fp8`.
+- `CHATBOT_CONVERSATION_RATE_LIMIT` y `CHATBOT_CONVERSATION_RATE_WINDOW_MS`: límite de conversación.
 - `JWT_SECRET`: Render genera uno automáticamente desde el blueprint.
 
 El plan de Render está en `free` para permitir iniciar sin comprometer un gasto. Los servicios

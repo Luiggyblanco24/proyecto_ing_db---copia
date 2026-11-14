@@ -84,7 +84,24 @@ consultarDatosPropios.type = 'button';
 consultarDatosPropios.className = 'chatbot-accion';
 consultarDatosPropios.textContent = 'Mis datos';
 consultarDatosPropios.setAttribute('aria-label', 'Consultar mis datos');
-acciones.append(accionBuscar, verSugerencias, consultarInformes, consultarDatosPropios);
+const buscarDocumentos = document.createElement('button');
+buscarDocumentos.type = 'button';
+buscarDocumentos.className = 'chatbot-accion';
+buscarDocumentos.textContent = 'Buscar documentos';
+const cambiarContrasena = document.createElement('button');
+cambiarContrasena.type = 'button';
+cambiarContrasena.className = 'chatbot-accion';
+cambiarContrasena.textContent = 'Cambiar contraseña';
+const cambiarFoto = document.createElement('button');
+cambiarFoto.type = 'button';
+cambiarFoto.className = 'chatbot-accion';
+cambiarFoto.textContent = 'Cambiar foto';
+const gestionarAfiliados = document.createElement('button');
+gestionarAfiliados.type = 'button';
+gestionarAfiliados.className = 'chatbot-accion';
+gestionarAfiliados.textContent = 'Gestionar afiliados';
+gestionarAfiliados.hidden = true;
+acciones.append(accionBuscar, verSugerencias, consultarInformes, consultarDatosPropios, buscarDocumentos, cambiarContrasena, cambiarFoto, gestionarAfiliados);
 
 const panelInformes = document.createElement('section');
 panelInformes.className = 'chatbot-informes';
@@ -210,6 +227,8 @@ formulario.append(campo, enviar, limpiar);
 
 panel.append(cabecera, acciones, contenido, formulario);
 
+let historialModelo = [];
+
 function capacidadesVisibles() {
   // Solo controla qué opciones se presentan; el servidor sigue autorizando cada operación.
   return window.SUTENSChatbotDashboard?.obtenerCapacidades?.() || {};
@@ -302,6 +321,383 @@ function mostrarDatosPropios() {
   contenido.scrollTop = contenido.scrollHeight;
 }
 
+function agregarFormularioCuenta(tipo) {
+  const datos = window.SUTENSChatbotDashboard?.obtenerDatosPropios?.();
+  if (!datos) {
+    agregarMensaje('No pude cargar tu perfil. Actualiza la página e inténtalo de nuevo.', 'bot');
+    return;
+  }
+  const esContrasena = tipo === 'contrasena';
+  agregarMensaje(esContrasena
+    ? 'Completa este formulario privado. Tu contraseña no se añadirá a la conversación.'
+    : 'Selecciona una foto JPG, PNG o WebP (máximo 4 MB).', 'bot');
+  const form = document.createElement('form');
+  form.className = 'chatbot-cuenta-form';
+  form.setAttribute('aria-label', esContrasena ? 'Cambiar contraseña' : 'Cambiar foto de perfil');
+  const controles = [];
+  const crearCampo = (labelTexto, type, name, extra = {}) => {
+    const wrapper = document.createElement('label');
+    wrapper.className = 'chatbot-cuenta-campo';
+    wrapper.append(document.createTextNode(labelTexto));
+    const input = document.createElement('input');
+    input.type = type;
+    input.name = name;
+    Object.entries(extra).forEach(([key, value]) => input.setAttribute(key, value));
+    input.required = true;
+    wrapper.append(input);
+    form.append(wrapper);
+    controles.push(input);
+    return input;
+  };
+  if (esContrasena) {
+    crearCampo('Contraseña actual', 'password', 'contrasenaActual', { autocomplete: 'current-password' });
+    crearCampo('Nueva contraseña (mínimo 8 caracteres)', 'password', 'nuevaContrasena', { minlength: '8', autocomplete: 'new-password' });
+    crearCampo('Confirmar nueva contraseña', 'password', 'confirmarContrasena', { minlength: '8', autocomplete: 'new-password' });
+  } else {
+    crearCampo('Foto de perfil', 'file', 'foto', { accept: 'image/jpeg,image/png,image/webp' });
+  }
+  const estado = document.createElement('p');
+  estado.className = 'chatbot-cuenta-estado';
+  estado.setAttribute('role', 'status');
+  estado.setAttribute('aria-live', 'polite');
+  const guardar = document.createElement('button');
+  guardar.type = 'submit';
+  guardar.className = 'btn btn-primario';
+  guardar.textContent = esContrasena ? 'Actualizar contraseña' : 'Actualizar foto';
+  form.append(guardar, estado);
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    estado.textContent = '';
+    if (esContrasena && controles[1].value !== controles[2].value) {
+      estado.textContent = 'Las contraseñas nuevas no coinciden.';
+      controles[2].focus();
+      return;
+    }
+    if (!esContrasena && (!controles[0].files?.[0] || controles[0].files[0].size > 4 * 1024 * 1024)) {
+      estado.textContent = 'Selecciona una imagen válida de hasta 4 MB.';
+      return;
+    }
+    guardar.disabled = true;
+    estado.textContent = 'Guardando…';
+    try {
+      const payload = new FormData();
+      payload.append('nombre1', datos.nombre1);
+      payload.append('nombre2', datos.nombre2);
+      payload.append('apellido1', datos.apellido1);
+      payload.append('apellido2', datos.apellido2);
+      payload.append('correo', datos.correo);
+      if (esContrasena) {
+        payload.append('contrasenaActual', controles[0].value);
+        payload.append('nuevaContrasena', controles[1].value);
+      } else {
+        payload.append('foto', controles[0].files[0]);
+      }
+      await apiFetch('/api/auth/me', { method: 'PATCH', body: payload });
+      form.reset();
+      estado.textContent = esContrasena ? 'Contraseña actualizada correctamente.' : 'Foto de perfil actualizada correctamente.';
+      document.dispatchEvent(new CustomEvent('sutens:perfil-actualizado'));
+    } catch (error) {
+      estado.textContent = error.message || 'No se pudo actualizar el perfil. Inténtalo de nuevo.';
+      if (esContrasena) controles.forEach((control) => { control.value = ''; });
+      else form.reset();
+    } finally {
+      guardar.disabled = false;
+    }
+  });
+  mensajes.append(form);
+  contenido.scrollTop = contenido.scrollHeight;
+  controles[0].focus();
+}
+
+async function buscarDocumentosSindicales(consulta = '') {
+  const normalizarBusqueda = (valor) => String(valor || '').normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es');
+  const termino = normalizarBusqueda(consulta.trim());
+  try {
+    const [sindicales, educativas] = await Promise.all([
+      apiFetch('/api/biblioteca'),
+      apiFetch('/api/biblioteca/educativa'),
+    ]);
+    const documentos = [
+      ...sindicales.map((documento) => ({ ...documento, tipoBiblioteca: 'Sindical' })),
+      ...educativas.map((documento) => ({ ...documento, tipoBiblioteca: 'Educativa' })),
+    ];
+    const resultados = documentos.filter((documento) => !termino ||
+      normalizarBusqueda(`${documento.titulo || ''} ${documento.descripcion || ''} ${documento.categoria || ''} ${documento.materia || ''} ${documento.tipo_recurso || ''}`)
+        .includes(termino)).slice(0, 5);
+    agregarMensaje(resultados.length
+      ? `Encontré ${resultados.length} documento${resultados.length === 1 ? '' : 's'}${termino ? ` relacionado${resultados.length === 1 ? '' : 's'} con “${consulta.trim()}”` : ' reciente' + (resultados.length === 1 ? '' : 's')}:`
+      : 'No encontré documentos con ese título o tema en las bibliotecas disponibles para tu cuenta.', 'bot');
+    resultados.forEach((documento) => {
+      const tarjeta = document.createElement('article');
+      tarjeta.className = 'chatbot-documento';
+      const encabezado = document.createElement('strong');
+      encabezado.textContent = documento.titulo || 'Documento sin título';
+      const tipo = document.createElement('span');
+      tipo.className = 'chatbot-documento-tipo';
+      tipo.textContent = [documento.tipoBiblioteca, documento.categoria || documento.materia || documento.tipo_recurso]
+        .filter(Boolean).join(' · ');
+      const resumen = document.createElement('p');
+      resumen.textContent = documento.descripcion?.trim()
+        ? `Resumen de la ficha: ${documento.descripcion.trim().slice(0, 500)}${documento.descripcion.trim().length > 500 ? '…' : ''}`
+        : 'La ficha no incluye una descripción; el asistente solo puede mostrar el título y la clasificación del documento.';
+      tarjeta.append(encabezado, tipo, resumen);
+      mensajes.append(tarjeta);
+    });
+    if (!termino && documentos.length > resultados.length) {
+      agregarMensaje('Escribe palabras del título o tema para buscar entre los documentos disponibles.', 'bot');
+    }
+  } catch (error) {
+    agregarMensaje(error.message || 'No pude consultar las bibliotecas de documentos. Inténtalo de nuevo.', 'bot');
+  }
+  contenido.scrollTop = contenido.scrollHeight;
+}
+
+function normalizarEtiqueta(valor) {
+  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es').trim();
+}
+
+function crearCampoGestion(form, texto, control) {
+  const etiqueta = document.createElement('label');
+  etiqueta.className = 'chatbot-cuenta-campo';
+  etiqueta.append(document.createTextNode(texto), control);
+  form.append(etiqueta);
+}
+
+async function mostrarGestionAfiliados(accion, textoOriginal = '') {
+  if (!capacidadesVisibles().manageAffiliates) {
+    agregarMensaje('No tienes permisos para gestionar afiliados desde el asistente.', 'bot');
+    return;
+  }
+  const tipoAccion = ['aprobar', 'asignar', 'aprobar_y_asignar'].includes(accion?.tipo) ? accion.tipo : 'aprobar';
+  const requiereAsignacion = tipoAccion !== 'aprobar';
+  let estructura = [];
+  let cargosDisponibles = [];
+  let rolesLaborales = [];
+  const form = document.createElement('form');
+  form.className = 'chatbot-gestion-form';
+  form.setAttribute('aria-label', 'Preparar gestión de afiliados');
+  const tituloGestion = document.createElement('strong');
+  tituloGestion.textContent = 'Preparar acción para afiliados';
+  const ayuda = document.createElement('p');
+  ayuda.className = 'chatbot-cuenta-estado';
+  ayuda.textContent = 'Las cédulas se consultan dentro de SUTENS y no se envían al modelo. Revisa la vista previa antes de confirmar.';
+  const cedulas = document.createElement('textarea');
+  cedulas.rows = 3;
+  cedulas.maxLength = 1200;
+  cedulas.placeholder = 'Pega aquí cédulas separadas por espacios, comas o saltos de línea';
+  cedulas.setAttribute('aria-label', 'Cédulas de afiliados');
+  cedulas.value = (textoOriginal.match(/\b\d{5,20}\b/g) || []).join('\n');
+  crearCampoGestion(form, 'Cédulas', cedulas);
+  const controles = { subdirectiva: null, sede: null, cargo: null, rol: null };
+
+  if (requiereAsignacion) {
+    try {
+      [estructura, cargosDisponibles, rolesLaborales] = await Promise.all([
+        apiFetch('/api/subdirectivas'),
+        apiFetch('/api/subdirectivas/cargos'),
+        apiFetch('/api/subdirectivas/roles-laborales'),
+      ]);
+    } catch (error) {
+      agregarMensaje(error.message || 'No se pudo cargar la estructura sindical.', 'bot');
+      return;
+    }
+    const crearSelect = (etiqueta) => {
+      const control = document.createElement('select');
+      control.append(new Option(etiqueta, ''));
+      return control;
+    };
+    controles.subdirectiva = crearSelect('Selecciona una subdirectiva…');
+    estructura.forEach((sub) => controles.subdirectiva.append(new Option(sub.nombre, String(sub.id_subdirectiva))));
+    const subSolicitada = estructura.find((sub) => normalizarEtiqueta(sub.nombre) === normalizarEtiqueta(accion.subdirectiva));
+    if (subSolicitada) controles.subdirectiva.value = String(subSolicitada.id_subdirectiva);
+    crearCampoGestion(form, 'Subdirectiva', controles.subdirectiva);
+    controles.sede = crearSelect('Sin sede asignada');
+    crearCampoGestion(form, 'Sede (opcional)', controles.sede);
+    controles.cargo = crearSelect('Sin cargo en esta subdirectiva');
+    crearCampoGestion(form, 'Cargo sindical', controles.cargo);
+    controles.rol = crearSelect('Sin rol laboral/docente');
+    rolesLaborales.forEach((rol) => controles.rol.append(new Option(rol.nombre, String(rol.id_rol_laboral))));
+    const rolSolicitado = rolesLaborales.find((rol) => normalizarEtiqueta(rol.nombre) === normalizarEtiqueta(accion.rol_laboral));
+    if (rolSolicitado) controles.rol.value = String(rolSolicitado.id_rol_laboral);
+    crearCampoGestion(form, 'Rol laboral/docente', controles.rol);
+
+    const actualizarDestino = () => {
+      const sub = estructura.find((item) => String(item.id_subdirectiva) === controles.subdirectiva.value);
+      const sedes = (sub?.instituciones || []).flatMap((institucion) => (institucion.sedes || []).map((sede) => ({
+        id: sede.id_sede, nombre: `${institucion.nombre} · ${sede.nombre}`,
+      })));
+      const sedeAnterior = controles.sede.value;
+      controles.sede.replaceChildren(new Option('Sin sede asignada', ''));
+      sedes.forEach((sede) => controles.sede.append(new Option(sede.nombre, String(sede.id))));
+      if (sedes.some((sede) => String(sede.id) === sedeAnterior)) controles.sede.value = sedeAnterior;
+      const cargos = cargosDisponibles.filter((cargo) => sub?.es_principal
+        ? cargo.es_departamental || cargo.nombre === 'Afiliado'
+        : !cargo.es_departamental && cargo.nombre !== 'Afiliado');
+      controles.cargo.replaceChildren(new Option(sub?.es_principal ? 'Selecciona un cargo…' : 'Sin cargo en esta subdirectiva', ''));
+      cargos.forEach((cargo) => controles.cargo.append(new Option(cargo.nombre, String(cargo.id_cargo_sindical))));
+      const cargoSolicitado = cargos.find((cargo) => normalizarEtiqueta(cargo.nombre) === normalizarEtiqueta(accion.cargo_sindical));
+      if (cargoSolicitado) controles.cargo.value = String(cargoSolicitado.id_cargo_sindical);
+      controles.cargo.required = Boolean(sub?.es_principal);
+    };
+    controles.subdirectiva.addEventListener('change', actualizarDestino);
+    if (!controles.subdirectiva.value && estructura.length === 1) controles.subdirectiva.value = String(estructura[0].id_subdirectiva);
+    actualizarDestino();
+  }
+
+  const resultadoLista = document.createElement('div');
+  resultadoLista.className = 'chatbot-gestion-resultados';
+  const estado = document.createElement('p');
+  estado.className = 'chatbot-cuenta-estado';
+  estado.setAttribute('role', 'status');
+  estado.setAttribute('aria-live', 'polite');
+  const revisar = document.createElement('button');
+  revisar.type = 'button';
+  revisar.className = 'btn btn-secundario';
+  revisar.textContent = 'Consultar y revisar';
+  const confirmar = document.createElement('button');
+  confirmar.type = 'button';
+  confirmar.className = 'btn btn-primario';
+  confirmar.textContent = 'Confirmar cambios';
+  confirmar.hidden = true;
+  form.append(tituloGestion, ayuda, revisar, resultadoLista, estado, confirmar);
+  mensajes.append(form);
+  let afiliadosRevisados = [];
+  const invalidarVistaPrevia = () => {
+    if (!afiliadosRevisados.length) return;
+    afiliadosRevisados = [];
+    confirmar.hidden = true;
+    estado.textContent = 'Cambiaste la lista o el destino. Vuelve a consultar y revisar antes de confirmar.';
+  };
+  form.addEventListener('input', invalidarVistaPrevia);
+  form.addEventListener('change', invalidarVistaPrevia);
+
+  revisar.addEventListener('click', async () => {
+    const lista = cedulas.value.split(/[\s,;]+/).map((valor) => valor.replace(/\D/g, '')).filter(Boolean);
+    if (!lista.length || lista.length > 50 || lista.some((cedula) => cedula.length < 5 || cedula.length > 20)) {
+      estado.textContent = 'Indica entre 1 y 50 cédulas válidas (entre 5 y 20 dígitos cada una).';
+      return;
+    }
+    if (new Set(lista).size !== lista.length) {
+      estado.textContent = 'Hay cédulas repetidas. Elimínalas antes de continuar.';
+      return;
+    }
+    revisar.disabled = true;
+    confirmar.hidden = true;
+    estado.textContent = 'Consultando en SUTENS…';
+    const camposFormulario = [cedulas, ...Object.values(controles).filter(Boolean)];
+    camposFormulario.forEach((control) => { control.disabled = true; });
+    try {
+      const preview = await apiFetch('/api/chatbot/afiliados/previsualizar', {
+        method: 'POST', body: JSON.stringify({ cedulas: lista }),
+      });
+      afiliadosRevisados = preview.afiliados || [];
+      resultadoLista.replaceChildren();
+      afiliadosRevisados.forEach((afiliado) => {
+        const fila = document.createElement('p');
+        fila.textContent = `${afiliado.nombre || 'No encontrado'} · ${afiliado.cedula_mascarada} · ${afiliado.estado || 'No registrado'}${afiliado.subdirectiva ? ` · ${afiliado.subdirectiva}` : ''}`;
+        resultadoLista.append(fila);
+      });
+      const sub = estructura.find((item) => String(item.id_subdirectiva) === controles.subdirectiva?.value);
+      const destinoValido = !requiereAsignacion || (sub && (!sub.es_principal || Boolean(controles.cargo.value)) &&
+        Boolean(controles.sede.value) === Boolean(controles.rol.value));
+      const elegibles = afiliadosRevisados.filter((afiliado) => {
+        if (!afiliado.id_afiliado) return false;
+        if (tipoAccion === 'aprobar') return afiliado.estado === 'pendiente';
+        if (tipoAccion === 'asignar') return afiliado.estado === 'aprobado';
+        return ['pendiente', 'aprobado'].includes(afiliado.estado);
+      });
+      estado.textContent = destinoValido
+        ? `${elegibles.length} de ${afiliadosRevisados.length} afiliado(s) podría(n) procesarse. Revisa los estados y el destino antes de confirmar.`
+        : 'Completa un destino válido. Para asignar un rol laboral debes elegir también una sede, y viceversa.';
+      confirmar.hidden = !destinoValido || elegibles.length === 0;
+    } catch (error) {
+      estado.textContent = error.message || 'No se pudo preparar la vista previa.';
+    } finally {
+      camposFormulario.forEach((control) => { control.disabled = false; });
+      revisar.disabled = false;
+    }
+    contenido.scrollTop = contenido.scrollHeight;
+  });
+
+  confirmar.addEventListener('click', async () => {
+    const sub = estructura.find((item) => String(item.id_subdirectiva) === controles.subdirectiva?.value);
+    if (requiereAsignacion && (!sub || (sub.es_principal && !controles.cargo.value) ||
+        Boolean(controles.sede.value) !== Boolean(controles.rol.value))) {
+      estado.textContent = 'Revisa subdirectiva, cargo y pareja sede/rol laboral antes de confirmar.';
+      return;
+    }
+    const total = afiliadosRevisados.filter((afiliado) => afiliado.id_afiliado && (
+      tipoAccion === 'aprobar' ? afiliado.estado === 'pendiente' :
+        tipoAccion === 'asignar' ? afiliado.estado === 'aprobado' : ['pendiente', 'aprobado'].includes(afiliado.estado)
+    )).length;
+    const accionTexto = tipoAccion === 'aprobar' ? 'aprobar' : tipoAccion === 'asignar' ? 'asignar o mover' : 'aprobar y asignar';
+    if (!window.confirm(`¿Confirmas ${accionTexto} ${total} afiliado(s)${sub ? ` a ${sub.nombre}` : ''}?`)) return;
+    const asignacionConfirmada = requiereAsignacion ? {
+      id_subdirectiva: controles.subdirectiva.value,
+      id_sede: controles.sede.value,
+      id_rol_laboral: controles.rol.value,
+      id_cargo_sindical: controles.cargo.value,
+    } : null;
+    revisar.disabled = true;
+    confirmar.disabled = true;
+    [cedulas, ...Object.values(controles).filter(Boolean)].forEach((control) => { control.disabled = true; });
+    estado.textContent = 'Aplicando los cambios autorizados…';
+    const resultados = [];
+    for (const afiliado of afiliadosRevisados) {
+      if (!afiliado.id_afiliado) {
+        resultados.push(`${afiliado.cedula_mascarada}: no encontrado`);
+        continue;
+      }
+      try {
+        let estadoAfiliacion = afiliado.estado;
+        if (['aprobar', 'aprobar_y_asignar'].includes(tipoAccion) && estadoAfiliacion === 'pendiente') {
+          await apiFetch(`/api/afiliados/${afiliado.id_afiliado}/estado`, {
+            method: 'PATCH', body: JSON.stringify({ estado: 'aprobado' }),
+          });
+          estadoAfiliacion = 'aprobado';
+        } else if (tipoAccion === 'aprobar' && estadoAfiliacion !== 'pendiente') {
+          resultados.push(`${afiliado.nombre}: omitido (${estadoAfiliacion})`);
+          continue;
+        }
+        if (requiereAsignacion) {
+          if (estadoAfiliacion !== 'aprobado') {
+            resultados.push(`${afiliado.nombre}: requiere solicitud aprobada`);
+            continue;
+          }
+          await apiFetch(`/api/afiliados/${afiliado.id_afiliado}/asignacion`, {
+            method: 'PATCH',
+            body: JSON.stringify(asignacionConfirmada),
+          });
+        }
+        resultados.push(`${afiliado.nombre}: completado`);
+      } catch (error) {
+        resultados.push(`${afiliado.nombre || afiliado.cedula_mascarada}: ${error.message || 'no se pudo completar'}`);
+      }
+    }
+    const listaResultados = document.createElement('ul');
+    resultados.forEach((resultado) => {
+      const item = document.createElement('li');
+      item.textContent = resultado;
+      listaResultados.append(item);
+    });
+    resultadoLista.replaceChildren(listaResultados);
+    estado.textContent = 'Proceso terminado. Revisa cada resultado; puede haber operaciones parciales.';
+    document.dispatchEvent(new CustomEvent('sutens:afiliados-actualizados'));
+    confirmar.hidden = true;
+    confirmar.disabled = false;
+    revisar.disabled = false;
+    [cedulas, ...Object.values(controles).filter(Boolean)].forEach((control) => { control.disabled = false; });
+    contenido.scrollTop = contenido.scrollHeight;
+  });
+  contenido.scrollTop = contenido.scrollHeight;
+}
+
+function esSaludo(texto) {
+  const normalizado = texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es').trim();
+  return /^(hola|buenos dias|buenas tardes|buenas noches|buenas|saludos|que tal|hey)[.!?\s]*$/.test(normalizado);
+}
+
 function mostrarCanalSoporte(prefijo) {
   const canal = CANAL_SOPORTE.trim();
   const mensaje = canal
@@ -313,6 +709,7 @@ function mostrarCanalSoporte(prefijo) {
 function actualizarVisibilidadInformes() {
   // La visibilidad es solo una ayuda de interfaz; el servidor aplica la autorización real.
   consultarInformes.hidden = !capacidadesVisibles().viewReports;
+  gestionarAfiliados.hidden = !capacidadesVisibles().manageAffiliates;
 }
 
 function actualizarDisponibilidadChatbot() {
@@ -590,35 +987,67 @@ async function enviarInforme(evento) {
 
 function responder(texto) {
   agregarMensaje(texto, 'usuario');
+  if (esSaludo(texto)) {
+    agregarMensaje('¡Hola! Soy el asistente virtual de SUTENS. Puedo ayudarte con documentos, tu perfil, consultas del sistema y preguntas sobre el sindicato. ¿Qué necesitas?', 'bot');
+    return;
+  }
+  if (/\b(cambiar|actualizar|modificar)\b.{0,35}\b(contrasena|clave|password)\b|\b(contrasena|clave)\b.{0,35}\b(cambiar|actualizar|modificar)\b/i.test(texto)) {
+    agregarFormularioCuenta('contrasena');
+    return;
+  }
+  if (/\b(cambiar|actualizar|modificar|subir)\b.{0,35}\b(foto|imagen|avatar)\b|\b(foto|imagen|avatar)\b.{0,35}\b(cambiar|actualizar|modificar)\b/i.test(texto)) {
+    agregarFormularioCuenta('foto');
+    return;
+  }
+  if (/\b(documento|documentos|biblioteca|archivo|resumen)\b/i.test(texto)) {
+    const busqueda = texto.replace(/\b(busca|buscar|encuentra|encontrar|documento|documentos|biblioteca|archivo|archivos|resumen|resume|resumir|resumes|de|del|la|el|un|una|sobre|acerca|por favor|mi sindicato|me|puedes|puede|quiero|necesito|dime|muestra|cual|que|hay|en)\b/gi, ' ').trim();
+    void buscarDocumentosSindicales(busqueda);
+    return;
+  }
   if (/\b(mi|mis)\s+(datos|información|perfil|estado|correo|nombre|afiliación|subdirectiva)\b/i.test(texto)) {
     mostrarDatosPropios();
     return;
   }
-  const resultado = buscarAyuda(texto, CATALOGO_AYUDA_CHATBOT, capacidadesVisibles());
+  void responderConIA(texto);
+}
 
-  if (resultado.estado === 'demasiado-largo') {
-    agregarMensaje('La pregunta debe tener máximo 500 caracteres.', 'bot');
-    return;
+async function responderConIA(texto) {
+  const pensando = document.createElement('p');
+  pensando.className = 'chatbot-escribiendo';
+  pensando.textContent = 'Asistente SUTENS está pensando…';
+  mensajes.append(pensando);
+  contenido.scrollTop = contenido.scrollHeight;
+  try {
+    const resultado = await apiFetch('/api/chatbot/conversar', {
+      method: 'POST',
+      body: JSON.stringify({ mensaje: texto, historial: historialModelo }),
+    });
+    pensando.remove();
+    if (resultado.respuesta) agregarMensaje(resultado.respuesta, 'bot');
+    historialModelo.push({ role: 'user', content: texto }, { role: 'assistant', content: resultado.respuesta || '' });
+    historialModelo = historialModelo.slice(-6);
+    if (resultado.accion && capacidadesVisibles().manageAffiliates) {
+      await mostrarGestionAfiliados(resultado.accion, texto);
+    } else if (resultado.accion) {
+      agregarMensaje('Para proteger los datos de afiliados, esa operación solo está disponible para Administración y Directiva Departamental.', 'bot');
+    }
+  } catch (error) {
+    pensando.remove();
+    if (/todavía no está configurada/i.test(error.message)) {
+      const respuestaLocal = buscarAyuda(texto, CATALOGO_AYUDA_CHATBOT, capacidadesVisibles());
+      if (respuestaLocal.estado === 'respuesta') {
+        agregarMensaje(respuestaLocal.entrada.respuesta, 'bot');
+        agregarAccionDestino(respuestaLocal.entrada);
+      } else if (capacidadesVisibles().manageAffiliates && /\b(aprueba|aprobar|asigna|asignar|mueve|mover|cambia|cambiar)\b/i.test(texto)) {
+        agregarMensaje('La conexión inteligente aún no está configurada. Puedes preparar la acción desde Gestionar afiliados.', 'bot');
+      } else {
+        agregarMensaje('La conexión inteligente aún no está configurada. Puedes usar las acciones disponibles en la barra del asistente.', 'bot');
+      }
+    } else {
+      agregarMensaje(error.message || 'No pude responder en este momento. Inténtalo de nuevo.', 'bot');
+    }
   }
-  if (resultado.estado === 'vacio') {
-    agregarMensaje('Escribe una pregunta para buscar ayuda.', 'bot');
-    return;
-  }
-  if (resultado.estado === 'pendiente') {
-    mostrarCanalSoporte('No hay un procedimiento confirmado para ese tema.');
-    return;
-  }
-  if (resultado.estado === 'respuesta') {
-    agregarMensaje(resultado.entrada.respuesta, 'bot');
-    agregarAccionDestino(resultado.entrada);
-    return;
-  }
-  if (resultado.estado === 'sugerencias') {
-    agregarMensaje('No encontré una coincidencia única. ¿Te refieres a alguna de estas opciones?', 'bot');
-    mostrarSugerencias(resultado.entradas);
-    return;
-  }
-  agregarMensaje('Lo siento, mis funciones se limitan al sistema de gestión y a la organización sindical. No encuentro una respuesta confirmada para esa consulta. Para información oficial sobre un proceso interno, contacta al equipo administrador. ¿Puedo ayudarte con algo del sistema o del sindicato?', 'bot');
+  contenido.scrollTop = contenido.scrollHeight;
 }
 
 function mostrarPreguntasSugeridas() {
@@ -636,6 +1065,7 @@ function alternar(abrir) {
 
 function limpiarConversacion() {
   mensajes.replaceChildren();
+  historialModelo = [];
   panelInformes.hidden = true;
   consultarInformes.setAttribute('aria-expanded', 'false');
   agregarMensaje('Hola, soy el asistente virtual de SUTENS. Puedo orientarte sobre el sistema y la organización sindical. Escribe una pregunta o elige una opción.', 'bot');
@@ -646,6 +1076,10 @@ cerrar.addEventListener('click', () => alternar(false));
 accionBuscar.addEventListener('click', () => campo.focus());
 verSugerencias.addEventListener('click', mostrarPreguntasSugeridas);
 consultarDatosPropios.addEventListener('click', mostrarDatosPropios);
+gestionarAfiliados.addEventListener('click', () => mostrarGestionAfiliados({ tipo: 'aprobar' }));
+buscarDocumentos.addEventListener('click', () => buscarDocumentosSindicales());
+cambiarContrasena.addEventListener('click', () => agregarFormularioCuenta('contrasena'));
+cambiarFoto.addEventListener('click', () => agregarFormularioCuenta('foto'));
 limpiar.addEventListener('click', limpiarConversacion);
 consultarInformes.addEventListener('click', async () => {
   if (!capacidadesVisibles().viewReports) return;

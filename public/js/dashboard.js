@@ -280,6 +280,8 @@ async function cargarPerfil() {
   }
 }
 
+document.addEventListener('sutens:perfil-actualizado', () => { void cargarPerfil(); });
+
 async function cargarEstadisticasAfiliacion() {
   const seccion = document.getElementById('estadisticas-afiliacion');
   const contenido = document.getElementById('contenido-estadisticas-afiliacion');
@@ -485,6 +487,10 @@ window.SUTENSChatbotDashboard = {
       nombre: [perfilActual.nombre1, perfilActual.nombre2, perfilActual.apellido1, perfilActual.apellido2]
         .filter(Boolean).join(' '),
       correo: perfilActual.correo,
+      nombre1: perfilActual.nombre1 || '',
+      nombre2: perfilActual.nombre2 || '',
+      apellido1: perfilActual.apellido1 || '',
+      apellido2: perfilActual.apellido2 || '',
       estadoAfiliacion: perfilActual.estado,
       estadoSindical: perfilActual.estado_sindical,
       subdirectiva: perfilActual.subdirectiva,
@@ -1506,15 +1512,16 @@ async function cargarUsuarios() {
     }
 
     tbody.innerHTML = usuarios.map((a) => {
-      const puedeAprobar = esAdmin || esSecretarioGeneral;
+      const puedeAprobar = puedeGestionarAfiliados;
+      const puedeRechazar = esAdmin || esSecretarioGeneral;
       const acciones = puedeGestionarAfiliados
         ? `<div class="acciones">
          ${a.estado === 'aprobado' ? `<button class="btn btn-secundario btn-sm" onclick="abrirModalAsignacion(${Number(a.id_afiliado)})">Asignación</button>` : ''}
          ${esAdmin && a.usuario ? `<button class="btn btn-secundario btn-sm" onclick="abrirModalRoles(${Number(a.id_afiliado)})">Actualizar roles</button>` : ''}
          ${esAdmin && a.usuario && String(a.id_afiliado) !== String(perfilActual?.id_afiliado) ? `<button class="btn btn-secundario btn-sm" onclick="restablecerContrasenaTemporal(${Number(a.id_afiliado)})">Restablecer contraseña</button>` : ''}
          ${esAdmin && String(a.id_afiliado) !== String(perfilActual?.id_afiliado) ? `<button class="btn-icono peligro-suave" type="button" onclick="eliminarAfiliado(${Number(a.id_afiliado)})" aria-label="Eliminar a ${escapeHTML(nombreCompleto(a))}" title="Eliminar">${UI.svg(UI.iconos.papelera, 18)}</button>` : ''}
-         ${puedeAprobar && a.estado === 'pendiente' ? `<button class="btn btn-rojo btn-sm" onclick="cambiarEstado(${Number(a.id_afiliado)}, 'rechazado')">Rechazar</button>
-             <button class="btn btn-primario btn-sm" onclick="cambiarEstado(${Number(a.id_afiliado)}, 'aprobado')">Aprobar</button>` : ''}
+         ${a.estado === 'pendiente' && puedeRechazar ? `<button class="btn btn-rojo btn-sm" onclick="cambiarEstado(${Number(a.id_afiliado)}, 'rechazado')">Rechazar</button>` : ''}
+         ${a.estado === 'pendiente' && puedeAprobar ? `<button class="btn btn-primario btn-sm" onclick="cambiarEstado(${Number(a.id_afiliado)}, 'aprobado')">Aprobar</button>` : ''}
            </div>`
         : '—';
 
@@ -1541,6 +1548,8 @@ async function cargarUsuarios() {
     tbody.innerHTML = `<tr><td colspan="14" style="text-align:center; color:#991b1b;">${escapeHTML(err.message)}</td></tr>`;
   }
 }
+
+document.addEventListener('sutens:afiliados-actualizados', () => { void cargarUsuarios(); });
 
 function cambiarModoAdministracion(modo) {
   modoAdministracion = modo;

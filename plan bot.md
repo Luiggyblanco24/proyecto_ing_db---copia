@@ -8,24 +8,31 @@ Este documento es un plan, no autoriza por sí solo cambios en producción, cont
 
 ## 2. Estado actual — actualizado
 
-- ✅ El widget ofrece ayuda determinista, preguntas sugeridas y consulta de los datos básicos del propio perfil; no usa IA externa ni conserva historial.
+- ✅ El widget ofrece ayuda contextual, preguntas sugeridas, perfil propio y conversación con Workers AI; el servidor no persiste historial. ⏳ La conexión en producción requiere configurar el token de Cloudflare.
 - ✅ El backend expone cuatro informes estructurados, con filtros validados, consultas parametrizadas de solo lectura, timeout y límite de resultados.
 - ✅ El servidor autoriza informes a Administrador SUTENS y Directiva Departamental activa. Las exportaciones PDF/Excel y correos existen, pero siguen apagadas por defecto y sujetas a revisión legal/operativa.
 - ✅ Las descargas están habilitadas explícitamente en la configuración local; otros entornos conservan el apagado por defecto hasta que su variable de entorno se active.
 - ✅ La Directiva Departamental tiene acceso global a informes/exportaciones del chatbot mediante validación de su cargo departamental activo en el servidor; pruebas de staging pendientes.
 - ✅ La auditoría registra una referencia seudónima HMAC para atribución operativa sin guardar el ID directo. Deriva de `JWT_SECRET`; rotar el secreto cambia la referencia.
+- ✅ El blueprint de Render declara habilitado el chatbot y sus descargas, y Vercel reescribe `/api` hacia el servicio Render declarado; ⏳ falta confirmar el despliegue efectivo después del commit/sincronización del blueprint.
+- ✅ El asistente responde saludos cotidianos y ofrece accesos guiados para buscar documentos, cambiar contraseña y actualizar foto de perfil.
+- ✅ La búsqueda consulta las bibliotecas sindical y educativa con las rutas autenticadas existentes; presenta título, clasificación y resumen basado exclusivamente en la descripción guardada.
+- ✅ Los cambios de contraseña y foto reutilizan `PATCH /api/auth/me`, validación de contraseña actual, límites y validaciones de archivo del servidor; los secretos no se agregan al historial del chat.
+- ✅ Workers AI se llama únicamente desde el backend; el modelo recibe mensajes con correos, teléfonos y secuencias numéricas redactadas. La clave y el Account ID se configuran por variables de entorno.
+- ✅ Administración y titulares activos de la Directiva Departamental pueden preparar y confirmar operaciones con afiliados; la búsqueda de cédulas queda en SUTENS y los cambios usan las rutas existentes.
+- ✅ La página oficial del sindicato aporta el contexto histórico confirmado: conformación el 29 de junio de 2016 por docentes de El Tarra y Teorama.
 - ⏳ El canal oficial de soporte aún no está configurado; el chatbot lo comunica sin mostrar un marcador interno.
 - ⏳ Staging, operación, privacidad y producción no están validados; consultar `docs/chatbot-operacion.md`.
-- No hay búsqueda individual libre, IA externa, acciones que modifiquen datos ni historial de conversación.
+- No se ofrece búsqueda libre de afiliados a usuarios limitados; no se envían cédulas al modelo ni se almacena historial de conversación en el servidor.
 
 ## 3. Principios y límites
 
 1. **Autorización en el servidor:** cada petición identifica al usuario desde su JWT y aplica permisos y alcance por rol/subdirectiva. No confiar en filtros, roles o IDs enviados por el navegador.
 2. **Consultas permitidas:** el backend ejecuta funciones de consulta explícitas, parametrizadas y de solo lectura. No aceptar ni ejecutar SQL redactado por un usuario o generado por una IA.
 3. **Minimización de datos:** priorizar conteos y agrupaciones. Nombres, cédulas, celulares, correos y otros datos individuales solo podrán consultarse si el permiso existente lo autoriza y el usuario los necesita para su tarea.
-4. **Sin exposición externa por defecto:** preguntas, resultados e identificadores personales no se envían a proveedores de IA. Integrar un proveedor externo requerirá decisión explícita, evaluación de privacidad/costos y aprobación del responsable del tratamiento.
+4. **Minimización ante el proveedor:** Workers AI recibe mensajes conversacionales redactados; no se envían cédulas, documentos personales ni resultados de afiliados. SUTENS debe revisar el tratamiento institucional antes de producción.
 5. **Respuestas verificables:** mostrar filtros aplicados, alcance consultado, fecha/hora de generación y fuente del informe. Si no entiende una pregunta, pedir aclaración en vez de adivinar.
-6. **No realizar cambios críticos:** no aprobar/rechazar solicitudes, modificar afiliaciones, borrar datos ni cambiar roles desde el chat. Enlazar a la pantalla existente y exigir sus controles normales.
+6. **Cambios bajo control humano:** aprobar solicitudes y modificar asignaciones solo para Administración/Directiva Departamental, tras mostrar coincidencias y destino y recibir confirmación expresa. El rechazo sigue limitado a Administración y Secretaría General; no borrar ni cambiar roles de acceso desde el chatbot.
 7. **Auditoría mínima:** usar referencia seudónima derivada de `JWT_SECRET`, nunca el ID directo; no guardar texto libre ni resultados personales por defecto. Restringir acceso a logs y definir retención.
 8. **Cumplimiento:** revisar finalidad, autorización, retención y acceso conforme a la Ley 1581 de 2012 y a las políticas de SUTENS antes de habilitar datos personales.
 
@@ -64,7 +71,7 @@ El sistema indicará cuando un filtro se haya ignorado o no sea válido. No debe
 
 Crear un catálogo de preguntas y respuestas revisadas por SUTENS sobre tareas existentes, como iniciar sesión, recuperar contraseña, actualizar datos, usar biblioteca/calendario y solicitar soporte. Cada respuesta debe incluir enlaces internos a la vista o procedimiento correspondiente cuando exista.
 
-La ayuda inicial será determinista (búsqueda por palabras clave o categorías), sin IA generativa. Cuando no encuentre una respuesta, indicará que no puede resolverla y sugerirá el canal de soporte aprobado.
+La ayuda puede usar Workers AI para comprender preguntas naturales con respuestas basadas en contenido verificado. Se conserva el catálogo determinista como respaldo cuando el proveedor no está configurado o no responde.
 
 ### 4.4 Conversación
 
@@ -113,10 +120,8 @@ permisos.
 - Respuesta estándar para temas ajenos al alcance: “Lo siento, mis funciones están limitadas a
   temas relacionados con el sindicato. ¿Puedo ayudarte con alguna consulta sobre el sistema o la
   organización?”
-- El texto de sistema propuesto puede orientar tono, idioma, alcance y abstención, pero no es un
-  control de seguridad. Si se mantiene el chatbot sin IA, estas reglas se implementarán como
-  catálogo, clasificación determinista y respuestas seguras; no se integrará un proveedor externo
-  solo para poder copiar un prompt.
+- El texto de sistema orienta tono, idioma, alcance y abstención, pero no es un control de
+  seguridad. La autorización, consultas y operaciones permanecen en el backend SUTENS.
 
 ### 4.7 Descargas generadas desde el chatbot
 
@@ -152,7 +157,7 @@ permisos.
 
 - ✅ Roles habilitados para informes: Administrador SUTENS y Directiva Departamental activa; los demás reciben rechazo del servidor.
 - ✅ Informes de estadísticas; exportaciones individuales existentes autorizadas en la conversación y deshabilitadas por defecto.
-- ✅ Sin historial y sin proveedor externo de IA.
+- ✅ Se eligió Cloudflare Workers AI para el asistente; ⏳ configurar `CLOUDFLARE_ACCOUNT_ID` y `CLOUDFLARE_API_TOKEN` en staging y Render, y revisar tratamiento de datos con el responsable de privacidad.
 - ⏳ Revisar finalidad, base legal, retención, textos legales y responsable de aprobación para despliegue.
 - ⏳ Confirmar preguntas frecuentes publicables y definir el canal oficial de soporte.
 - ⏳ Completar la validación de staging antes de habilitar acceso en producción.
@@ -200,9 +205,9 @@ permisos.
 
 Esta función no tiene tareas activas. El padrón conserva su propio flujo de búsqueda autorizado.
 
-### Fase 4 — Interpretación de lenguaje natural, fuera del alcance activo
+### Fase 4 — Interpretación de lenguaje natural
 
-**Estado: ⏸ diferida.** La ayuda determinista y los informes estructurados cubren el alcance actual; cualquier clasificador o proveedor de IA requiere decisión explícita y evaluación de privacidad/costos.
+**Estado: 🟡 integración implementada; credenciales y validación de staging pendientes.** Workers AI redacta respuestas con contenido verificado y clasifica intenciones de gestión; no ejecuta acciones ni recibe cédulas. La aplicación conserva flujos deterministas de respaldo.
 
 ### Fase 5 — Validación, despliegue y operación
 
@@ -235,11 +240,16 @@ rechazados en consulta y descarga por backend, con auditoría sin datos sensible
 
 ### Fase 7 — Respuestas conversacionales y archivos
 
-**Estado: 🟡 flujo, perfil propio y formato PDF implementados; contenido general amplio y validación visual pendientes.**
+**Estado: 🟡 informes, perfil propio, búsqueda documental y acciones de perfil implementados; validación visual/operativa y contenido general amplio pendientes.**
 
 - ✅ Aplicar idioma, tono, límites temáticos, abstención y orientación inicial definidos en
   las secciones 4.5–4.6. ⏳ Publicar nuevas respuestas generales solo después de validarlas con SUTENS.
 - ✅ Permitir a cada usuario consultar campos básicos de su propio perfil sin exponer datos de terceros.
+- ✅ Responder saludos comunes en español y orientar al usuario hacia las funciones disponibles.
+- ✅ Buscar documentos sindicales y educativos mediante los endpoints autenticados existentes y mostrar un resumen breve derivado de su descripción. ⏳ Resumir texto íntegro del archivo requiere extracción documental segura y soporte explícito para PDF/DOC/DOCX.
+- ✅ Permitir cambiar contraseña con contraseña actual y confirmación local; permitir actualizar foto con límite de 4 MB y formatos admitidos. El formulario nunca incluye contraseñas en los mensajes ni en el historial.
+- ✅ Usar Workers AI para conversación natural y clasificación limitada de acciones. La integración se apaga de hecho mientras falten las credenciales y recurre al catálogo de ayuda.
+- ✅ Dar a Administración y Directiva un flujo de aprobación/asignación con búsqueda autenticada, preview, confirmación y resultado por afiliado; el rechazo mantiene su permiso previo.
 - ✅ Después de cada informe permitido con resultados, ofrecer archivos solo si la política
   del usuario lo permite. El servidor vuelve a validar la solicitud al generar el archivo.
 - ✅ Reutilizar el generador PDF del padrón y añadir la leyenda de chatbot al pie de la primera
@@ -294,7 +304,7 @@ Estas decisiones afectan privacidad, permisos, costos o alcance. No se asumirán
 2. ✅ El chat muestra estadísticas; las descargas pueden incluir datos de personas de
    grupos visibles, bajo las condiciones descritas en la Fase 2.
 3. ✅ No se guarda historial ni texto libre en servidor.
-4. ✅ No se incorpora IA; cualquier propuesta sigue fuera del alcance y requiere evaluación/aprobación.
+4. ✅ El modelo externo se limita a comprender y redactar; no recibe cédulas ni ejecuta herramientas de escritura. Las consultas de datos se mantienen en APIs del backend.
 5. ✅ Exportaciones existentes: PDF/Excel de afiliados y Excel de correos de grupos visibles; deshabilitadas por defecto.
 6. ⏳ Definir el canal oficial de soporte para reemplazar la orientación genérica.
 7. ⏳ Acordar umbrales de latencia/carga y completar staging antes de producción.
@@ -307,5 +317,7 @@ El chatbot permite informes para Directiva Departamental activa y Administrador 
 alcance global de SUTENS y validación en servidor. Las exportaciones se mantienen apagadas por
 defecto mediante la bandera existente. El flujo ofrece PDF/Excel coherentes con el padrón y el
 PDF de chatbot incluye la leyenda en portada. Completar staging, revisión operativa/privacidad y
-validación visual antes de habilitar en producción. La búsqueda individual libre, las acciones
-que modifican datos y la IA externa siguen fuera del alcance.
+validación visual antes de habilitar en producción. La búsqueda individual libre de afiliados
+sigue fuera del alcance. La conexión de Workers AI queda pendiente de credenciales de entorno y
+validación de staging. Las acciones de contraseña y foto se limitan al perfil autenticado y
+reutilizan las validaciones existentes de la API.

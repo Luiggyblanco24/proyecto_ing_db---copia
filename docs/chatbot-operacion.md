@@ -6,12 +6,22 @@ Los informes se autorizan para Administrador SUTENS y titulares activos de los c
 Directiva Departamental reconocidos por el servidor (`Presidente General`, `Vicepresidente
 General`, `Secretario General`, `Fiscal General` y `Tesorero General`). Su alcance es todo SUTENS.
 Afiliados y demás roles no tienen acceso a estos informes. Las descargas individuales permanecen
-apagadas por defecto. Sin IA externa ni historial de conversación. Las consultas son de solo
-lectura; la autenticación actualiza la actividad de sesión.
+apagadas por defecto. La conversación con Workers AI no conserva historial en el servidor y
+redacta correos, teléfonos y secuencias numéricas antes de enviar mensajes al modelo. Las
+operaciones administrativas usan rutas SUTENS autenticadas, vistas previas y confirmación del
+usuario; el modelo nunca ejecuta cambios. La autenticación actualiza la actividad de sesión.
 
 - `CHATBOT_ENABLED=false` por defecto bloquea todas las rutas `/api/chatbot/*` con 404 y oculta
-  el widget. Con `true` se habilita el asistente; la autorización por rol sigue en el servidor.
+  el widget si la variable no está definida. El blueprint de Render declara `true` para habilitar
+  el chatbot desplegado; la autorización por rol sigue en el servidor.
 - `CHATBOT_DOWNLOADS_ENABLED=false` mantiene descargas apagadas incluso con chatbot habilitado.
+  El blueprint de Render declara `true` por solicitud explícita del responsable del proyecto.
+- `CLOUDFLARE_ACCOUNT_ID` y `CLOUDFLARE_API_TOKEN` habilitan las respuestas generativas; ambos
+  se configuran en el servidor y nunca en el navegador. El token requiere únicamente
+  `Account > Workers AI > Read`. `CLOUDFLARE_AI_MODEL` permite cambiar el modelo.
+- `CHATBOT_CONVERSATION_RATE_LIMIT` y `CHATBOT_CONVERSATION_RATE_WINDOW_MS` limitan las llamadas
+  al modelo por usuario y proceso; el límite en memoria no sustituye un control compartido si se
+  escala a varias instancias.
 - Las variables se leen al iniciar el proceso. Asegurar la misma configuración en todas las
   instancias y esperar que los procesos anteriores terminen; una pestaña abierta necesita
   recargarse para reflejar el estado visual.
@@ -31,6 +41,11 @@ No usar una previsualización conectada a producción ni copiar datos reales.
 - [ ] Activar solo `CHATBOT_ENABLED`; reiniciar todas las instancias y recargar el panel.
       Verificar ayuda, sesión ausente/vencida, informes de administrador y Directiva activa,
       y rechazo por backend de afiliados/otros roles, incluidos roles y filtros manipulados.
+- [ ] Configurar credenciales de Workers AI en staging y comprobar saludos, respuestas fuera de
+      alcance, historia confirmada de SUTENS, fallo del proveedor, 429 y timeout sin filtrar datos.
+- [ ] Con perfil de Directiva y de Administración, revisar la vista previa de gestión; verificar
+      que cédulas no aparecen en solicitudes al proveedor ni en logs y que ninguna escritura se
+      produce antes de la confirmación explícita.
 - [ ] Con `CHATBOT_DOWNLOADS_ENABLED=false`, comprobar que el botón no aparece y el endpoint
       de descarga devuelve 404 para administrador y Directiva Departamental autenticados.
 - [ ] Comparar los cuatro informes con consultas de referencia; probar límites, timeout,
@@ -52,11 +67,11 @@ No usar una previsualización conectada a producción ni copiar datos reales.
 
 1. Completar la lista de staging y las revisiones de seguridad y legal; aceptar explícitamente
    el riesgo conocido de inferencia entre consultas para el administrador.
-2. Desplegar inicialmente con `CHATBOT_ENABLED=false` y `CHATBOT_DOWNLOADS_ENABLED=false`;
-   comprobar 404 por la ruta publicada y por cada instancia accesible.
-3. Solo tras aprobación, establecer `CHATBOT_ENABLED=true`, mantener descargas en `false`,
-   reiniciar/actualizar todas las instancias y comprobar sesión, autorización y widget con
-   cuentas autorizadas. No modificar roles.
+2. Para staging, sobrescribir ambas banderas a `false`; comprobar 404 por la ruta publicada y
+   por cada instancia accesible.
+3. En producción, confirmar los valores `true` del blueprint, sincronizar/reiniciar todas las
+   instancias y comprobar sesión, autorización, descargas y widget con cuentas autorizadas.
+   No modificar roles.
 4. Vigilar `chatbot_informe` por resultado y `duracion_ms` (p50/p95 de los eventos con esa
    duración, medida en el controlador, no extremo a extremo), aumentos de 403, 429,
    500 y `timeout`, además de disponibilidad, carga y costos. La alerta
