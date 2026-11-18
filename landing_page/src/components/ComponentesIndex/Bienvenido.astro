@@ -5,7 +5,7 @@ import detailPhoto from '../../assets/landing/3.jpg';
 import placeholderPhoto from '../../assets/landing/2.jpg';
 ---
 
-<section class="hero relative isolate overflow-hidden text-white" style="min-height:100svh; background: radial-gradient(ellipse 100% 80% at 20% -10%, #1a5c35 0%, #0a2715 55%, #061a0e 100%);">
+<section class="hero relative isolate overflow-hidden text-white" style="background: radial-gradient(ellipse 100% 80% at 20% -10%, #1a5c35 0%, #0a2715 55%, #061a0e 100%);">
 
   <!-- Textura diagonal sutil -->
   <div class="hero-grid absolute inset-0 pointer-events-none opacity-[0.035]" aria-hidden="true"></div>
@@ -16,7 +16,7 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
   <!-- Línea decorativa horizontal luminosa -->
   <div class="hero-line absolute top-0 left-0 right-0 h-px pointer-events-none" aria-hidden="true"></div>
 
-  <div class="relative z-10 mx-auto grid min-h-[calc(100svh-4rem)] max-w-7xl items-center gap-8 px-5 pb-16 pt-16 sm:px-6 lg:min-h-[calc(100svh-4.5rem)] lg:grid-cols-[1.15fr_0.85fr] lg:gap-16 lg:py-14">
+  <div class="relative z-10 mx-auto grid max-w-7xl items-center gap-8 px-5 pb-20 pt-9 sm:px-6 sm:pt-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-12 lg:pb-24 lg:pt-16">
 
     <!-- ══ COLUMNA IZQUIERDA ══ -->
     <div class="flex flex-col justify-center">
@@ -33,7 +33,7 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
       </div>
 
       <!-- Título principal -->
-      <h1 class="hero-title mb-7 text-balance font-extrabold leading-[1.0] tracking-tight">
+      <h1 class="hero-title mb-5 text-balance font-extrabold leading-[1.0] tracking-tight">
         <span class="block text-white">Defensa de la Educación,</span>
         <span class="relative mt-1 block">
           <span class="hero-gradient-text">Unidad de los Trabajadores</span>
@@ -52,13 +52,13 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
         </span>
       </h1>
 
-      <p class="mb-10 max-w-lg text-lg leading-relaxed text-white/80 lg:text-xl">
+      <p class="mb-6 max-w-lg text-base leading-relaxed text-white/90 sm:text-lg">
         Unidos defendemos los derechos laborales, el salario justo y la educación pública de calidad para los docentes de Norte de Santander.
       </p>
 
       <!-- CTAs -->
-      <div class="flex flex-wrap gap-4">
-        <a href="/Afiliate/" class="btn btn-accent group px-8 py-4 text-base font-extrabold tracking-wide shadow-xl">
+      <div class="grid gap-3 sm:flex sm:flex-wrap">
+        <a href="/Afiliate/" class="btn hero-join group px-8 py-4 text-base font-extrabold tracking-wide shadow-xl">
           Afíliate a SUTENS
           <svg class="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M5 12h14M13 6l6 6-6 6"/>
@@ -73,18 +73,18 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
       </div>
 
       <!-- Stats rápidas -->
-      <div class="mt-12 grid grid-cols-3 gap-4 max-w-md border-t border-white/10 pt-8">
+      <div class="mt-7 grid grid-cols-3 gap-2 max-w-md border-t border-white/15 pt-4 sm:gap-4 sm:pt-6">
         <div>
           <p class="text-2xl font-extrabold text-white lg:text-3xl">2016</p>
-          <p class="mt-0.5 text-xs font-semibold uppercase tracking-wider text-white/80">Fundados</p>
+          <p class="mt-0.5 text-[0.69rem] font-semibold text-white/85 sm:text-xs">Fundados</p>
         </div>
-        <div class="border-l border-white/10 pl-4">
+        <div class="border-l border-white/15 pl-2 sm:pl-4">
           <p class="text-2xl font-extrabold text-amber-300 lg:text-3xl">4</p>
-          <p class="mt-0.5 text-xs font-semibold uppercase tracking-wider text-white/80">Subdirectivas</p>
+          <p class="mt-0.5 text-[0.69rem] font-semibold text-white/85 sm:text-xs">Subdirectivas</p>
         </div>
-        <div class="border-l border-white/10 pl-4">
+        <div class="border-l border-white/15 pl-2 sm:pl-4">
           <p class="text-2xl font-extrabold text-emerald-300 lg:text-3xl">NdeS</p>
-          <p class="mt-0.5 text-xs font-semibold uppercase tracking-wider text-white/80">Departamento</p>
+          <p class="mt-0.5 text-[0.69rem] font-semibold text-white/85 sm:text-xs">Departamento</p>
         </div>
       </div>
     </div>
@@ -96,27 +96,19 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
       <div class="hero-ring absolute -inset-8 rounded-[2.5rem] border border-white/5" aria-hidden="true"></div>
       <div class="hero-ring-2 absolute -inset-4 rounded-[2.5rem]" style="background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(251,191,36,0.03));" aria-hidden="true"></div>
 
-      <!-- Badge flotante superior derecho -->
-      <div class="hidden absolute -top-4 -right-2 z-20 items-center gap-2 rounded-2xl border border-white/15 px-4 py-2.5 backdrop-blur-md shadow-2xl animate-floating-slow md:flex" style="background: rgba(14,30,20,0.75);">
-        <span class="relative flex h-2 w-2 shrink-0" aria-hidden="true">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-          <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-400"></span>
-        </span>
-        <span class="text-xs font-extrabold text-white">Organización activa</span>
-      </div>
-
       <!-- Badge flotante izquierdo central -->
-      <div class="hidden absolute -left-4 top-1/2 z-20 items-center gap-2 rounded-2xl border border-white/15 px-4 py-2.5 backdrop-blur-md shadow-2xl animate-floating-fast lg:flex" style="background: rgba(14,30,20,0.75);">
+      <div class="hidden absolute -left-4 top-1/2 z-20 items-center gap-2 rounded-2xl border border-white/15 px-4 py-2.5 backdrop-blur-md shadow-2xl xl:flex" style="background: rgba(14,30,20,0.75);">
         <span class="text-base" aria-hidden="true">🏛️</span>
         <span class="text-xs font-extrabold text-white">Reg. Min. Trabajo N°001</span>
       </div>
 
       <!-- Carrusel de imágenes -->
-      <div id="hero-carousel" class="relative w-full overflow-hidden rounded-[2rem] shadow-2xl" style="height: 30rem; box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);">
+      <div id="hero-carousel" class="relative w-full overflow-hidden rounded-[2rem] shadow-2xl" style="box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);">
 
         <!-- Imagen 1 -->
         <div class="carousel-slide absolute inset-0 opacity-100 scale-100 z-10 transition-all duration-700 ease-in-out" data-index="0" aria-hidden="false">
           <Picture
+            data-imagen-portada="inicio-1"
             src={heroPhoto}
             alt="Actividad sindical de SUTENS en Norte de Santander"
             formats={['avif', 'webp']}
@@ -135,6 +127,7 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
         <!-- Imagen 2 -->
         <div class="carousel-slide absolute inset-0 opacity-0 scale-95 z-0 transition-all duration-700 ease-in-out" data-index="1" aria-hidden="true">
           <Picture
+            data-imagen-portada="inicio-2"
             src={placeholderPhoto}
             alt="Afiliados de SUTENS en Norte de Santander"
             formats={['avif', 'webp']}
@@ -152,6 +145,7 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
         <!-- Imagen 3 -->
         <div class="carousel-slide absolute inset-0 opacity-0 scale-95 z-0 transition-all duration-700 ease-in-out" data-index="2" aria-hidden="true">
           <Picture
+            data-imagen-portada="inicio-3"
             src={detailPhoto}
             alt="Encuentro de trabajadores de la educación de SUTENS"
             formats={['avif', 'webp']}
@@ -167,17 +161,21 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
         </div>
 
         <!-- Controles del carrusel -->
-        <div class="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-3">
+        <div class="carousel-controls absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center">
           <button id="carousel-prev" class="carousel-ctrl" aria-label="Imagen anterior" type="button">
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
-          <div class="flex items-center gap-1.5" role="tablist" aria-label="Indicadores">
-            <button class="carousel-dot w-2 h-2 rounded-full" data-index="0" role="tab" aria-selected="true" aria-label="Imagen 1"></button>
-            <button class="carousel-dot w-2 h-2 rounded-full" data-index="1" role="tab" aria-selected="false" aria-label="Imagen 2"></button>
-            <button class="carousel-dot w-2 h-2 rounded-full" data-index="2" role="tab" aria-selected="false" aria-label="Imagen 3"></button>
+          <div class="flex items-center" role="group" aria-label="Seleccionar imagen">
+            <button class="carousel-dot" type="button" data-index="0" aria-pressed="true" aria-label="Imagen 1"></button>
+            <button class="carousel-dot" type="button" data-index="1" aria-pressed="false" aria-label="Imagen 2"></button>
+            <button class="carousel-dot" type="button" data-index="2" aria-pressed="false" aria-label="Imagen 3"></button>
           </div>
           <button id="carousel-next" class="carousel-ctrl" aria-label="Imagen siguiente" type="button">
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+          </button>
+          <button id="carousel-pause" class="carousel-ctrl" aria-label="Pausar carrusel" aria-pressed="false" type="button">
+            <svg class="pause-icon h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M9 5v14m6-14v14"/></svg>
+            <svg class="play-icon h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="m9 5 11 7-11 7z"/></svg>
           </button>
         </div>
       </div>
@@ -206,10 +204,14 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
     const prevBtn = document.getElementById('carousel-prev');
     const nextBtn = document.getElementById('carousel-next');
 
+    const pauseBtn = document.querySelector<HTMLButtonElement>('#carousel-pause');
     let currentIndex = 0;
     let intervalId: ReturnType<typeof setInterval> | null = null;
     const SLIDE_DURATION = 5000;
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let paused = prefersReducedMotion;
+    pauseBtn?.setAttribute('aria-pressed', String(paused));
 
     function showSlide(index: number) {
       if (index >= slides.length) index = 0;
@@ -227,7 +229,7 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
       dots.forEach((dot, i) => {
         const active = i === index;
         dot.classList.toggle('active', active);
-        dot.setAttribute('aria-selected', String(active));
+        dot.setAttribute('aria-pressed', String(active));
       });
     }
 
@@ -235,7 +237,7 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
     const prevSlide = () => showSlide(currentIndex - 1);
 
     function startAutoPlay() {
-      if (prefersReducedMotion) return;
+      if (paused || intervalId !== null || document.hidden || carousel.matches(':hover, :focus-within')) return;
       intervalId = setInterval(nextSlide, SLIDE_DURATION);
     }
 
@@ -250,6 +252,15 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
       dot.addEventListener('click', () => { stopAutoPlay(); showSlide(i); startAutoPlay(); });
     });
 
+    pauseBtn?.addEventListener('click', () => {
+      paused = !paused;
+      pauseBtn.setAttribute('aria-pressed', String(paused));
+      if (paused) stopAutoPlay();
+      else startAutoPlay();
+    });
+
+    carousel.addEventListener('focusin', stopAutoPlay);
+    carousel.addEventListener('focusout', () => requestAnimationFrame(startAutoPlay));
     carousel.addEventListener('mouseenter', stopAutoPlay);
     carousel.addEventListener('mouseleave', startAutoPlay);
     document.addEventListener('visibilitychange', () => {
@@ -257,8 +268,10 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
     });
 
     carousel.addEventListener('keydown', (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') { stopAutoPlay(); prevSlide(); startAutoPlay(); }
-      else if (e.key === 'ArrowRight') { stopAutoPlay(); nextSlide(); startAutoPlay(); }
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      if (e.key === 'ArrowLeft') prevSlide();
+      else nextSlide();
     });
 
     showSlide(0);
@@ -269,7 +282,7 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
 <style>
   /* ── Tipografía del hero ── */
   .hero-title {
-    font-size: clamp(2.8rem, 6vw, 5.5rem);
+    font-size: clamp(2rem, 5vw, 4.5rem);
     line-height: 1.0;
   }
 
@@ -279,7 +292,6 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
     background-clip: text;
     -webkit-text-fill-color: transparent;
     background-size: 200% auto;
-    animation: grad-shift 4s linear infinite;
   }
 
   .hero-underline {
@@ -329,22 +341,60 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
     transform: scale(1.1);
   }
 
-  .carousel-dot {
-    background: rgba(255,255,255,0.35);
+  #hero-carousel {
+    height: clamp(14rem, 52vw, 23rem);
+  }
+
+  @media (min-width: 1024px) {
+    #hero-carousel {
+      height: clamp(23rem, 35vw, 30rem);
+    }
+  }
+
+  .carousel-controls {
+    padding: 0.125rem;
     border-radius: 999px;
-    transition: background 250ms ease, width 250ms ease;
+    background: #10231a;
   }
 
-  .carousel-dot.active {
-    background: #fff;
-    width: 20px !important;
+  .carousel-dot {
+    display: grid;
+    width: 28px;
+    height: 44px;
+    place-items: center;
+    border-radius: 999px;
   }
 
-  /* ── Animaciones ── */
-  @keyframes grad-shift {
-    0%   { background-position: 0% center; }
-    50%  { background-position: 100% center; }
-    100% { background-position: 0% center; }
+  .carousel-dot::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #a1b8aa;
+  }
+
+  .carousel-dot.active::before {
+    width: 16px;
+    background: #fbbf24;
+  }
+
+  .carousel-controls button:focus-visible {
+    outline: 2px solid #fbbf24;
+    outline-offset: -3px;
+  }
+
+  #carousel-pause[aria-pressed='false'] .play-icon,
+  #carousel-pause[aria-pressed='true'] .pause-icon {
+    display: none;
+  }
+
+  .hero-join {
+    background: #fbbf24;
+    color: #10231a;
+  }
+
+  .hero-join:hover {
+    background: #fcd34d;
   }
 
   @keyframes line-shimmer {
@@ -352,56 +402,9 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
     50%       { opacity: 1; }
   }
 
-  @keyframes floating-slow {
-    0%, 100% { transform: translateY(0); }
-    50%       { transform: translateY(-10px); }
-  }
-
-  @keyframes floating-fast {
-    0%, 100% { transform: translateY(0); }
-    50%       { transform: translateY(-6px); }
-  }
-
-  .animate-floating-slow { animation: floating-slow 4s ease-in-out infinite; }
-  .animate-floating-fast { animation: floating-fast 3s ease-in-out infinite; }
-
-  /* Shimmer del botón CTA */
-  .btn-accent {
-    position: relative;
-    overflow: hidden;
-  }
-  .btn-accent::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
-    transform: translateX(-100%);
-    transition: transform 0.55s ease;
-  }
-  .btn-accent:hover::before {
-    transform: translateX(100%);
-  }
-
-  /* ── Responsive ── */
-  @media (max-width: 1023px) {
-    #hero-carousel { height: 20rem !important; }
-  }
-
-  @media (max-width: 767px) {
-    .hero-title { font-size: clamp(2.2rem, 8vw, 3rem); }
-    #hero-carousel { height: 17rem !important; }
-    .hero .btn { width: 100%; }
-    .hero .flex.flex-wrap.gap-4 { width: 100%; }
-    .hero .grid.grid-cols-3 { margin-top: 2rem; }
-  }
-
   /* ── Movimiento reducido ── */
   @media (prefers-reduced-motion: reduce) {
     .carousel-slide,
-    .hero-gradient-text,
-    .hero-line,
-    .animate-floating-slow,
-    .animate-floating-fast,
-    .btn-accent::before { animation: none !important; transition: none !important; }
+    .hero-line { animation: none !important; transition: none !important; }
   }
 </style>

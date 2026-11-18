@@ -289,6 +289,7 @@ CREATE TABLE galeria_sutens (
     imagen       BYTEA,
     tipo_mime    VARCHAR(100),
     orden        INTEGER NOT NULL DEFAULT 0,
+    clave_portada TEXT UNIQUE,
     id_usuario   BIGINT REFERENCES usuario(id_usuario) ON DELETE SET NULL,
     created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
     CONSTRAINT ck_galeria_sutens_tipo_mime
@@ -302,7 +303,7 @@ CREATE INDEX idx_galeria_sutens_orden
 
 CREATE UNIQUE INDEX uq_galeria_sutens_imagen_url
     ON galeria_sutens (imagen_url)
-    WHERE imagen_url IS NOT NULL;
+    WHERE imagen_url IS NOT NULL AND clave_portada IS NULL;
 
 -- ============================================================================
 -- 5. EVENTOS (calendario de asambleas y eventos sindicales)

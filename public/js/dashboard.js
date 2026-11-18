@@ -261,6 +261,9 @@ async function cargarPerfil() {
     document.getElementById('evento-subdirectiva').required = esAdmin || esDirectivaPrincipal;
     document.getElementById('btn-subir-documento').hidden = !puedeSubirBiblioteca;
     document.getElementById('campo-documento-subdirectiva').hidden = !esAdmin;
+    document.getElementById('nav-portada').hidden = !(esAdmin || (
+      perfil.cargo_departamental && perfil.estado === 'aprobado' && perfil.estado_sindical === 'activo'
+    ));
     document.getElementById('nav-administracion').hidden = !(esAdmin || esDirectivaPrincipal);
     document.getElementById('gestion-catalogos-roles').hidden = !esAdmin;
     if (puedeVerAfiliados) document.getElementById('nav-afiliados').hidden = false;
@@ -450,6 +453,7 @@ async function mostrarVista(idVista) {
   });
   cerrarSidebarMovil(true);
 
+  if (idVista === 'vista-portada' && !document.getElementById('nav-portada').hidden) await cargarEditorPortada();
   if (idVista === 'vista-directorio') await cargarDirectorio();
   if (idVista === 'vista-calendario') await cargarEventos();
   if (idVista === 'vista-biblioteca') await cargarBiblioteca();

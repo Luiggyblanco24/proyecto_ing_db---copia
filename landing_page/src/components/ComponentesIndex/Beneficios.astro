@@ -37,6 +37,7 @@ const imagenesPorKey: Record<string, any> = {
           <article class="group flex flex-col p-6 rounded-2xl border border-slate-200 bg-white shadow-md transition-all duration-300 hover:scale-[1.01] hover:shadow-xl reveal" style={`--reveal-delay: ${index * 40}ms`}>
             <div class="relative aspect-[16/10] overflow-hidden rounded-xl">
               <Picture
+                data-imagen-portada={`beneficios-${beneficio.imagenKey}`}
                 src={imagen}
                 alt={beneficio.title}
                 formats={['avif', 'webp']}

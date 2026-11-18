@@ -14,15 +14,23 @@ import {
   descargarDocumentoPublico,
 } from '../controllers/biblioteca.controller.js';
 import { autenticar } from '../middleware/auth.js';
-import { autorizarDirectivaPrincipal } from '../middleware/rbac.js';
+import {
+  listarEspaciosPortada,
+  listarImagenesPortada,
+  publicarImagenPortada,
+  restaurarImagenPortada,
+  servirImagenPortada,
+} from '../controllers/portada.controller.js';
+import { autorizarDirectivaPrincipal, autorizarMiembroDirectivaPrincipal } from '../middleware/rbac.js';
 
 const router = Router();
+const gestionarPortada = [autenticar, autorizarMiembroDirectivaPrincipal()];
 const cargarImagen = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 4 * 1024 * 1024, files: 1 },
+  limits: { fileSize: 4 * 1024 * 1024, files: 1, fields: 8, fieldSize: 2048 },
   fileFilter(req, file, callback) {
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) {
-      callback(new Error('La galería solo admite imágenes JPG, PNG o WebP'));
+      callback(new Error('Solo se admiten imágenes JPG, PNG o WebP'));
       return;
     }
     callback(null, true);
@@ -46,5 +54,11 @@ router.get('/documentos/:id/descargar', descargarDocumentoPublico);
 router.post('/galeria', autenticar, autorizarDirectivaPrincipal(), manejarImagen, agregarImagenGaleria);
 router.patch('/galeria/:id', autenticar, autorizarDirectivaPrincipal(), manejarImagen, actualizarImagenGaleria);
 router.delete('/galeria/:id', autenticar, autorizarDirectivaPrincipal(), eliminarImagenGaleria);
+
+router.get('/portada', listarImagenesPortada);
+router.get('/portada/espacios', ...gestionarPortada, listarEspaciosPortada);
+router.get('/portada/:clave/imagen', servirImagenPortada);
+router.put('/portada/:clave', ...gestionarPortada, manejarImagen, publicarImagenPortada);
+router.delete('/portada/:clave', ...gestionarPortada, restaurarImagenPortada);
 
 export default router;

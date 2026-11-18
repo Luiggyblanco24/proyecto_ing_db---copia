@@ -9,7 +9,7 @@ const navLinks = [
 ---
 
 <header id="site-header" class="site-header sticky top-0 z-50">
-  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:h-[4.5rem] sm:px-6">
+  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:h-[4.5rem] sm:px-6">
 
     <!-- Logo -->
     <a href="/" class="shrink-0 flex items-center gap-3 rounded-lg" aria-label="SUTENS, inicio">
@@ -24,23 +24,23 @@ const navLinks = [
     </a>
 
     <!-- Separador vertical -->
-    <div class="hidden h-6 w-px bg-line lg:block" aria-hidden="true"></div>
+    <div class="hidden h-6 w-px bg-line xl:block" aria-hidden="true"></div>
 
     <!-- Nav desktop -->
-    <nav class="hidden flex-1 items-center gap-1 lg:flex" aria-label="Navegación principal">
+    <nav class="hidden flex-1 items-center gap-1 xl:flex" aria-label="Navegación principal">
       {navLinks.map((link) => (
         <a class="nav-link" href={link.href} data-nav-section={link.section}>{link.label}</a>
       ))}
     </nav>
 
     <!-- Acciones desktop -->
-    <div class="hidden items-center gap-2 lg:flex">
+    <div class="hidden items-center gap-2 xl:flex">
       <div id="acciones-publicas" class="flex items-center gap-2">
         <a href="/login.html" class="btn btn-outline text-sm">Iniciar sesión</a>
         <a href="/Afiliate/" class="btn btn-accent text-sm">Afíliate</a>
       </div>
       <div id="acciones-sesion" class="flex items-center gap-2" hidden>
-        <span id="nombre-sesion" class="max-w-[12rem] truncate text-sm font-bold text-ink" aria-live="polite"></span>
+        <span id="nombre-sesion" class="max-w-24 truncate 2xl:max-w-36 text-sm font-bold text-ink" aria-live="polite"></span>
         <a href="/dashboard.html" class="btn btn-outline text-sm">Ir al panel</a>
         <button id="cerrar-sesion" class="btn btn-primary text-sm" type="button">Cerrar sesión</button>
       </div>
@@ -49,7 +49,7 @@ const navLinks = [
     <!-- Botón hamburguesa móvil -->
     <button
       id="menu-btn"
-      class="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line bg-white/80 text-brand-900 shadow-sm transition hover:bg-verde-suave lg:hidden"
+      class="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-line bg-white/80 text-brand-900 shadow-sm transition hover:bg-verde-suave xl:hidden"
       type="button"
       aria-expanded="false"
       aria-controls="menu"
@@ -65,7 +65,7 @@ const navLinks = [
   </div>
 
   <!-- Menú móvil -->
-  <div id="menu" class="mobile-menu border-t border-line/60 bg-white/97 lg:hidden" hidden>
+  <div id="menu" class="mobile-menu border-t border-line bg-white xl:hidden" hidden>
     <nav class="mx-auto max-w-7xl px-4 py-4 sm:px-6" aria-label="Navegación móvil">
       <div class="grid gap-0.5">
         {navLinks.map((link) => (
@@ -98,56 +98,20 @@ const navLinks = [
   #menu-btn.is-open .menu-icon-open { display: none; }
   #menu-btn.is-open .menu-icon-close { display: block; }
 
-  /* Menú móvil con animación de deslizamiento */
   .mobile-menu {
-    backdrop-filter: blur(20px) saturate(1.8);
-    -webkit-backdrop-filter: blur(20px) saturate(1.8);
+    max-height: calc(100dvh - 4rem - 1px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
-  /* Modo transparente sobre el hero */
-  .site-header.hero-mode {
-    background: rgba(10, 25, 15, 0.45);
-    border-bottom-color: rgba(255, 255, 255, 0.08);
-    box-shadow: none;
+  @media (min-width: 640px) {
+    .mobile-menu {
+      max-height: calc(100dvh - 4.5rem - 1px);
+    }
   }
 
-  .site-header.hero-mode .nav-link {
-    color: rgba(255, 255, 255, 0.85);
-  }
-
-  .site-header.hero-mode .nav-link:hover,
-  .site-header.hero-mode .nav-link.is-active {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.10);
-  }
-
-  .site-header.hero-mode #menu-btn {
-    background: rgba(255, 255, 255, 0.10);
-    border-color: rgba(255, 255, 255, 0.20);
-    color: #fff;
-  }
-
-  /* Cuando scrollea por encima del hero: vuelve al modo claro */
-  .site-header.is-scrolled.hero-mode {
-    background: rgba(255, 255, 255, 0.96);
-    border-bottom-color: rgba(219, 231, 223, 0.9);
-    box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 4px 32px rgba(16,35,26,0.10);
-  }
-
-  .site-header.is-scrolled.hero-mode .nav-link {
-    color: var(--ui-muted);
-  }
-
-  .site-header.is-scrolled.hero-mode .nav-link:hover,
-  .site-header.is-scrolled.hero-mode .nav-link.is-active {
-    color: var(--ui-verde-900);
-    background: var(--verde-suave);
-  }
-
-  .site-header.is-scrolled.hero-mode #menu-btn {
-    background: rgba(255, 255, 255, 0.80);
-    border-color: var(--ui-border);
-    color: var(--ui-verde-900);
+  .nav-link {
+    white-space: nowrap;
   }
 </style>
 
@@ -155,7 +119,7 @@ const navLinks = [
   const header = document.getElementById('site-header');
   const button = document.getElementById('menu-btn');
   const menu = document.getElementById('menu');
-  const desktopQuery = window.matchMedia('(min-width: 1024px)');
+  const desktopQuery = window.matchMedia('(min-width: 1280px)');
 
   // ── Menú móvil ──
   function setMenu(open: boolean, options: { restoreFocus?: boolean } = {}) {
@@ -181,20 +145,8 @@ const navLinks = [
   });
   desktopQuery.addEventListener('change', (event) => { if (event.matches) setMenu(false); });
 
-  // ── Header transparente sobre el hero / sombra al scrollear ──
-  const isHomePage = window.location.pathname === '/' || window.location.pathname === '/index.html';
-
   function updateHeader() {
-    if (!header) return;
-    const scrolled = window.scrollY > 8;
-    header.classList.toggle('is-scrolled', scrolled);
-
-    if (isHomePage) {
-      const heroSection = document.querySelector('.hero');
-      const heroBottom = heroSection ? (heroSection as HTMLElement).offsetHeight : 0;
-      const inHero = window.scrollY < heroBottom - 80;
-      header.classList.toggle('hero-mode', inHero);
-    }
+    header?.classList.toggle('is-scrolled', window.scrollY > 8);
   }
 
   updateHeader();

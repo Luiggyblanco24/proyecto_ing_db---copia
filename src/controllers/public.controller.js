@@ -71,6 +71,7 @@ export async function listarGaleriaPublica(req, res) {
                    ELSE '/api/public/galeria/' || id_foto || '/imagen'
               END AS imagen_url
        FROM galeria_sutens
+       WHERE clave_portada IS NULL
        ORDER BY orden, id_foto`,
       []
     );
@@ -80,6 +81,11 @@ export async function listarGaleriaPublica(req, res) {
     if (error.code === '42P01') {
       return res.status(503).json({
         error: 'Falta crear la tabla de la galería. Aplica la migración 011_galeria_publica.sql en la base de datos sutens.',
+      });
+    }
+    if (error.code === '42703') {
+      return res.status(503).json({
+        error: 'Aplica la migración 022_imagenes_portada.sql para actualizar la galería.',
       });
     }
     return res.status(500).json({ error: 'No se pudo cargar la galería pública' });
@@ -92,7 +98,7 @@ export async function servirImagenGaleria(req, res) {
   }
 
   const { rows } = await query(
-    'SELECT imagen, tipo_mime FROM galeria_sutens WHERE id_foto = $1 AND imagen IS NOT NULL',
+    'SELECT imagen, tipo_mime FROM galeria_sutens WHERE id_foto = $1 AND clave_portada IS NULL AND imagen IS NOT NULL',
     [req.params.id]
   );
   if (rows.length === 0) return res.status(404).json({ error: 'Imagen no encontrada' });
@@ -144,7 +150,7 @@ export async function actualizarImagenGaleria(req, res) {
          imagen = COALESCE($3, imagen),
          tipo_mime = COALESCE($4, tipo_mime),
          imagen_url = CASE WHEN $3::bytea IS NULL THEN imagen_url ELSE NULL END
-     WHERE id_foto = $1
+     WHERE id_foto = $1 AND clave_portada IS NULL
      RETURNING id_foto, descripcion,
        CASE WHEN imagen IS NULL THEN imagen_url
             ELSE '/api/public/galeria/' || id_foto || '/imagen'
@@ -159,12 +165,12 @@ export async function eliminarImagenGaleria(req, res) {
   if (!/^\d+$/.test(String(req.params.id))) {
     return res.status(400).json({ error: 'El identificador de la imagen no es válido' });
   }
-  const { rowCount } = await query('DELETE FROM galeria_sutens WHERE id_foto = $1', [req.params.id]);
+  const { rowCount } = await query('DELETE FROM galeria_sutens WHERE id_foto = $1 AND clave_portada IS NULL', [req.params.id]);
   if (rowCount === 0) return res.status(404).json({ error: 'Imagen no encontrada' });
   return res.json({ mensaje: 'La imagen se eliminó de la galería' });
 }
 
-function detectarTipoImagen(buffer) {
+export function detectarTipoImagen(buffer) {
   if (buffer.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff]))) return 'image/jpeg';
   if (buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return 'image/png';
   if (buffer.toString('ascii', 0, 4) === 'RIFF' && buffer.toString('ascii', 8, 12) === 'WEBP') return 'image/webp';

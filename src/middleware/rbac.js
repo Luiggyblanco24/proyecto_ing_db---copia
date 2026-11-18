@@ -29,7 +29,7 @@ function autorizarCargoPrincipal(cargosPermitidos) {
            AND a.estado = 'aprobado'
            AND a.estado_sindical = 'activo'
            AND sd.es_principal = TRUE
-           AND cs.nombre = ANY($2::text[])
+           AND ($2::text[] IS NULL OR cs.nombre = ANY($2::text[]))
          LIMIT 1`,
         [req.user.id_afiliado, cargosPermitidos]
       );
@@ -55,6 +55,10 @@ export function autorizarDirectivaPrincipal() {
     'Fiscal General',
     'Tesorero General',
   ]);
+}
+
+export function autorizarMiembroDirectivaPrincipal() {
+  return autorizarCargoPrincipal(null);
 }
 
 export function autorizarSecretarioGeneral() {

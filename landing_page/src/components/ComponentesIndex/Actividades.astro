@@ -64,6 +64,7 @@ const mostrarGaleria = Array.isArray(actividadesGaleria) && actividadesGaleria.l
               >
                 <div class={`relative overflow-hidden bg-verde-suave ${esDestacada ? 'aspect-[16/9]' : 'aspect-[4/3]'}`}>
                   <Picture
+                    data-imagen-portada={`actividades-${actividad.imagenKey}`}
                     src={imgAsset}
                     alt={actividad.descripcion}
                     formats={['avif', 'webp']}
@@ -166,7 +167,7 @@ const mostrarGaleria = Array.isArray(actividadesGaleria) && actividadesGaleria.l
     const src = boton.getAttribute('data-img-src') || '';
 
     imgElem.src = src;
-    imgElem.alt = desc || titulo;
+    imgElem.alt = boton.querySelector('img')?.alt || desc || titulo;
     tituloElem.textContent = titulo;
     descElem.textContent = desc;
     catElem.textContent = cat;

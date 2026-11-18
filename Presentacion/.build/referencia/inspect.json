@@ -1,0 +1,1203 @@
+[
+  {
+    "id": "sl/y90nupkv",
+    "index": 0,
+    "layout": {
+      "id": "ly/p83mt83u",
+      "name": "Title and body"
+    },
+    "elements": [
+      {
+        "id": "sh/547294r6",
+        "kind": "textbox",
+        "text": "PROPUESTA DE PLATAFORMA DIGITAL",
+        "position": {
+          "left": 85.33,
+          "top": 245.33,
+          "width": 1142.61,
+          "height": 26.93
+        },
+        "style": {
+          "fontSize": 17.33,
+          "typeface": "Inter",
+          "color": "#E0A526",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/k3yl0zql",
+        "kind": "textbox",
+        "text": "SUTENS, un sindicato conectado con cada docente",
+        "position": {
+          "left": 85.33,
+          "top": 288.8,
+          "width": 1142.61,
+          "height": 137.07
+        },
+        "style": {
+          "fontSize": 64,
+          "typeface": "Space Grotesk",
+          "color": "#F5F2EA",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/7qp4be9c",
+        "kind": "textbox",
+        "text": "Sindicato Unitario de Trabajadores de la Educación de Norte de Santander · Fundado en 2016",
+        "position": {
+          "left": 85.33,
+          "top": 446.67,
+          "width": 1142.61,
+          "height": 30.67
+        },
+        "style": {
+          "fontSize": 20,
+          "typeface": "Inter",
+          "color": "#F5F2EA",
+          "alignment": "left"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sl/hwbqtkby",
+    "index": 1,
+    "layout": {
+      "id": "ly/p83mt83u",
+      "name": "Title and body"
+    },
+    "elements": [
+      {
+        "id": "sh/9072xkry",
+        "kind": "textbox",
+        "text": "PUNTO DE PARTIDA",
+        "position": {
+          "left": 85.33,
+          "top": 85.33,
+          "width": 1142.61,
+          "height": 26.93
+        },
+        "style": {
+          "fontSize": 17.33,
+          "typeface": "Inter",
+          "color": "#8A5A00",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/ozy1ofad",
+        "kind": "textbox",
+        "text": "Una organización joven con presencia en el territorio",
+        "position": {
+          "left": 85.33,
+          "top": 125.6,
+          "width": 1194.67,
+          "height": 49.6
+        },
+        "style": {
+          "fontSize": 42.67,
+          "typeface": "Space Grotesk",
+          "color": "#14231A",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/b29kza94",
+        "kind": "shape",
+        "position": {
+          "left": 85.33,
+          "top": 204.53,
+          "width": 355.55,
+          "height": 259.47
+        }
+      },
+      {
+        "id": "sh/a10jqpsj",
+        "kind": "textbox",
+        "text": "2016",
+        "position": {
+          "left": 112,
+          "top": 225.2,
+          "width": 311.28,
+          "height": 94.67
+        },
+        "style": {
+          "fontSize": 80,
+          "typeface": "Space Grotesk",
+          "color": "#14532D",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/x4r21kru",
+        "kind": "textbox",
+        "text": "Fundación",
+        "position": {
+          "left": 112,
+          "top": 321.87,
+          "width": 311.28,
+          "height": 29.07
+        },
+        "style": {
+          "fontSize": 24,
+          "typeface": "Space Grotesk",
+          "color": "#14231A",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/w3i1sfa9",
+        "kind": "textbox",
+        "text": "Nace en El Tarra y Teorama, por docentes que se asocian en defensa de sus derechos.",
+        "position": {
+          "left": 112,
+          "top": 358.93,
+          "width": 311.28,
+          "height": 81.07
+        },
+        "style": {
+          "fontSize": 18.67,
+          "typeface": "Inter",
+          "color": "#14231A",
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/r65knqtk",
+        "kind": "shape",
+        "position": {
+          "left": 462.22,
+          "top": 204.53,
+          "width": 355.56,
+          "height": 259.47
+        }
+      },
+      {
+        "id": "sh/q5wjelsz",
+        "kind": "textbox",
+        "text": "4",
+        "position": {
+          "left": 488.88,
+          "top": 225.2,
+          "width": 311.29,
+          "height": 94.67
+        },
+        "style": {
+          "fontSize": 80,
+          "typeface": "Space Grotesk",
+          "color": "#14532D",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/ove9o7yd",
+        "kind": "textbox",
+        "text": "Subdirectivas",
+        "position": {
+          "left": 488.88,
+          "top": 321.87,
+          "width": 311.29,
+          "height": 29.07
+        },
+        "style": {
+          "fontSize": 24,
+          "typeface": "Space Grotesk",
+          "color": "#14231A",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/9wnqhczy",
+        "kind": "textbox",
+        "text": "Ocaña, Ábrego, San Calixto y El Tarra, con equipos locales.",
+        "position": {
+          "left": 488.88,
+          "top": 358.93,
+          "width": 311.29,
+          "height": 54.93
+        },
+        "style": {
+          "fontSize": 18.67,
+          "typeface": "Inter",
+          "color": "#14231A",
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/mtwrmxg7",
+        "kind": "shape",
+        "position": {
+          "left": 839.11,
+          "top": 204.53,
+          "width": 355.56,
+          "height": 259.47
+        }
+      },
+      {
+        "id": "sh/nu58f2hs",
+        "kind": "textbox",
+        "text": "1",
+        "position": {
+          "left": 865.78,
+          "top": 225.2,
+          "width": 311.29,
+          "height": 94.67
+        },
+        "style": {
+          "fontSize": 80,
+          "typeface": "Space Grotesk",
+          "color": "#14532D",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/wjy9sry9",
+        "kind": "textbox",
+        "text": "Sede física",
+        "position": {
+          "left": 865.78,
+          "top": 321.87,
+          "width": 311.29,
+          "height": 29.07
+        },
+        "style": {
+          "fontSize": 24,
+          "typeface": "Space Grotesk",
+          "color": "#14231A",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/xk7qlczu",
+        "kind": "textbox",
+        "text": "En Ocaña, donde hoy se entrega el formato de afiliación impreso.",
+        "position": {
+          "left": 865.78,
+          "top": 358.93,
+          "width": 311.29,
+          "height": 54.93
+        },
+        "style": {
+          "fontSize": 18.67,
+          "typeface": "Inter",
+          "color": "#14231A",
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/ahwrqhgj",
+        "kind": "textbox",
+        "text": "Sin estructura web, la afiliación, la información y la comunicación dependen del papel, la sede y los delegados.",
+        "position": {
+          "left": 85.33,
+          "top": 608.53,
+          "width": 1142.61,
+          "height": 28.8
+        },
+        "style": {
+          "fontSize": 18.67,
+          "typeface": "Inter",
+          "color": "#14231A",
+          "bold": true,
+          "alignment": "left"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sl/ofy9wn61",
+    "index": 2,
+    "layout": {
+      "id": "ly/p83mt83u",
+      "name": "Title and body"
+    },
+    "elements": [
+      {
+        "id": "sh/cza94vmx",
+        "kind": "textbox",
+        "text": "PANORAMA",
+        "position": {
+          "left": 85.33,
+          "top": 85.33,
+          "width": 1142.61,
+          "height": 26.93
+        },
+        "style": {
+          "fontSize": 17.33,
+          "typeface": "Inter",
+          "color": "#8A5A00",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/d0jax03i",
+        "kind": "textbox",
+        "text": "Otras organizaciones ya ocupan el espacio público",
+        "position": {
+          "left": 85.33,
+          "top": 125.6,
+          "width": 1142.61,
+          "height": 49.6
+        },
+        "style": {
+          "fontSize": 42.67,
+          "typeface": "Space Grotesk",
+          "color": "#14231A",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/298ryl4v",
+        "kind": "shape",
+        "position": {
+          "left": 85.33,
+          "top": 204.53,
+          "width": 355.55,
+          "height": 273.33
+        }
+      },
+      {
+        "id": "sh/3ah8rqlg",
+        "kind": "textbox",
+        "text": "FECODE",
+        "position": {
+          "left": 112,
+          "top": 231.2,
+          "width": 311.28,
+          "height": 29.07
+        },
+        "style": {
+          "fontSize": 24,
+          "typeface": "Space Grotesk",
+          "color": "#14231A",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/obq90bml",
+        "kind": "textbox",
+        "text": "Federación nacional de educadores. Agrupa sindicatos filiales por departamento y envía circulares oficiales a sus bases.",
+        "position": {
+          "left": 112,
+          "top": 268.27,
+          "width": 311.28,
+          "height": 107.2
+        },
+        "style": {
+          "fontSize": 18.67,
+          "typeface": "Inter",
+          "color": "#14231A",
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/pcjqtg36",
+        "kind": "shape",
+        "position": {
+          "left": 462.22,
+          "top": 204.53,
+          "width": 355.56,
+          "height": 273.33
+        }
+      },
+      {
+        "id": "sh/m5cra54z",
+        "kind": "textbox",
+        "text": "ASINORT",
+        "position": {
+          "left": 488.88,
+          "top": 231.2,
+          "width": 311.29,
+          "height": 29.07
+        },
+        "style": {
+          "fontSize": 24,
+          "typeface": "Space Grotesk",
+          "color": "#14231A",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/n6ls3alk",
+        "kind": "textbox",
+        "text": "Asociación Sindical de Institutores de Norte de Santander, con sede en Cúcuta. Convoca paros, denuncia amenazas a docentes en medios y publica una guía jurídica gratuita.",
+        "position": {
+          "left": 488.88,
+          "top": 268.27,
+          "width": 311.29,
+          "height": 185.6
+        },
+        "style": {
+          "fontSize": 18.67,
+          "typeface": "Inter",
+          "color": "#14231A",
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/n2l4fq98",
+        "kind": "shape",
+        "position": {
+          "left": 839.11,
+          "top": 204.53,
+          "width": 355.56,
+          "height": 273.33
+        }
+      },
+      {
+        "id": "sh/m1c3mlsn",
+        "kind": "textbox",
+        "text": "Otras filiales",
+        "position": {
+          "left": 865.78,
+          "top": 231.2,
+          "width": 311.29,
+          "height": 29.07
+        },
+        "style": {
+          "fontSize": 24,
+          "typeface": "Space Grotesk",
+          "color": "#14231A",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/943mhgre",
+        "kind": "textbox",
+        "text": "EDUMAG (Magdalena), ASODEGUA (La Guajira), AICA (Caquetá) y SINDIMAESTROS (Boyacá) hacen parte de la misma red nacional.",
+        "position": {
+          "left": 865.78,
+          "top": 268.27,
+          "width": 311.29,
+          "height": 133.33
+        },
+        "style": {
+          "fontSize": 18.67,
+          "typeface": "Inter",
+          "color": "#14231A",
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/83ulovat",
+        "kind": "textbox",
+        "text": "Quien comunica mejor también organiza mejor: SUTENS necesita su propio canal.",
+        "position": {
+          "left": 85.33,
+          "top": 532,
+          "width": 1142.61,
+          "height": 28.8
+        },
+        "style": {
+          "fontSize": 18.67,
+          "typeface": "Inter",
+          "color": "#14231A",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/v6l4jq94",
+        "kind": "textbox",
+        "text": "Fuentes: circulares de FECODE, La Opinión, Radio Nacional y guía jurídica de ASINORT.",
+        "position": {
+          "left": 85.33,
+          "top": 612.27,
+          "width": 1142.61,
+          "height": 25.07
+        },
+        "style": {
+          "fontSize": 16,
+          "typeface": "Inter",
+          "color": "rgba(20,35,26,0.7)",
+          "alignment": "left"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sl/jyx0ra1s",
+    "index": 3,
+    "layout": {
+      "id": "ly/p83mt83u",
+      "name": "Title and body"
+    },
+    "elements": [
+      {
+        "id": "sh/1cj2d8b6",
+        "kind": "textbox",
+        "text": "POR QUÉ IMPORTA",
+        "position": {
+          "left": 85.33,
+          "top": 85.33,
+          "width": 1142.61,
+          "height": 26.93
+        },
+        "style": {
+          "fontSize": 17.33,
+          "typeface": "Inter",
+          "color": "#E0A526",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/0ba143al",
+        "kind": "textbox",
+        "text": "Por qué SUTENS necesita su plataforma",
+        "position": {
+          "left": 85.33,
+          "top": 125.6,
+          "width": 1142.61,
+          "height": 49.6
+        },
+        "style": {
+          "fontSize": 42.67,
+          "typeface": "Space Grotesk",
+          "color": "#F5F2EA",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/rm1k7yt4",
+        "kind": "shape",
+        "position": {
+          "left": 85.33,
+          "top": 204.53,
+          "width": 544,
+          "height": 138.93
+        }
+      },
+      {
+        "id": "sh/ql8jytsj",
+        "kind": "textbox",
+        "text": "Territorio disperso",
+        "position": {
+          "left": 112,
+          "top": 231.2,
+          "width": 505.39,
+          "height": 29.07
+        },
+        "style": {
+          "fontSize": 24,
+          "typeface": "Space Grotesk",
+          "color": "#F5F2EA",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/doj29oba",
+        "kind": "textbox",
+        "text": "El índice de ruralidad del departamento ronda el 37 %. La plataforma llega donde la sede no.",
+        "position": {
+          "left": 112,
+          "top": 268.27,
+          "width": 505.39,
+          "height": 51.2
+        },
+        "style": {
+          "fontSize": 17.33,
+          "typeface": "Inter",
+          "color": "#F5F2EA",
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/sna103ap",
+        "kind": "shape",
+        "position": {
+          "left": 650.67,
+          "top": 204.53,
+          "width": 544,
+          "height": 138.93
+        }
+      },
+      {
+        "id": "sh/3ihk3et8",
+        "kind": "textbox",
+        "text": "Afiliación en papel",
+        "position": {
+          "left": 677.33,
+          "top": 231.2,
+          "width": 505.39,
+          "height": 29.07
+        },
+        "style": {
+          "fontSize": 24,
+          "typeface": "Space Grotesk",
+          "color": "#F5F2EA",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/ih8ju9sn",
+        "kind": "textbox",
+        "text": "Hoy se imprime, firma y entrega en Ocaña. En línea, el trámite se acerca a cada municipio.",
+        "position": {
+          "left": 677.33,
+          "top": 268.27,
+          "width": 505.39,
+          "height": 51.2
+        },
+        "style": {
+          "fontSize": 17.33,
+          "typeface": "Inter",
+          "color": "#F5F2EA",
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/kbm987y5",
+        "kind": "shape",
+        "position": {
+          "left": 85.33,
+          "top": 364.8,
+          "width": 544,
+          "height": 138.93
+        }
+      },
+      {
+        "id": "sh/5cva1cfq",
+        "kind": "textbox",
+        "text": "Riesgo en el territorio",
+        "position": {
+          "left": 112,
+          "top": 391.47,
+          "width": 505.39,
+          "height": 29.07
+        },
+        "style": {
+          "fontSize": 24,
+          "typeface": "Space Grotesk",
+          "color": "#F5F2EA",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/i94r6xgz",
+        "kind": "textbox",
+        "text": "ASINORT reporta más de 150 docentes amenazados. Un canal oficial permite orientar con rapidez.",
+        "position": {
+          "left": 112,
+          "top": 428.53,
+          "width": 505.39,
+          "height": 51.2
+        },
+        "style": {
+          "fontSize": 17.33,
+          "typeface": "Inter",
+          "color": "#F5F2EA",
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/jadsz2xk",
+        "kind": "shape",
+        "position": {
+          "left": 650.67,
+          "top": 364.8,
+          "width": 544,
+          "height": 138.93
+        }
+      },
+      {
+        "id": "sh/w72947yt",
+        "kind": "textbox",
+        "text": "Información dispersa",
+        "position": {
+          "left": 677.33,
+          "top": 391.47,
+          "width": 505.39,
+          "height": 29.07
+        },
+        "style": {
+          "fontSize": 24,
+          "typeface": "Space Grotesk",
+          "color": "#F5F2EA",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/x8vaxsfe",
+        "kind": "textbox",
+        "text": "Circulares, actas y resoluciones quedan reunidas en una biblioteca sindical para los afiliados.",
+        "position": {
+          "left": 677.33,
+          "top": 428.53,
+          "width": 505.39,
+          "height": 51.2
+        },
+        "style": {
+          "fontSize": 17.33,
+          "typeface": "Inter",
+          "color": "#F5F2EA",
+          "alignment": "left"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sl/i107q5of",
+    "index": 4,
+    "layout": {
+      "id": "ly/p83mt83u",
+      "name": "Title and body"
+    },
+    "elements": [
+      {
+        "id": "sh/dgbulwnm",
+        "kind": "textbox",
+        "text": "QUÉ OFRECE HOY",
+        "position": {
+          "left": 85.33,
+          "top": 85.33,
+          "width": 1142.61,
+          "height": 26.93
+        },
+        "style": {
+          "fontSize": 17.33,
+          "typeface": "Inter",
+          "color": "#8A5A00",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/cf2tcr61",
+        "kind": "textbox",
+        "text": "Cómo la plataforma ayuda a crecer",
+        "position": {
+          "left": 85.33,
+          "top": 125.6,
+          "width": 1142.61,
+          "height": 49.6
+        },
+        "style": {
+          "fontSize": 42.67,
+          "typeface": "Space Grotesk",
+          "color": "#14231A",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/z2tcnm5s",
+        "kind": "shape",
+        "position": {
+          "left": 85.33,
+          "top": 204.53,
+          "width": 355.55,
+          "height": 168.8
+        }
+      },
+      {
+        "id": "sh/yhkbe1o7",
+        "kind": "textbox",
+        "text": "Visibilidad",
+        "position": {
+          "left": 112,
+          "top": 231.2,
+          "width": 311.28,
+          "height": 29.07
+        },
+        "style": {
+          "fontSize": 24,
+          "typeface": "Space Grotesk",
+          "color": "#14231A",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/l4bupwny",
+        "kind": "textbox",
+        "text": "Quiénes somos, estructura, actividades y comunicaciones, visibles para cualquier docente.",
+        "position": {
+          "left": 112,
+          "top": 268.27,
+          "width": 311.28,
+          "height": 81.07
+        },
+        "style": {
+          "fontSize": 18.67,
+          "typeface": "Inter",
+          "color": "#14231A",
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/032tgr6d",
+        "kind": "shape",
+        "position": {
+          "left": 462.22,
+          "top": 204.53,
+          "width": 355.56,
+          "height": 168.8
+        }
+      },
+      {
+        "id": "sh/n6dcr65o",
+        "kind": "textbox",
+        "text": "Afiliación en línea",
+        "position": {
+          "left": 488.88,
+          "top": 231.2,
+          "width": 311.29,
+          "height": 29.07
+        },
+        "style": {
+          "fontSize": 24,
+          "typeface": "Space Grotesk",
+          "color": "#14231A",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/m5kbi1oj",
+        "kind": "textbox",
+        "text": "Registro, inicio de sesión y guía de 3 pasos con requisitos claros.",
+        "position": {
+          "left": 488.88,
+          "top": 268.27,
+          "width": 311.29,
+          "height": 54.93
+        },
+        "style": {
+          "fontSize": 18.67,
+          "typeface": "Inter",
+          "color": "#14231A",
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/w32dkbuh",
+        "kind": "shape",
+        "position": {
+          "left": 839.11,
+          "top": 204.53,
+          "width": 355.56,
+          "height": 168.8
+        }
+      },
+      {
+        "id": "sh/x4vedgvm",
+        "kind": "textbox",
+        "text": "Cercanía",
+        "position": {
+          "left": 865.78,
+          "top": 231.2,
+          "width": 311.29,
+          "height": 29.07
+        },
+        "style": {
+          "fontSize": 24,
+          "typeface": "Space Grotesk",
+          "color": "#14231A",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/ahkvi1cb",
+        "kind": "textbox",
+        "text": "Subdirectivas por municipio, WhatsApp y Facebook oficial como canales de atención.",
+        "position": {
+          "left": 865.78,
+          "top": 268.27,
+          "width": 311.29,
+          "height": 81.07
+        },
+        "style": {
+          "fontSize": 18.67,
+          "typeface": "Inter",
+          "color": "#14231A",
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/v2twb6dw",
+        "kind": "textbox",
+        "text": "Más visibilidad → más afiliados → más voz y recursos para el sindicato",
+        "position": {
+          "left": 85.33,
+          "top": 400,
+          "width": 1109.33,
+          "height": 80
+        },
+        "style": {
+          "fontSize": 26.67,
+          "typeface": "Space Grotesk",
+          "color": "#F5F2EA",
+          "bold": true,
+          "alignment": "left"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sl/x8f69ofe",
+    "index": 5,
+    "layout": {
+      "id": "ly/p83mt83u",
+      "name": "Title and body"
+    },
+    "elements": [
+      {
+        "id": "sh/yhg7epsj",
+        "kind": "textbox",
+        "text": "SIGUIENTES PASOS",
+        "position": {
+          "left": 85.33,
+          "top": 85.33,
+          "width": 1142.61,
+          "height": 26.93
+        },
+        "style": {
+          "fontSize": 17.33,
+          "typeface": "Inter",
+          "color": "#E0A526",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/zi98nu94",
+        "kind": "textbox",
+        "text": "Hoja de ruta para consolidar la plataforma",
+        "position": {
+          "left": 85.33,
+          "top": 125.6,
+          "width": 1142.61,
+          "height": 49.6
+        },
+        "style": {
+          "fontSize": 42.67,
+          "typeface": "Space Grotesk",
+          "color": "#F5F2EA",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/87ipkzal",
+        "kind": "shape",
+        "position": {
+          "left": 85.33,
+          "top": 204.53,
+          "width": 261.33,
+          "height": 209.07
+        }
+      },
+      {
+        "id": "sh/98rqt4r6",
+        "kind": "textbox",
+        "text": "1",
+        "position": {
+          "left": 112,
+          "top": 227.6,
+          "width": 214.24,
+          "height": 57.87
+        },
+        "style": {
+          "fontSize": 48,
+          "typeface": "Space Grotesk",
+          "color": "#E0A526",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/ml07i9sv",
+        "kind": "textbox",
+        "text": "Completar contenidos: directiva, subdirectivas y biblioteca de documentos.",
+        "position": {
+          "left": 112,
+          "top": 289.87,
+          "width": 214.24,
+          "height": 99.73
+        },
+        "style": {
+          "fontSize": 17.33,
+          "typeface": "Inter",
+          "color": "#F5F2EA",
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/7m98ru9g",
+        "kind": "shape",
+        "position": {
+          "left": 368,
+          "top": 204.53,
+          "width": 261.33,
+          "height": 209.07
+        }
+      },
+      {
+        "id": "sh/oryp8fah",
+        "kind": "textbox",
+        "text": "2",
+        "position": {
+          "left": 394.67,
+          "top": 227.6,
+          "width": 214.24,
+          "height": 57.87
+        },
+        "style": {
+          "fontSize": 48,
+          "typeface": "Space Grotesk",
+          "color": "#E0A526",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/pc76hkr2",
+        "kind": "textbox",
+        "text": "Capacitar a los delegados de las 4 subdirectivas en el uso del panel.",
+        "position": {
+          "left": 394.67,
+          "top": 289.87,
+          "width": 214.24,
+          "height": 99.73
+        },
+        "style": {
+          "fontSize": 17.33,
+          "typeface": "Inter",
+          "color": "#F5F2EA",
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/h4bupgn6",
+        "kind": "shape",
+        "position": {
+          "left": 650.67,
+          "top": 204.53,
+          "width": 261.33,
+          "height": 209.07
+        }
+      },
+      {
+        "id": "sh/w32twb6l",
+        "kind": "textbox",
+        "text": "3",
+        "position": {
+          "left": 677.33,
+          "top": 227.6,
+          "width": 214.24,
+          "height": 57.87
+        },
+        "style": {
+          "fontSize": 48,
+          "typeface": "Space Grotesk",
+          "color": "#E0A526",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/v2tcn650",
+        "kind": "textbox",
+        "text": "Lanzar una campaña de afiliación por WhatsApp y Facebook.",
+        "position": {
+          "left": 677.33,
+          "top": 289.87,
+          "width": 214.24,
+          "height": 75.47
+        },
+        "style": {
+          "fontSize": 17.33,
+          "typeface": "Inter",
+          "color": "#F5F2EA",
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/u1kbu1ov",
+        "kind": "shape",
+        "position": {
+          "left": 933.33,
+          "top": 204.53,
+          "width": 261.33,
+          "height": 209.07
+        }
+      },
+      {
+        "id": "sh/5svutgni",
+        "kind": "textbox",
+        "text": "4",
+        "position": {
+          "left": 960,
+          "top": 227.6,
+          "width": 214.24,
+          "height": 57.87
+        },
+        "style": {
+          "fontSize": 48,
+          "typeface": "Space Grotesk",
+          "color": "#E0A526",
+          "bold": true,
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/47mt0b6x",
+        "kind": "textbox",
+        "text": "Medir afiliaciones nuevas, visitas y consultas por subdirectiva.",
+        "position": {
+          "left": 960,
+          "top": 289.87,
+          "width": 214.24,
+          "height": 99.73
+        },
+        "style": {
+          "fontSize": 17.33,
+          "typeface": "Inter",
+          "color": "#F5F2EA",
+          "alignment": "left"
+        }
+      },
+      {
+        "id": "sh/j6dcr65c",
+        "kind": "textbox",
+        "text": "WhatsApp +57 318 521 8787 · Calle 10 Nro. 13 - 37, Of. 201, Ocaña",
+        "position": {
+          "left": 85.33,
+          "top": 608.53,
+          "width": 1142.61,
+          "height": 28.8
+        },
+        "style": {
+          "fontSize": 18.67,
+          "typeface": "Inter",
+          "color": "#F5F2EA",
+          "bold": true,
+          "alignment": "left"
+        }
+      }
+    ]
+  }
+]

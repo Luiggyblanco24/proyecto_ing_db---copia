@@ -1,0 +1,108 @@
+.editor-portada {
+  max-width: 48rem;
+  margin-top: 1.25rem;
+}
+
+.editor-portada fieldset {
+  min-inline-size: 0;
+  padding: clamp(1rem, 4vw, 1.75rem);
+  border: 1px solid var(--borde, #dbe7df);
+  border-radius: 1rem;
+}
+
+.editor-portada legend {
+  padding-inline: .5rem;
+  font-weight: 700;
+}
+
+.editor-portada-fuentes {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+
+.editor-portada .editor-portada-sugerencias {
+  grid-column: 1 / -1;
+  padding: .75rem;
+}
+
+.editor-portada-galeria {
+  display: grid;
+  gap: .5rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 8rem), 1fr));
+  max-height: 19rem;
+  overflow: auto;
+  padding: .25rem;
+}
+
+.editor-portada-galeria label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-content: start;
+  gap: .4rem;
+  padding: .5rem;
+  border: 1px solid var(--borde, #dbe7df);
+  border-radius: .5rem;
+  cursor: pointer;
+}
+
+.editor-portada-galeria label:has(input:checked) {
+  border-color: #176638;
+  background: #edf8ef;
+}
+
+.editor-portada-galeria img {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: .25rem;
+}
+
+.editor-portada-galeria span {
+  overflow-wrap: anywhere;
+}
+
+.editor-portada input,
+.editor-portada select {
+  width: 100%;
+  min-width: 0;
+}
+
+.editor-portada-galeria input[type="radio"] {
+  width: auto;
+  align-self: start;
+}
+
+.editor-portada-preview {
+  margin: 1rem 0;
+}
+
+.editor-portada-preview img,
+.editor-portada-candidata {
+  display: block;
+  width: min(100%, 21rem);
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: .75rem;
+  margin-block: .75rem;
+}
+
+.editor-portada-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: 1rem;
+}
+
+.editor-portada-mensaje:not(:empty) {
+  margin-block: 1rem;
+  padding: .75rem 1rem;
+  border: 1px solid var(--borde, #dbe7df);
+  border-radius: .75rem;
+}
+
+.editor-portada img[hidden] {
+  display: none;
+}

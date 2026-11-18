@@ -32,3 +32,45 @@ import Reveal from '../components/ComponentesIndex/Reveal.astro';
 	<CtaBanner />
 	<Reveal />
 </Layout>
+
+<script>
+  async function aplicarImagenesPortada() {
+    const respuesta = await fetch('/api/public/portada');
+    if (!respuesta.ok) return;
+    const imagenes = new Map<string, { descripcion: string; imagen_url: string }>();
+    for (const imagen of await respuesta.json()) imagenes.set(imagen.clave, imagen);
+
+    const cargar = (original: HTMLImageElement) => {
+      const imagen = imagenes.get(original.dataset.imagenPortada ?? '');
+      const picture = original.parentElement;
+      if (!imagen || !picture || !/^(\/(?:Actividades|api\/public\/portada)\/|https:\/\/)/.test(imagen.imagen_url)) return;
+      const nueva = original.cloneNode() as HTMLImageElement;
+      for (const atributo of ['src', 'srcset', 'sizes', 'loading', 'width', 'height']) {
+        nueva.removeAttribute(atributo);
+      }
+      nueva.alt = imagen.descripcion;
+      nueva.addEventListener('load', () => {
+        const mosaico = picture.closest<HTMLElement>('[data-img-src]');
+        if (mosaico) mosaico.dataset.imgSrc = nueva.src;
+        picture.replaceWith(nueva);
+      }, { once: true });
+      nueva.src = imagen.imagen_url;
+    };
+
+    const observador = new IntersectionObserver((entradas) => {
+      for (const entrada of entradas) {
+        if (!entrada.isIntersecting) continue;
+        observador.unobserve(entrada.target);
+        cargar(entrada.target as HTMLImageElement);
+      }
+    }, { rootMargin: '300px' });
+
+    document.querySelectorAll<HTMLImageElement>('img[data-imagen-portada]').forEach((imagen) => {
+      if (imagenes.has(imagen.dataset.imagenPortada ?? '')) observador.observe(imagen);
+    });
+  }
+
+  void aplicarImagenesPortada().catch(() => {
+    // La portada estática conserva sus imágenes originales si la API no responde.
+  });
+</script>

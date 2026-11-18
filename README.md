@@ -55,6 +55,7 @@ psql -d sutens -f database/migrations/018_autorizacion_datos_personales.sql
 psql -d sutens -f database/migrations/019_origen_autorizacion_datos.sql
 psql -d sutens -f database/migrations/020_indices_busqueda_afiliados.sql
 psql -d sutens -f database/migrations/021_notificaciones_eventos.sql
+psql -d sutens -f database/migrations/022_imagenes_portada.sql
 ```
 
 > La migración 009 ya fue aplicada en la base existente. Aplica las migraciones posteriores que aún estén pendientes, en orden; no ejecutes otra vez una migración que ya terminó correctamente. La 011 crea la galería pública y carga de forma idempotente sus seis imágenes iniciales. La 012 agrega la opción de publicación pública de documentos sindicales. La 013 habilita la biblioteca educativa y permite varios Secretarios Generales. La 014 quita las asignaciones sindicales y laborales a quienes tengan el rol de acceso Administrador SUTENS, sin quitarles ese rol administrativo. La 015 permite clasificar nuevos cargos sindicales para la Directiva Departamental. La 016 habilita el restablecimiento temporal de contraseña e invalida sesiones anteriores.
@@ -78,6 +79,8 @@ La migración 020 instala índices trigram concurrentes para acelerar las búsqu
 | Calendario | `evento` |
 
 La migración 005 marca `Directiva Departamental` como Directiva Principal y crea los cargos Presidente General, Vicepresidente General, Secretario General, Fiscal General y Tesorero General. Sus titulares tienen acceso al padrón y gestión global de afiliados; la aprobación de solicitudes está autorizada para Administración SUTENS y los titulares activos de la Directiva Departamental, mientras que el rechazo se mantiene limitado a Administración y Secretaría General. La migración 009 agrega instituciones educativas debajo de cada subdirectiva y organiza las sedes existentes en una institución temporal llamada `Institución por clasificar`, que puedes renombrar después. La migración 010 permite conservar el cargo departamental junto con una afiliación en otra subdirectiva; esa afiliación puede no tener cargo sindical y puede quedar sin sede ni rol laboral.
+
+Aplica también `database/migrations/022_imagenes_portada.sql` en las bases existentes. Esta migración amplía `galeria_sutens` para guardar las ubicaciones de portada en la misma tabla. En el panel, Administradores SUTENS y miembros activos de la Directiva Departamental pueden abrir **Gestión → Imágenes de la portada** para editar el carrusel y las fotos de Quiénes somos, Beneficios y Actividades. Pueden reutilizar fotos de Comunicaciones, cargar JPG, PNG o WebP de hasta 4 MB y restaurar cada imagen original. Cada cambio se refleja al volver a cargar la portada.
 
 ## 2. Instalar y compilar la landing pública
 

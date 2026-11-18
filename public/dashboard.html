@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="/css/dialogos.css" />
   <link rel="stylesheet" href="/css/navegacion-sidebar.css" />
   <link rel="stylesheet" href="/css/sistema.css" />
+  <link rel="stylesheet" href="/css/portada.css" />
 </head>
 <body class="pagina-panel">
   <aside id="sidebar" class="sidebar" aria-label="Navegación principal">
@@ -72,6 +73,10 @@
         <button id="nav-afiliados" class="nav-vista sidebar-item" data-vista="vista-afiliados" data-tooltip="Afiliados" hidden>
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           <span class="sidebar-etiqueta">Afiliados</span>
+        </button>
+        <button id="nav-portada" class="nav-vista sidebar-item" data-vista="vista-portada" data-tooltip="Imágenes de la portada" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="1"/><path d="m3 17 5-4 3 2 4-5 6 7"/></svg>
+          <span class="sidebar-etiqueta">Imágenes de la portada</span>
         </button>
         <button id="nav-administracion" class="nav-vista sidebar-item" data-vista="vista-administracion" data-tooltip="Administración" hidden>
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 13c0 5-3.5 7.5-8 9-4.5-1.5-8-4-8-9V5l8-3 8 3Z"/><path d="m9 12 2 2 4-4"/></svg>
@@ -542,6 +547,43 @@
     <div id="paginacion-local" class="paginacion"></div>
   </main>
 
+  <main id="vista-portada" class="contenido vista" hidden>
+    <h1>Imágenes de la portada</h1>
+    <p>Elige una ubicación y publica una foto de Comunicaciones o carga una nueva.</p>
+    <a href="/" target="_blank" rel="noopener">Abrir portada pública</a>
+    <p id="portada-mensaje" class="editor-portada-mensaje" role="status"></p>
+
+    <form id="portada-editor" class="editor-portada" hidden>
+      <fieldset id="portada-controles">
+        <legend>Editar una imagen</legend>
+        <label for="portada-espacio">Ubicación en la portada</label>
+        <select id="portada-espacio"></select>
+        <figure class="editor-portada-preview">
+          <img id="portada-actual" alt="" hidden />
+          <figcaption id="portada-estado"></figcaption>
+        </figure>
+        <div class="editor-portada-fuentes">
+          <fieldset class="editor-portada-sugerencias">
+            <legend>Fotos sugeridas de Comunicaciones</legend>
+            <div id="portada-galeria" class="editor-portada-galeria"></div>
+          </fieldset>
+          <div>
+            <label for="portada-archivo">Cargar una foto nueva</label>
+            <input id="portada-archivo" name="imagen" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="portada-formatos" />
+            <small id="portada-formatos">JPG, PNG o WebP. Máximo 4 MB.</small>
+          </div>
+        </div>
+        <img id="portada-preview" class="editor-portada-candidata" alt="Vista previa de la foto seleccionada" hidden />
+        <label for="portada-descripcion">Descripción de la imagen</label>
+        <input id="portada-descripcion" name="descripcion" required maxlength="160" />
+        <div class="editor-portada-acciones">
+          <button class="btn btn-primario" type="submit">Publicar imagen</button>
+          <button id="portada-restaurar" class="btn btn-secundario" type="button" hidden>Restaurar imagen original</button>
+        </div>
+      </fieldset>
+    </form>
+  </main>
+
   <main id="vista-administracion" class="contenido vista" hidden>
     <div class="panel-header">
       <div>
@@ -845,6 +887,7 @@
   <script src="/js/ui-componentes.js"></script>
   <script src="/js/graficas.js"></script>
   <script src="/js/calendario-ui.js"></script>
+  <script src="/js/portada.js"></script>
   <script src="/js/dashboard.js"></script>
   <script type="module" src="/js/chatbot.js"></script>
 </body>
