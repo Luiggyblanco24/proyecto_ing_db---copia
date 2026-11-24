@@ -1,3 +1,4 @@
+import { calcularCuotaConsultada } from '../../../public/js/datos-afiliacion.js';
 import { documentosRequeridos, informacionAfiliacion } from './afiliacion.js';
 import { beneficios } from './beneficios.js';
 import { datosContacto } from './contacto.js';
@@ -40,13 +41,9 @@ export function responderVisitante(texto, historial = []) {
   if (consultaAfiliacion) {
     return { texto: preguntaCuota.test(q) ? requisitos + '\n\n' + cuota : requisitos, enlaces: [registro, formulario] };
   }
-  const salario = texto.trim().match(/^[¿\s]*(?:y )?si (?:mi salario b[áa]sico es(?: de)?|gano)\s+\$?\s*(\d{1,3}(?:\.\d{3})+|\d+)(?:[,.](\d{1,2}))?(?:\s+(mill[oó]n|millones))?(?:\s+(?:de pesos|pesos|cop))?\s*[?!.]*$/i);
-  if (salario && historial.some((turno) => turno.role === 'assistant' && /cuota mensual|salario básico/i.test(turno.content))) {
-    const cantidad = Number(salario[1].replaceAll('.', '') + '.' + (salario[2] || '0')) * (salario[3] ? 1000000 : 1);
-    if (Number.isSafeInteger(cantidad) && cantidad > 0) {
-      return { texto: 'Con un salario básico de $' + cantidad.toLocaleString('es-CO') + ' COP, el ' + porcentaje +
-        ' % equivale a $' + (cantidad * porcentaje / 100).toLocaleString('es-CO') + ' COP al mes.', enlaces: [formulario] };
-    }
+  if (historial.some((turno) => turno.role === 'assistant' && /cuota mensual|salario básico/i.test(turno.content))) {
+    const calculo = calcularCuotaConsultada(texto);
+    if (calculo) return { texto: calculo, enlaces: [formulario] };
   }
   if (/^(cuanto (cuesta|vale|valdria|pago)( (afiliarme|la afiliacion|la cuota))?|cual es la cuota( mensual)?|cuota( sindical)?)$/.test(q)) {
     return { texto: cuota, enlaces: [formulario] };

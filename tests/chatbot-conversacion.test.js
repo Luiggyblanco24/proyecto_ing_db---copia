@@ -15,6 +15,9 @@ test('un segundo turno acepta una respuesta anterior de 1200 caracteres', async 
     const req = { user: { roles: ['Administrador SUTENS'] }, body: { mensaje: 'Continúa', historial: [{ role: 'assistant', content: 'a'.repeat(1200) }] } };
     const res = { json: (dato) => dato };
     assert.equal((await conversarConChatbot(req, res)).respuesta, 'Respuesta de prueba');
+    const instrucciones = JSON.parse(globalThis.fetch.mock.calls[0].arguments[1].body).messages[0].content;
+    assert.match(instrucciones, /porcentajeSalarioBasico":1\b/);
+    assert.match(instrucciones, /cumplir y respetar los estatutos/);
     respuesta = () => Response.json({ success: true, result: { response: 'Respuesta nativa' } });
     assert.equal((await conversarConChatbot(req, res)).respuesta, 'Respuesta nativa');
     const avisos = [];
@@ -65,7 +68,7 @@ test('el chat orienta por rol, conserva el contexto y descarta turnos borrados',
           estado: 'programado', fecha_inicio: new Date(Date.now() + 86400000),
           asistentes_confirmados: 7, mi_asistencia: true,
         }];
-        if (ruta === '/api/biblioteca') return [];
+        if (ruta === '/api/biblioteca') return [{ titulo: 'Estatutos de prueba', categoria: 'Estatutos' }];
         if (ruta === '/api/biblioteca/educativa') return [
           { titulo: 'Guía de inglés quinto', grado: '5', materia: 'Inglés' },
           { titulo: 'Guía de inglés sexto', grado: '6', materia: 'Inglés' },
@@ -85,6 +88,19 @@ test('el chat orienta por rol, conserva el contexto y descarta turnos borrados',
       await campo.fill(texto);
       await campo.press('Enter');
     };
+    await preguntar('quiero ayudar afiliar a un docente, me puedes ayudar con el formulario, el costo y qué normas tienes?');
+    const orientacion = await page.locator('.chatbot-bot').last().innerText();
+    assert.match(orientacion, /formulario oficial/);
+    assert.match(orientacion, /1 % del salario básico/);
+    assert.match(orientacion, /cumplir y respetar los estatutos/);
+    const pdf = page.getByRole('link', { name: /formulario oficial de afiliación/ });
+    assert.equal(await pdf.getAttribute('href'), '/Formatodeafiliacionsutens.pdf');
+    await preguntar('¿Y si gano 4 millones?');
+    assert.match(await page.locator('.chatbot-bot').last().innerText(), /40\.000 COP al mes/);
+    await page.getByRole('button', { name: 'Buscar estatutos en la biblioteca sindical' }).click();
+    await page.getByText('Estatutos de prueba', { exact: true }).waitFor();
+    assert.equal(await page.evaluate(() => window.llamadasIA), 0);
+    await page.getByText('Borrar conversación', { exact: true }).click();
     for (const [pregunta, esperado] of [
       ['¿Cómo actualizo mis datos?', 'Mi cuenta'],
       ['Cambiar contraseña', 'Mi cuenta'],

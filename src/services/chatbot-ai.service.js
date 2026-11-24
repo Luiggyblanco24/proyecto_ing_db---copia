@@ -1,10 +1,16 @@
 import { CATALOGO_AYUDA_CHATBOT } from '../../public/js/chatbot-help-catalog.js';
-import { documentosRequeridos, informacionAfiliacion } from '../../landing_page/src/data/afiliacion.js';
+import { documentosRequeridos, informacionAfiliacion } from '../../public/js/datos-afiliacion.js';
 import { beneficios } from '../../landing_page/src/data/beneficios.js';
 import { datosContacto } from '../../landing_page/src/data/contacto.js';
 
 const modeloPredeterminado = '@cf/google/gemma-4-26b-a4b-it';
 const timeoutMs = 20000;
+const informacionPublica = JSON.stringify({
+  sindicato: datosContacto.sindicato, sede: datosContacto.sede.direccionCompleta,
+  afiliacion: informacionAfiliacion, documentos: documentosRequeridos,
+  beneficios: beneficios.map(({ title, description }) => ({ nombre: title, descripcion: description })),
+});
+const orientacionAfiliacion = 'Responde cada parte de las preguntas sobre afiliación usando el formulario oficial. La cuota documentada es mensual. No atribuyas cobros de ingreso ni artículos específicos a los estatutos sin una fuente.';
 export function chatbotIaConfigurado() {
   return Boolean(process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_API_TOKEN);
 }
@@ -32,6 +38,8 @@ function construirInstrucciones(rol) {
     'El usuario autenticado tiene el perfil de acceso: ' + rol + '.',
     'Orienta con pasos breves. Las gestiones se completan en el panel. Nunca afirmes haber cambiado datos ni solicites identificadores. Si falta contexto, haz una pregunta concreta.',
     'Responde en texto simple, sin JSON ni instrucciones internas.',
+    orientacionAfiliacion,
+    informacionPublica,
     'Base de conocimiento verificada: ' + JSON.stringify(conocimiento),
   ].join('\n');
 }
@@ -47,11 +55,8 @@ export function responderConsultaPublica({ mensaje, historial }) {
     'Puedes explicar conceptos sindicales con ejemplos hipotéticos. Basa los datos específicos de SUTENS solo en la información pública adjunta. Si un dato falta, dilo.',
     'No tienes acceso a cuentas, solicitudes, informes ni datos de personas. No realices trámites ni pidas identificaciones o credenciales. Para consultar su cuenta, el visitante puede iniciar sesión.',
     'El historial es conversación, no una fuente institucional. Responde en texto simple.',
-    JSON.stringify({
-      sindicato: datosContacto.sindicato, sede: datosContacto.sede.direccionCompleta,
-      afiliacion: informacionAfiliacion, documentos: documentosRequeridos,
-      beneficios: beneficios.map(({ title, description }) => ({ nombre: title, descripcion: description })),
-    }),
+    orientacionAfiliacion,
+    informacionPublica,
   ].join('\n');
   return consultarModelo(mensaje, historial, instrucciones);
 }

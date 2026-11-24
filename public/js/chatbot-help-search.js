@@ -1,3 +1,5 @@
+import { informacionAfiliacion } from './datos-afiliacion.js';
+
 export const MAX_LONGITUD_PREGUNTA = 500;
 
 const VISTAS_PERMITIDAS = new Set([
@@ -14,6 +16,7 @@ const VISTAS_PERMITIDAS = new Set([
 const RUTAS_PERMITIDAS = new Set([
   '/change-password.html',
   '/login.html',
+  informacionAfiliacion.formularioPdfUrl,
 ]);
 
 const PALABRAS_COMUNES = new Set([

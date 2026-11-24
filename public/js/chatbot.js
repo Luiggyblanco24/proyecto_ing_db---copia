@@ -1,4 +1,5 @@
 import { CANAL_SOPORTE, CATALOGO_AYUDA_CHATBOT } from './chatbot-help-catalog.js';
+import { calcularCuotaConsultada, documentosRequeridos, informacionAfiliacion } from './datos-afiliacion.js';
 import {
   buscarAyuda,
   normalizarPregunta,
@@ -228,6 +229,7 @@ formulario.append(campo, enviar, limpiar);
 panel.append(cabecera, herramientas, contenido, formulario);
 
 let historialModelo = [];
+let conversandoDeAfiliacion = false;
 let ultimaActividad = null;
 let ultimaBusqueda = null;
 let conversacion = new AbortController();
@@ -272,6 +274,10 @@ function agregarAccionDestino(entrada) {
   const enlace = document.createElement('a');
   enlace.className = 'chatbot-enlace';
   enlace.href = destino.ruta;
+  if (destino.ruta === informacionAfiliacion.formularioPdfUrl) {
+    enlace.target = '_blank';
+    enlace.rel = 'noopener';
+  }
   enlace.textContent = `Abrir ${entrada.titulo}`;
   mensajes.append(enlace);
 }
@@ -750,10 +756,47 @@ function orientar(id) {
   agregarAccionDestino(entrada);
 }
 
+function recordarTurno(texto, respuesta) {
+  historialModelo.push({ role: 'user', content: texto }, { role: 'assistant', content: respuesta.slice(0, 1200) });
+  historialModelo = historialModelo.slice(-6);
+}
+
+function responderSobreAfiliacion(texto, pregunta, seguimiento) {
+  const temaExplicito = /\b(afiliar\w*|afilio|afiliacion|cuota sindical|estatutos (?:de sutens|del sindicato))\b/.test(pregunta);
+  const calculo = seguimiento ? calcularCuotaConsultada(texto) : null;
+  const repregunta = /^(?:y )?(?:(?:el |la |los |las )?(?:costo|costos|cuota|precio|formulario|formato|requisitos|documentos|normas|estatutos|reglamento)|cuanto (?:cuesta|pago|vale)|que (?:normas|requisitos|documentos) (?:aplican|necesito)|donde (?:lo (?:entrego|radico)|se entrega))$/.test(pregunta);
+  if (!temaExplicito && !(seguimiento && (repregunta || calculo))) return false;
+  const tramite = /\b(formularios?|formatos?|requisitos?|documentos?|papeles|que necesito|como (?:me afilio|afiliar\w*))\b/.test(pregunta);
+  const costo = /\b(costo[s]?|cuotas?|precio|cuesta|vale|valdria|pago|paga|pagar|descuent\w*|cobran)\b/.test(pregunta);
+  const normas = /\b(normas?|normativa|estatutos?|reglamentos?)\b/.test(pregunta);
+  const entrega = /\b(entreg\w*|radic\w*)\b/.test(pregunta);
+  const partes = [];
+  if (tramite) {
+    partes.push('Para solicitar la afiliación, el docente debe diligenciar y firmar el formulario oficial. Para el trámite en papel, prepara:\n' +
+      documentosRequeridos.map((documento) => '• ' + documento.nombre).join('\n'));
+  }
+  if (entrega) partes.push('Puedes entregarlo al delegado de la subdirectiva municipal o en ' + informacionAfiliacion.sedeFisica + '.');
+  if (calculo) partes.push(calculo);
+  else if (costo) partes.push('La cuota mensual es del ' + informacionAfiliacion.cuotaSindical.porcentajeSalarioBasico +
+    ' % del salario básico y se descuenta por nómina. El formulario no indica un cobro aparte por inscribirse.');
+  if (normas) partes.push(informacionAfiliacion.compromisoEstatutario +
+    ' Para consultar artículos o requisitos específicos, busca los estatutos vigentes en la Biblioteca sindical o solicítalos a la Secretaría General.');
+  if (!partes.length) return false;
+  const respuesta = partes.join('\n\n');
+  agregarMensaje(respuesta, 'bot');
+  agregarAccionDestino({ titulo: 'formulario oficial de afiliación (PDF)', destino: { tipo: 'ruta', ruta: informacionAfiliacion.formularioPdfUrl } });
+  if (normas) mostrarSugerencias([{ preguntas: ['Buscar estatutos en la biblioteca sindical'] }]);
+  recordarTurno(texto, respuesta);
+  contenido.scrollTop = contenido.scrollHeight;
+  return true;
+}
+
 async function responder(texto) {
   if (enviar.disabled) return;
   const { signal } = conversacion;
   const pregunta = normalizarPregunta(texto);
+  const seguimientoAfiliacion = conversandoDeAfiliacion;
+  conversandoDeAfiliacion = false;
   const capacidades = capacidadesVisibles();
   if (/\b(?:mi |la )?(?:clave|contrasena|password)\s*(?:es|:|=)\s*\S+/i.test(texto.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))) {
     agregarMensaje('Escribe tus credenciales únicamente en Mi cuenta. Desde allí puedes cambiar tu contraseña.', 'bot');
@@ -810,6 +853,10 @@ async function responder(texto) {
   if (/\b(confirmar|confirmo|retirar|retiro|cancelar)\b/.test(pregunta) && /\basistencia\b/.test(pregunta) &&
       !/\b(ya|quien|quienes|cuantos)\b/.test(pregunta)) {
     orientar('calendario');
+    return;
+  }
+  if (responderSobreAfiliacion(texto, pregunta, seguimientoAfiliacion)) {
+    conversandoDeAfiliacion = true;
     return;
   }
   const ayuda = buscarAyuda(texto, CATALOGO_AYUDA_CHATBOT, capacidades);
@@ -931,8 +978,7 @@ async function responderConIA(texto, sugerencias = []) {
     if (signal.aborted) return;
     if (!resultado.respuesta?.trim()) throw new Error('Respuesta vacía');
     agregarMensaje(resultado.respuesta, 'bot');
-    historialModelo.push({ role: 'user', content: texto }, { role: 'assistant', content: resultado.respuesta || '' });
-    historialModelo = historialModelo.slice(-6);
+    recordarTurno(texto, resultado.respuesta);
   } catch {
     pensando.remove();
     if (signal.aborted) return;
@@ -961,6 +1007,7 @@ function limpiarConversacion() {
   enviar.disabled = false;
   mensajes.replaceChildren();
   historialModelo = [];
+  conversandoDeAfiliacion = false;
   ultimaActividad = null;
   ultimaBusqueda = null;
   mensajeInforme.textContent = '';

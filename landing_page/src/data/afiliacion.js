@@ -34,37 +34,4 @@ export const pasosAfiliacion = [
   },
 ];
 
-export const documentosRequeridos = [
-  {
-    id: 'formato',
-    nombre: 'Formato de afiliación firmado',
-    detalle: 'Completado con datos personales y de contacto actualizados.',
-  },
-  {
-    id: 'autorizacion',
-    nombre: 'Autorización de descuento por nómina',
-    detalle: 'Firmada para el trámite correspondiente ante la secretaría de educación.',
-  },
-  {
-    id: 'cedula',
-    nombre: 'Fotocopia de la cédula de ciudadanía',
-    detalle: 'Copia legible del documento de identidad.',
-  },
-  {
-    id: 'nombramiento',
-    nombre: 'Acta de posesión o resolución de nombramiento',
-    detalle: 'Copia del documento que certifica tu vinculación educativa.',
-  },
-];
-
-export const informacionAfiliacion = {
-  registroEnLineaUrl: '/register.html',
-  formularioPdfUrl: '/Formatodeafiliacionsutens.pdf',
-  whatsappUrl: 'https://wa.me/573185218787',
-  whatsappTelefono: '+57 318 521 8787',
-  sedeFisica: 'Calle 10 Nro. 13 - 37, Oficina 201, Centro de Ocaña, Norte de Santander',
-  // Autorización de descuento en Formatodeafiliacionsutens.pdf, página 1.
-  cuotaSindical: {
-    porcentajeSalarioBasico: 1,
-  },
-};
+export { documentosRequeridos, informacionAfiliacion } from '../../../public/js/datos-afiliacion.js';
