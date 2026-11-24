@@ -209,7 +209,7 @@ El asistente resuelve la ayuda verificada en el panel. Biblioteca, perfil y cale
 
 La conversación libre usa Cloudflare Workers AI desde el backend. Para habilitarla configura
 `CLOUDFLARE_ACCOUNT_ID` y `CLOUDFLARE_API_TOKEN` como secretos, más `CLOUDFLARE_AI_MODEL` si
-quieres elegir otro modelo. El token solo requiere `Account > Workers AI > Read`; no lo incluyas
+quieres elegir otro modelo. Usa la plantilla de token de Workers AI o concede Workers AI Read y Edit en la cuenta correspondiente; no lo incluyas
 en el frontend ni en Git. El límite inicial es de 20 mensajes por usuario cada 60 segundos.
 Antes de procesar datos personales con un proveedor externo, revisa la política institucional de
 tratamiento de datos. El chatbot redacta correos, teléfonos y secuencias numéricas en el backend,
@@ -332,7 +332,7 @@ los documentos Word. Render solicita las variables marcadas como secretas; confi
   en el servicio y reinícialo/redespliega para cargarlos.
 - `CLOUDFLARE_ACCOUNT_ID` y `CLOUDFLARE_API_TOKEN`: credenciales del proveedor IA, solo en el
   entorno del servidor. El Account ID no es secreto, pero también se configura fuera del código.
-- `CLOUDFLARE_AI_MODEL`: modelo de Workers AI; la configuración inicial usa `@cf/qwen/qwen3-30b-a3b-fp8`.
+- `CLOUDFLARE_AI_MODEL`: modelo de Workers AI; la configuración inicial usa `@cf/google/gemma-4-26b-a4b-it`.
 - `CHATBOT_CONVERSATION_RATE_LIMIT` y `CHATBOT_CONVERSATION_RATE_WINDOW_MS`: límite de conversación.
 - `JWT_SECRET`: Render genera uno automáticamente desde el blueprint.
 

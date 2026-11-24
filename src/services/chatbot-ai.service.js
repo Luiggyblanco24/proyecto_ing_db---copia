@@ -1,6 +1,6 @@
 import { CATALOGO_AYUDA_CHATBOT } from '../../public/js/chatbot-help-catalog.js';
 
-const modeloPredeterminado = '@cf/qwen/qwen3-30b-a3b-fp8';
+const modeloPredeterminado = '@cf/google/gemma-4-26b-a4b-it';
 const timeoutMs = 20000;
 export function chatbotIaConfigurado() {
   return Boolean(process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_API_TOKEN);
