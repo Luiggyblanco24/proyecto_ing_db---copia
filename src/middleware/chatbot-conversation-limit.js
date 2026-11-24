@@ -31,3 +31,24 @@ export function limitarConversacionChatbot(req, res, next) {
   ventana.cantidad += 1;
   return next();
 }
+
+// Ventana compartida para acotar también el consumo total de la ruta anónima.
+const visitantes = new Map();
+let finVentanaPublica = 0;
+let totalPublico = 0;
+export function limitarConversacionPublica(req, res, next) {
+  const ahora = Date.now();
+  if (ahora >= finVentanaPublica) {
+    visitantes.clear();
+    totalPublico = 0;
+    finVentanaPublica = ahora + ventanaMs;
+  }
+  const cantidad = visitantes.get(req.ip) || 0;
+  if (cantidad >= maximo || totalPublico >= maximo * 5) {
+    res.set('Retry-After', String(Math.ceil((finVentanaPublica - ahora) / 1000)));
+    return res.status(429).json({ error: 'Espera un momento antes de enviar otra pregunta.' });
+  }
+  visitantes.set(req.ip, cantidad + 1);
+  totalPublico += 1;
+  return next();
+}

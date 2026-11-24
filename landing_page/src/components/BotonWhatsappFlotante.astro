@@ -5,7 +5,7 @@
       <button type="button" data-cerrar aria-label="Cerrar asistente">×</button>
     </header>
     <div data-mensajes role="log" aria-live="polite" aria-label="Conversación">
-      <p>¡Hola! Puedo orientarte sobre cómo afiliarte, cuánto se descuenta por nómina y qué hace el sindicato.</p>
+      <p>¡Hola! ¿Qué te gustaría saber sobre SUTENS? Puedes escribir tu pregunta o elegir una de estas. Evita compartir datos personales.</p>
       <div class="opciones">
         {['¿Cómo me afilio?', '¿Cuánto cuesta?', '¿Qué hace SUTENS?'].map((texto) => <button type="button" data-pregunta>{texto}</button>)}
       </div>
@@ -35,6 +35,9 @@
   const abrir = document.querySelector<HTMLButtonElement>('[data-abrir]')!;
   const historial = panel.querySelector<HTMLElement>('[data-mensajes]')!;
   const campo = panel.querySelector('input')!;
+  const botonesEnvio = panel.querySelectorAll<HTMLButtonElement>('[data-pregunta], button[type="submit"]');
+  const turnos: { role: 'user' | 'assistant'; content: string }[] = [];
+  let esperando = false;
   abrir.hidden = false;
   function alternar(visible: boolean) {
     panel.hidden = !visible;
@@ -43,15 +46,52 @@
     abrir.setAttribute('aria-label', abrir.title);
     (visible ? campo : abrir).focus();
   }
-  function preguntar(texto: string) {
-    if (!texto.trim()) return;
+  async function preguntar(texto: string) {
+    if (!texto.trim() || esperando) return;
     const pregunta = document.createElement('p');
     pregunta.className = 'visitante';
     pregunta.textContent = texto;
-    const respuesta = responderVisitante(texto);
     const mensaje = document.createElement('p');
-    mensaje.textContent = respuesta.texto;
     historial.append(pregunta, mensaje);
+    campo.value = '';
+    campo.focus();
+    let respuesta = responderVisitante(texto, turnos);
+    if (!respuesta) {
+      esperando = true;
+      botonesEnvio.forEach((boton) => { boton.disabled = true; });
+      mensaje.textContent = 'Consultando tu pregunta…';
+      historial.scrollTop = historial.scrollHeight;
+      const controlador = new AbortController();
+      const limite = window.setTimeout(() => controlador.abort(), 65000);
+      try {
+        const peticion = await fetch('/api/chatbot/visitante/conversar', {
+          method: 'POST',
+          credentials: 'omit',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mensaje: texto, historial: turnos }),
+          signal: controlador.signal,
+        });
+        if (peticion.status === 429) {
+          mensaje.textContent = 'Hemos recibido varias consultas seguidas. Espera un momento y vuelve a enviar tu pregunta.';
+          return;
+        }
+        if (!peticion.ok) throw new Error();
+        const datos = await peticion.json();
+        if (typeof datos.respuesta !== 'string' || !datos.respuesta.trim()) throw new Error();
+        respuesta = { texto: datos.respuesta, enlaces: [] };
+      } catch {
+        mensaje.textContent = 'Ahora no puedo consultar la IA. Puedes volver a enviar tu pregunta o usar las opciones de afiliación, cuota y beneficios.';
+        return;
+      } finally {
+        window.clearTimeout(limite);
+        esperando = false;
+        botonesEnvio.forEach((boton) => { boton.disabled = false; });
+        historial.scrollTop = historial.scrollHeight;
+      }
+    }
+    mensaje.textContent = respuesta.texto;
+    turnos.push({ role: 'user', content: texto }, { role: 'assistant', content: respuesta.texto.slice(0, 1200) });
+    if (turnos.length > 6) turnos.splice(0, 2);
     const enlaces = document.createElement('div');
     enlaces.className = 'opciones';
     for (const enlace of respuesta.enlaces) {
@@ -64,10 +104,8 @@
       }
       enlaces.append(a);
     }
-    historial.append(enlaces);
+    if (enlaces.childElementCount) historial.append(enlaces);
     historial.scrollTop = historial.scrollHeight;
-    campo.value = '';
-    campo.focus();
   }
   abrir.addEventListener('click', () => alternar(panel.hidden));
   panel.querySelector('[data-cerrar]')!.addEventListener('click', () => alternar(false));

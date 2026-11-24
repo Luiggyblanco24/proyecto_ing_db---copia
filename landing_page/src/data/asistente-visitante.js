@@ -5,43 +5,62 @@ import { datosContacto } from './contacto.js';
 const registro = { texto: 'Iniciar solicitud', url: informacionAfiliacion.registroEnLineaUrl };
 const formulario = { texto: 'Ver formulario oficial', url: informacionAfiliacion.formularioPdfUrl };
 const whatsapp = { texto: 'Consultar por WhatsApp', url: datosContacto.canales.whatsapp.url };
+const porcentaje = informacionAfiliacion.cuotaSindical.porcentajeSalarioBasico;
 
-export function responderVisitante(texto) {
-  const q = texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  const parrafos = [];
-  const enlaces = new Set();
-  const afiliacion = /\b(afiliar\w*|afilio|afiliacion|inscrib\w*|registro|registrar\w*|requisitos?|documentos?|formulario|que necesito)\b/.test(q);
-  const costo = /\b(cuest[ae]|cost[oa]s?|precio|vale|valor|valdria|cuotas?|pago|pagar|porcentaje|descuent\w*|descont\w*|nomina|gratis|gratuit\w*)\b/.test(q) ||
-    /^(?:[¿\s]*y\s+)?[¿\s]*cuanto(?: seria)?[?\s]*$/.test(q);
-  const entrega = /\b(entreg\w*|radic\w*|sede|direccion|ubicacion|oficina|contact\w*|whatsapp|telefono)\b/.test(q);
-  if (afiliacion && (!costo || /\b(necesito|requisitos?|documentos?|quiero|como)\b/.test(q))) {
-    parrafos.push('Puedes iniciar tu solicitud en línea o diligenciar el formulario en papel. Para el trámite documental, prepara:\n' +
-      documentosRequeridos.map((doc) => '• ' + doc.nombre).join('\n'));
-    enlaces.add(registro).add(formulario);
+function normalizar(texto) {
+  return texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[¿?¡!.,:;]/g, ' ').trim().replace(/\s+/g, ' ');
+}
+
+const requisitos = 'Puedes iniciar tu solicitud en línea. Si la entregas en papel, prepara estos documentos:\n' +
+  documentosRequeridos.map((doc) => '• ' + doc.nombre).join('\n');
+const cuota = 'El formulario oficial establece una cuota mensual del ' + porcentaje +
+  ' % del salario básico, descontada por nómina. Por ejemplo, sobre $3.000.000 COP serían $' +
+  (3000000 * porcentaje / 100).toLocaleString('es-CO') + ' COP al mes.';
+
+// Solo interceptamos preguntas completas. Las dudas más específicas pasan al diálogo con contexto.
+/** @param {string} texto @param {{role: string, content: string}[]} historial */
+export function responderVisitante(texto, historial = []) {
+  const q = normalizar(texto);
+  if (/^(hola|buenas|buen[oa]s (dias|tardes|noches)|buen dia|saludos)( asistente| sutens)?$/.test(q)) {
+    return { texto: '¡Hola! ¿Qué te gustaría saber sobre SUTENS?', enlaces: [] };
   }
-  if (costo) {
-    const cuota = informacionAfiliacion.cuotaSindical;
-    parrafos.push('Según la autorización del formulario oficial, la cuota mensual es el ' + cuota.porcentajeSalarioBasico +
-      ' % del salario básico y se descuenta por nómina. Por ejemplo, con un salario básico de $3.000.000 COP, la cuota sería de $' +
-      (3000000 * cuota.porcentajeSalarioBasico / 100).toLocaleString('es-CO') + ' COP al mes.');
-    enlaces.add(formulario);
+  if (/^(en que me (puedes |pueden )?ayuda[rsn]?|que (puedo preguntar|puedes hacer)|ayuda)$/.test(q)) {
+    return { texto: 'Puedes preguntarme cómo afiliarte, cuánto aportarías al mes o cómo te acompaña el sindicato. ¿Qué te interesa?', enlaces: [] };
   }
-  if (entrega) {
-    parrafos.push('Puedes entregar el formulario en ' + datosContacto.sede.direccionCompleta +
-      ' o al delegado de tu subdirectiva municipal. Para orientación, el WhatsApp institucional es ' + datosContacto.canales.whatsapp.numero + '.');
-    enlaces.add(whatsapp);
+  if (/^(muchas )?gracias( por (la|tu) ayuda)?$/.test(q)) {
+    return { texto: '¡Con gusto! Si te surge otra pregunta sobre SUTENS, aquí estoy.', enlaces: [] };
   }
-  const beneficio = beneficios.find((item) => q.includes(item.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')));
-  if (beneficio) {
-    parrafos.push(beneficio.title + '. ' + beneficio.description);
-  } else if (/\b(beneficios?|funciones?|servicios?|hace|ofrece|defiende|que es sutens|que es el sindicato|ayudan)\b/.test(q)) {
-    parrafos.push(datosContacto.sindicato + '. Sus funciones y beneficios incluyen:\n' +
-      beneficios.map((item) => '• ' + item.title).join('\n'));
-    enlaces.add({ texto: 'Conocer SUTENS', url: '/Nosotros/' });
+  const preguntaCuota = / y cuanto (cuesta|vale|valdria)( la afiliacion)?$/;
+  const tramite = q.replace(/^(si )?soy docente y /, '').replace(preguntaCuota, '')
+    .replace(/ (al sindicato|a sutens)$/, '');
+  const consultaAfiliacion = /^(quiero afiliarme|me quiero afiliar)( que necesito)?$/.test(tramite) ||
+    /^que (documentos |requisitos )?necesito para afiliarme$/.test(tramite) ||
+    /^(como me inscribo|como me afilio|como puedo afiliarme|requisitos( de afiliacion)?|que (documentos|requisitos) necesito)$/.test(tramite);
+  if (consultaAfiliacion) {
+    return { texto: preguntaCuota.test(q) ? requisitos + '\n\n' + cuota : requisitos, enlaces: [registro, formulario] };
   }
-  if (!parrafos.length) {
-    parrafos.push('Puedo orientarte sobre requisitos, cuota mensual, beneficios y dónde entregar tu solicitud. Para otra consulta, puedes hablar con SUTENS por WhatsApp.');
-    enlaces.add(whatsapp);
+  const salario = texto.trim().match(/^[¿\s]*(?:y )?si (?:mi salario b[áa]sico es(?: de)?|gano)\s+\$?\s*(\d{1,3}(?:\.\d{3})+|\d+)(?:[,.](\d{1,2}))?(?:\s+(mill[oó]n|millones))?(?:\s+(?:de pesos|pesos|cop))?\s*[?!.]*$/i);
+  if (salario && historial.some((turno) => turno.role === 'assistant' && /cuota mensual|salario básico/i.test(turno.content))) {
+    const cantidad = Number(salario[1].replaceAll('.', '') + '.' + (salario[2] || '0')) * (salario[3] ? 1000000 : 1);
+    if (Number.isSafeInteger(cantidad) && cantidad > 0) {
+      return { texto: 'Con un salario básico de $' + cantidad.toLocaleString('es-CO') + ' COP, el ' + porcentaje +
+        ' % equivale a $' + (cantidad * porcentaje / 100).toLocaleString('es-CO') + ' COP al mes.', enlaces: [formulario] };
+    }
   }
-  return { texto: parrafos.join('\n\n'), enlaces: [...enlaces] };
+  if (/^(cuanto (cuesta|vale|valdria|pago)( (afiliarme|la afiliacion|la cuota))?|cual es la cuota( mensual)?|cuota( sindical)?)$/.test(q)) {
+    return { texto: cuota, enlaces: [formulario] };
+  }
+  if (/^(donde (queda(n)?|esta(n)?) (la sede|la oficina|sutens)|donde (entrego|radico) (el formulario|mi solicitud)|contacto|whatsapp)$/.test(q)) {
+    return { texto: 'La sede está en ' + datosContacto.sede.direccionCompleta +
+      '. También puedes entregar la solicitud al delegado de tu subdirectiva municipal.', enlaces: [whatsapp] };
+  }
+  if (/^(que (es|hace|ofrece) (sutens|el sindicato)|que beneficios (tengo|ofrecen)|beneficios|funciones)$/.test(q)) {
+    return { texto: datosContacto.sindicato + '. Sus funciones y beneficios incluyen:\n' +
+      beneficios.map((item) => '• ' + item.title).join('\n'), enlaces: [{ texto: 'Conocer SUTENS', url: '/Nosotros/' }] };
+  }
+  const tema = q.replace(/^(que es|que significa|en que consiste) (la |el )?/, '');
+  const beneficio = beneficios.find((item) => normalizar(item.title) === tema);
+  if (beneficio) return { texto: beneficio.description, enlaces: [] };
+  return null;
 }

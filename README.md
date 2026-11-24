@@ -185,6 +185,7 @@ Al abrir `http://localhost:3000` verás el sitio público de SUTENS:
 | POST | `/api/subdirectivas/cargos` | Administrador | Agrega una opción de cargo sindical |
 | POST | `/api/subdirectivas/roles-laborales` | Administrador | Agrega una opción de rol docente |
 | POST | `/api/subdirectivas` | Administrador o Directiva Principal | Crear subdirectiva (`{"nombre":"..."}`) |
+| POST | `/api/chatbot/visitante/conversar` | Público | Responde preguntas libres con la información de la landing y hasta seis mensajes de contexto |
 | POST | `/api/chatbot/informes` | Administrador SUTENS o Directiva Departamental activa | Genera informes agregados predefinidos; no devuelve datos personales |
 | POST | `/api/chatbot/informes/exportar` | Administrador SUTENS o Directiva Departamental activa | Descarga el resumen agregado en Excel y admite los formatos nominales autorizados |
 

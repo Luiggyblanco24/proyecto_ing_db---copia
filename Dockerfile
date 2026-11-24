@@ -21,6 +21,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 COPY src ./src
 COPY public ./public
+COPY landing_page/src/data/afiliacion.js landing_page/src/data/beneficios.js landing_page/src/data/contacto.js ./landing_page/src/data/
 COPY --from=frontend-build --chown=node:node ["/app/landing_page/dist", "/app/landing_page/dist"]
 
 USER node

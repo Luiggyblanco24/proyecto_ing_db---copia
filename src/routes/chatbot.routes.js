@@ -7,8 +7,8 @@ import { autorizarInformesChatbot } from '../middleware/chatbot-report-auth.js';
 import { limitarInformesChatbot } from '../middleware/chatbot-report-limit.js';
 import { auditarIntentoDescarga, exigirDescargasHabilitadas, limitarDescargasChatbot } from '../middleware/chatbot-download-policy.js';
 import { exigirChatbotHabilitado } from '../config/chatbot.js';
-import { limitarConversacionChatbot } from '../middleware/chatbot-conversation-limit.js';
-import { conversarConChatbot } from '../controllers/chatbot-conversation.controller.js';
+import { limitarConversacionChatbot, limitarConversacionPublica } from '../middleware/chatbot-conversation-limit.js';
+import { conversarConChatbot, conversarComoVisitante } from '../controllers/chatbot-conversation.controller.js';
 import { previsualizarGestionAfiliados } from '../controllers/chatbot-management.controller.js';
 import { autorizarDirectivaPrincipal } from '../middleware/rbac.js';
 
@@ -30,6 +30,7 @@ router.use('/informes', (req, res, next) => {
   });
   next();
 });
+router.post('/visitante/conversar', limitarConversacionPublica, manejarAsync(conversarComoVisitante));
 router.use(autenticar);
 router.post('/conversar', limitarConversacionChatbot, manejarAsync(conversarConChatbot));
 router.post('/afiliados/previsualizar', limitarConversacionChatbot, autorizarDirectivaPrincipal(), manejarAsync(previsualizarGestionAfiliados));

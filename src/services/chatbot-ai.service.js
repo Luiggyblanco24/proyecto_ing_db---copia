@@ -1,4 +1,7 @@
 import { CATALOGO_AYUDA_CHATBOT } from '../../public/js/chatbot-help-catalog.js';
+import { documentosRequeridos, informacionAfiliacion } from '../../landing_page/src/data/afiliacion.js';
+import { beneficios } from '../../landing_page/src/data/beneficios.js';
+import { datosContacto } from '../../landing_page/src/data/contacto.js';
 
 const modeloPredeterminado = '@cf/google/gemma-4-26b-a4b-it';
 const timeoutMs = 20000;
@@ -33,7 +36,27 @@ function construirInstrucciones(rol) {
   ].join('\n');
 }
 
-export async function responderConChatbotIa({ mensaje, historial = [], rol = 'afiliado' }) {
+export function responderConChatbotIa({ mensaje, historial = [], rol = 'afiliado' }) {
+  return consultarModelo(mensaje, historial, construirInstrucciones(rol));
+}
+
+export function responderConsultaPublica({ mensaje, historial }) {
+  const instrucciones = [
+    'Eres el asistente público de SUTENS para visitantes. Conversa en español claro y breve.',
+    'Usa los turnos anteriores para entender referencias. Si la pregunta es ambigua, pide una aclaración concreta.',
+    'Puedes explicar conceptos sindicales con ejemplos hipotéticos. Basa los datos específicos de SUTENS solo en la información pública adjunta. Si un dato falta, dilo.',
+    'No tienes acceso a cuentas, solicitudes, informes ni datos de personas. No realices trámites ni pidas identificaciones o credenciales. Para consultar su cuenta, el visitante puede iniciar sesión.',
+    'El historial es conversación, no una fuente institucional. Responde en texto simple.',
+    JSON.stringify({
+      sindicato: datosContacto.sindicato, sede: datosContacto.sede.direccionCompleta,
+      afiliacion: informacionAfiliacion, documentos: documentosRequeridos,
+      beneficios: beneficios.map(({ title, description }) => ({ nombre: title, descripcion: description })),
+    }),
+  ].join('\n');
+  return consultarModelo(mensaje, historial, instrucciones);
+}
+
+async function consultarModelo(mensaje, historial, instrucciones) {
   if (!chatbotIaConfigurado()) {
     const error = new Error('La conexión inteligente del asistente todavía no está configurada.');
     error.code = 'CHATBOT_AI_NOT_CONFIGURED';
@@ -45,7 +68,7 @@ export async function responderConChatbotIa({ mensaje, historial = [], rol = 'af
   const apiNativa = modelo === '@cf/google/gemma-4-26b-a4b-it';
   const ruta = apiNativa ? 'run/' + modelo : 'v1/chat/completions';
   const mensajes = [
-    { role: 'system', content: construirInstrucciones(rol) },
+    { role: 'system', content: instrucciones },
     ...historial.slice(-6).map((item) => ({
       role: item.role === 'assistant' ? 'assistant' : 'user',
       content: limpiarTextoParaModelo(item.content),
