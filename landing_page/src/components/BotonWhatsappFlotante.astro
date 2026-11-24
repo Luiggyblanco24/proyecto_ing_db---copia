@@ -16,7 +16,16 @@
     </form>
   </section>
   <div class="accesos">
-    <button hidden type="button" data-abrir aria-controls="chat-visitante" aria-expanded="false">Pregunta a SUTENS</button>
+    <button hidden type="button" data-abrir aria-label="Abrir asistente SUTENS" title="Abrir asistente SUTENS" aria-controls="chat-visitante" aria-expanded="false">
+      <svg viewBox="0 0 48 48" width="40" height="40" fill="none" aria-hidden="true" focusable="false">
+        <path d="M24 13V8" stroke="#ffdb72" stroke-width="3" />
+        <circle cx="24" cy="6" r="3" fill="#ffdb72" />
+        <path d="M12 13h24a7 7 0 0 1 7 7v10a7 7 0 0 1-7 7H20l-8 6v-6a7 7 0 0 1-7-7V20a7 7 0 0 1 7-7Z" fill="#fffcef" />
+        <rect x="10" y="18" width="28" height="12" rx="6" fill="#104931" />
+        <g fill="#ffdb72"><circle cx="17" cy="24" r="2.6"/><circle cx="31" cy="24" r="2.6"/></g>
+        <path d="M21 33q3 2.2 6 0" stroke="#104931" stroke-width="2" stroke-linecap="round" />
+      </svg>
+    </button>
   </div>
 </aside>
 
@@ -30,6 +39,8 @@
   function alternar(visible: boolean) {
     panel.hidden = !visible;
     abrir.setAttribute('aria-expanded', String(visible));
+    abrir.title = visible ? 'Cerrar asistente SUTENS' : 'Abrir asistente SUTENS';
+    abrir.setAttribute('aria-label', abrir.title);
     (visible ? campo : abrir).focus();
   }
   function preguntar(texto: string) {
@@ -76,8 +87,13 @@
   .accesos, form, header { display: flex; align-items: center; gap: .6rem; }
   .accesos { justify-content: flex-end; }
   .ayuda button { cursor: pointer; }
-  .accesos button, form button { background: #125936; color: white; font-weight: 700; border-radius: 2rem; padding: .7rem 1rem; }
-  .accesos > * { box-shadow: 0 3px 15px #102d2240; border: 2px solid white; }
+  form button { background: #125936; color: white; font-weight: 700; border-radius: 2rem; padding: .7rem 1rem; }
+  [data-abrir] { display: grid; place-items: center; width: 3.5rem; height: 3.5rem; border-radius: 50%; border: 2px solid #fffcef; background: linear-gradient(145deg, #228354, #0b422b); box-shadow: 0 0 0 2px #e4b94f, 0 5px 16px #10372455; }
+  [data-abrir]:focus-visible { outline: 3px solid #102d22; outline-offset: 5px; }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    [data-abrir] { transition: transform .18s ease; }
+    [data-abrir]:hover { transform: translateY(-2px) rotate(-4deg); }
+  }
   section { width: min(25rem, calc(100vw - 2rem)); max-height: min(35rem, calc(100dvh - 6rem)); margin-bottom: .65rem; display: flex; flex-direction: column; background: white; border: 1px solid #ccdcd2; border-radius: 1.15rem; overflow: hidden; box-shadow: 0 10px 45px #163d2c38; }
   [hidden] { display: none !important; }
   header { justify-content: space-between; padding: .55rem 1rem; color: white; background: #125936; }
