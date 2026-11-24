@@ -1,6 +1,7 @@
 import { CANAL_SOPORTE, CATALOGO_AYUDA_CHATBOT } from './chatbot-help-catalog.js';
 import {
   buscarAyuda,
+  normalizarPregunta,
   obtenerPreguntasSugeridas,
   validarDestinoChatbot,
 } from './chatbot-help-search.js';
@@ -63,10 +64,6 @@ const acciones = document.createElement('div');
 acciones.className = 'chatbot-acciones';
 acciones.setAttribute('role', 'group');
 acciones.setAttribute('aria-label', 'Acciones de ayuda');
-const accionBuscar = document.createElement('button');
-accionBuscar.type = 'button';
-accionBuscar.className = 'chatbot-accion';
-accionBuscar.textContent = 'Ayuda del sistema';
 const verSugerencias = document.createElement('button');
 verSugerencias.type = 'button';
 verSugerencias.className = 'chatbot-accion';
@@ -88,20 +85,12 @@ const buscarDocumentos = document.createElement('button');
 buscarDocumentos.type = 'button';
 buscarDocumentos.className = 'chatbot-accion';
 buscarDocumentos.textContent = 'Buscar documentos';
-const cambiarContrasena = document.createElement('button');
-cambiarContrasena.type = 'button';
-cambiarContrasena.className = 'chatbot-accion';
-cambiarContrasena.textContent = 'Cambiar contraseña';
-const cambiarFoto = document.createElement('button');
-cambiarFoto.type = 'button';
-cambiarFoto.className = 'chatbot-accion';
-cambiarFoto.textContent = 'Cambiar foto';
 const gestionarAfiliados = document.createElement('button');
 gestionarAfiliados.type = 'button';
 gestionarAfiliados.className = 'chatbot-accion';
 gestionarAfiliados.textContent = 'Gestionar afiliados';
 gestionarAfiliados.hidden = true;
-acciones.append(accionBuscar, verSugerencias, consultarInformes, consultarDatosPropios, buscarDocumentos, cambiarContrasena, cambiarFoto, gestionarAfiliados);
+acciones.append(verSugerencias, consultarInformes, consultarDatosPropios, buscarDocumentos, gestionarAfiliados);
 acciones.hidden = true;
 const herramientas = document.createElement('div');
 herramientas.className = 'chatbot-herramientas';
@@ -222,7 +211,7 @@ formulario.className = 'chatbot-form';
 const campo = document.createElement('textarea');
 campo.rows = 1;
 campo.maxLength = 500;
-campo.placeholder = 'Pregunta sobre el sistema o el sindicato…';
+campo.placeholder = 'Pregunta aquí sin incluir claves ni datos personales.';
 campo.setAttribute('aria-label', 'Escribe tu pregunta');
 campo.autocomplete = 'off';
 campo.required = true;
@@ -239,6 +228,9 @@ formulario.append(campo, enviar, limpiar);
 panel.append(cabecera, herramientas, contenido, formulario);
 
 let historialModelo = [];
+let ultimaActividad = null;
+let ultimaBusqueda = null;
+let conversacion = new AbortController();
 
 function capacidadesVisibles() {
   // Solo controla qué opciones se presentan; el servidor sigue autorizando cada operación.
@@ -251,9 +243,9 @@ function agregarMensaje(texto, autor) {
   const etiqueta = document.createElement('span');
   etiqueta.className = 'chatbot-autor';
   etiqueta.textContent = autor === 'usuario' ? 'Tú' : 'Asistente SUTENS';
-  const contenido = document.createElement('p');
-  contenido.textContent = texto;
-  burbuja.append(etiqueta, contenido);
+  const parrafo = document.createElement('p');
+  parrafo.textContent = texto;
+  burbuja.append(etiqueta, parrafo);
   mensajes.append(burbuja);
   contenido.scrollTop = contenido.scrollHeight;
   return burbuja;
@@ -267,10 +259,11 @@ function agregarAccionDestino(entrada) {
     const botonDestino = document.createElement('button');
     botonDestino.type = 'button';
     botonDestino.className = 'chatbot-enlace';
-    botonDestino.textContent = destino.id === 'biblioteca' ? 'Abrir biblioteca' : `Abrir ${entrada.titulo}`;
+    botonDestino.textContent = 'Abrir ' + ({ calendario: 'Calendario', biblioteca: 'Biblioteca sindical', 'biblioteca-educativa': 'Biblioteca educativa', 'mi-cuenta': 'Mi cuenta', afiliados: 'Afiliados', administracion: 'Administración' }[destino.id] || entrada.titulo);
     botonDestino.addEventListener('click', () => {
       const navego = window.SUTENSChatbotDashboard?.navegarA?.(destino.id);
-      if (!navego) agregarMensaje('Esa vista no está disponible para tu perfil.', 'bot');
+      if (navego) alternar(false);
+      else agregarMensaje('Esa vista no está disponible para tu perfil.', 'bot');
     });
     mensajes.append(botonDestino);
     return;
@@ -332,95 +325,9 @@ function mostrarDatosPropios() {
   contenido.scrollTop = contenido.scrollHeight;
 }
 
-function agregarFormularioCuenta(tipo) {
-  const datos = window.SUTENSChatbotDashboard?.obtenerDatosPropios?.();
-  if (!datos) {
-    agregarMensaje('No pude cargar tu perfil. Actualiza la página e inténtalo de nuevo.', 'bot');
-    return;
-  }
-  const esContrasena = tipo === 'contrasena';
-  agregarMensaje(esContrasena
-    ? 'Completa este formulario privado. Tu contraseña no se añadirá a la conversación.'
-    : 'Selecciona una foto JPG, PNG o WebP (máximo 4 MB).', 'bot');
-  const form = document.createElement('form');
-  form.className = 'chatbot-cuenta-form';
-  form.setAttribute('aria-label', esContrasena ? 'Cambiar contraseña' : 'Cambiar foto de perfil');
-  const controles = [];
-  const crearCampo = (labelTexto, type, name, extra = {}) => {
-    const wrapper = document.createElement('label');
-    wrapper.className = 'chatbot-cuenta-campo';
-    wrapper.append(document.createTextNode(labelTexto));
-    const input = document.createElement('input');
-    input.type = type;
-    input.name = name;
-    Object.entries(extra).forEach(([key, value]) => input.setAttribute(key, value));
-    input.required = true;
-    wrapper.append(input);
-    form.append(wrapper);
-    controles.push(input);
-    return input;
-  };
-  if (esContrasena) {
-    crearCampo('Contraseña actual', 'password', 'contrasenaActual', { autocomplete: 'current-password' });
-    crearCampo('Nueva contraseña (mínimo 8 caracteres)', 'password', 'nuevaContrasena', { minlength: '8', autocomplete: 'new-password' });
-    crearCampo('Confirmar nueva contraseña', 'password', 'confirmarContrasena', { minlength: '8', autocomplete: 'new-password' });
-  } else {
-    crearCampo('Foto de perfil', 'file', 'foto', { accept: 'image/jpeg,image/png,image/webp' });
-  }
-  const estado = document.createElement('p');
-  estado.className = 'chatbot-cuenta-estado';
-  estado.setAttribute('role', 'status');
-  estado.setAttribute('aria-live', 'polite');
-  const guardar = document.createElement('button');
-  guardar.type = 'submit';
-  guardar.className = 'btn btn-primario';
-  guardar.textContent = esContrasena ? 'Actualizar contraseña' : 'Actualizar foto';
-  form.append(guardar, estado);
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    estado.textContent = '';
-    if (esContrasena && controles[1].value !== controles[2].value) {
-      estado.textContent = 'Las contraseñas nuevas no coinciden.';
-      controles[2].focus();
-      return;
-    }
-    if (!esContrasena && (!controles[0].files?.[0] || controles[0].files[0].size > 4 * 1024 * 1024)) {
-      estado.textContent = 'Selecciona una imagen válida de hasta 4 MB.';
-      return;
-    }
-    guardar.disabled = true;
-    estado.textContent = 'Guardando…';
-    try {
-      const payload = new FormData();
-      payload.append('nombre1', datos.nombre1);
-      payload.append('nombre2', datos.nombre2);
-      payload.append('apellido1', datos.apellido1);
-      payload.append('apellido2', datos.apellido2);
-      payload.append('correo', datos.correo);
-      if (esContrasena) {
-        payload.append('contrasenaActual', controles[0].value);
-        payload.append('nuevaContrasena', controles[1].value);
-      } else {
-        payload.append('foto', controles[0].files[0]);
-      }
-      await apiFetch('/api/auth/me', { method: 'PATCH', body: payload });
-      form.reset();
-      estado.textContent = esContrasena ? 'Contraseña actualizada correctamente.' : 'Foto de perfil actualizada correctamente.';
-      document.dispatchEvent(new CustomEvent('sutens:perfil-actualizado'));
-    } catch (error) {
-      estado.textContent = error.message || 'No se pudo actualizar el perfil. Inténtalo de nuevo.';
-      if (esContrasena) controles.forEach((control) => { control.value = ''; });
-      else form.reset();
-    } finally {
-      guardar.disabled = false;
-    }
-  });
-  mensajes.append(form);
-  contenido.scrollTop = contenido.scrollHeight;
-  controles[0].focus();
-}
-
 async function buscarDocumentosSindicales(consulta = '') {
+  const { signal } = conversacion;
+  ultimaBusqueda = consulta;
   const normalizarBusqueda = (valor) => String(valor || '').normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es');
   const termino = normalizarBusqueda(consulta.trim());
@@ -430,18 +337,19 @@ async function buscarDocumentosSindicales(consulta = '') {
     'el', 'en', 'encuentra', 'es', 'esta', 'hay', 'la', 'las', 'lo', 'los', 'me', 'muestra',
     'necesito', 'para', 'por', 'puede', 'puedes', 'quiero', 'que', 'resumen', 'resume', 'sobre',
     'un', 'una', 'unas', 'uno', 'unos', 'ver', 'mostrar', 'solicitada', 'solicitado', 'cualquier',
-    'grado', 'grados', 'materia', 'materias', 'biblioteca', 'sindical', 'sindicato',
+    'documento', 'archivo', 'favor', 'educativos', 'recientes', 'grado', 'grados', 'materia', 'materias', 'biblioteca', 'sindical', 'sindicato',
     'educativo', 'educativa', 'educativos', 'educativas',
   ]);
   const terminos = termino.split(/[^\p{L}\p{N}]+/u)
-    .filter((palabra) => palabra.length > 1 && !palabrasIgnoradas.has(palabra));
+    .filter((palabra) => (palabra.length > 1 || /^\d$/.test(palabra)) && !palabrasIgnoradas.has(palabra));
   const educativoSolicitado = /\b(educativ[oa]s?|grado|materia|guia|ingles|matematicas|ciencias|espanol|escolar)\b/i.test(termino);
   const sindicalSolicitado = /\b(sindical|sindicato|acta|asamblea|estatutos|directiva|comunicado)\b/i.test(termino);
   try {
     const respuestas = await Promise.allSettled([
-      apiFetch('/api/biblioteca'),
-      apiFetch('/api/biblioteca/educativa'),
+      apiFetch('/api/biblioteca', { signal }),
+      apiFetch('/api/biblioteca/educativa', { signal }),
     ]);
+    if (signal.aborted) return;
     if (educativoSolicitado && !sindicalSolicitado && respuestas[1].status === 'rejected') {
       throw respuestas[1].reason;
     }
@@ -473,8 +381,7 @@ async function buscarDocumentosSindicales(consulta = '') {
         documento.tipo_recurso,
         documento.grado,
       ].filter(Boolean).join(' '));
-      const texto = `${titulo} ${clasificacion}`;
-      const gradoSolicitado = terminos.find((palabra) => /^\d{1,2}$/.test(palabra));
+      const gradoSolicitado = termino.match(/\bgrado\s+(\d{1,2})\b/)?.[1];
       if (gradoSolicitado && !normalizarBusqueda(documento.grado).match(new RegExp(`\\b${gradoSolicitado}\\b`))) {
         return { documento, puntaje: 0 };
       }
@@ -530,7 +437,7 @@ async function buscarDocumentosSindicales(consulta = '') {
               setTimeout(() => URL.revokeObjectURL(url), 1000);
             }
           } catch (error) {
-            agregarMensaje(error.message || 'No se pudo abrir el archivo solicitado.', 'bot');
+            if (!signal.aborted) agregarMensaje(error.message || 'No se pudo abrir el archivo solicitado.', 'bot');
           } finally {
             abrir.disabled = false;
           }
@@ -543,248 +450,9 @@ async function buscarDocumentosSindicales(consulta = '') {
       agregarMensaje('Escribe el tema, el nombre de la materia, el grado o el tipo de documento para afinar la búsqueda.', 'bot');
     }
   } catch (error) {
+    if (signal.aborted) return;
     agregarMensaje(error.message || 'No pude consultar las bibliotecas de documentos. Inténtalo de nuevo.', 'bot');
   }
-  contenido.scrollTop = contenido.scrollHeight;
-}
-
-function normalizarEtiqueta(valor) {
-  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es').trim();
-}
-
-function crearCampoGestion(form, texto, control) {
-  const etiqueta = document.createElement('label');
-  etiqueta.className = 'chatbot-cuenta-campo';
-  etiqueta.append(document.createTextNode(texto), control);
-  form.append(etiqueta);
-}
-
-async function mostrarGestionAfiliados(accion, textoOriginal = '') {
-  if (!capacidadesVisibles().manageAffiliates) {
-    agregarMensaje('No tienes permisos para gestionar afiliados desde el asistente.', 'bot');
-    return;
-  }
-  const tipoAccion = ['aprobar', 'asignar', 'aprobar_y_asignar'].includes(accion?.tipo) ? accion.tipo : 'aprobar';
-  const requiereAsignacion = tipoAccion !== 'aprobar';
-  let estructura = [];
-  let cargosDisponibles = [];
-  let rolesLaborales = [];
-  const form = document.createElement('form');
-  form.className = 'chatbot-gestion-form';
-  form.setAttribute('aria-label', 'Preparar gestión de afiliados');
-  const tituloGestion = document.createElement('strong');
-  tituloGestion.textContent = 'Preparar acción para afiliados';
-  const ayuda = document.createElement('p');
-  ayuda.className = 'chatbot-cuenta-estado';
-  ayuda.textContent = 'Las cédulas se consultan dentro de SUTENS y no se envían al modelo. Revisa la vista previa antes de confirmar.';
-  const cedulas = document.createElement('textarea');
-  cedulas.rows = 3;
-  cedulas.maxLength = 1200;
-  cedulas.placeholder = 'Pega aquí cédulas separadas por espacios, comas o saltos de línea';
-  cedulas.setAttribute('aria-label', 'Cédulas de afiliados');
-  cedulas.value = (textoOriginal.match(/\b\d{5,20}\b/g) || []).join('\n');
-  crearCampoGestion(form, 'Cédulas', cedulas);
-  const controles = { subdirectiva: null, sede: null, cargo: null, rol: null };
-
-  if (requiereAsignacion) {
-    try {
-      [estructura, cargosDisponibles, rolesLaborales] = await Promise.all([
-        apiFetch('/api/subdirectivas'),
-        apiFetch('/api/subdirectivas/cargos'),
-        apiFetch('/api/subdirectivas/roles-laborales'),
-      ]);
-    } catch (error) {
-      agregarMensaje(error.message || 'No se pudo cargar la estructura sindical.', 'bot');
-      return;
-    }
-    const crearSelect = (etiqueta) => {
-      const control = document.createElement('select');
-      control.append(new Option(etiqueta, ''));
-      return control;
-    };
-    controles.subdirectiva = crearSelect('Selecciona una subdirectiva…');
-    estructura.forEach((sub) => controles.subdirectiva.append(new Option(sub.nombre, String(sub.id_subdirectiva))));
-    const subSolicitada = estructura.find((sub) => normalizarEtiqueta(sub.nombre) === normalizarEtiqueta(accion.subdirectiva));
-    if (subSolicitada) controles.subdirectiva.value = String(subSolicitada.id_subdirectiva);
-    crearCampoGestion(form, 'Subdirectiva', controles.subdirectiva);
-    controles.sede = crearSelect('Sin sede asignada');
-    crearCampoGestion(form, 'Sede (opcional)', controles.sede);
-    controles.cargo = crearSelect('Sin cargo en esta subdirectiva');
-    crearCampoGestion(form, 'Cargo sindical', controles.cargo);
-    controles.rol = crearSelect('Sin rol laboral/docente');
-    rolesLaborales.forEach((rol) => controles.rol.append(new Option(rol.nombre, String(rol.id_rol_laboral))));
-    const rolSolicitado = rolesLaborales.find((rol) => normalizarEtiqueta(rol.nombre) === normalizarEtiqueta(accion.rol_laboral));
-    if (rolSolicitado) controles.rol.value = String(rolSolicitado.id_rol_laboral);
-    crearCampoGestion(form, 'Rol laboral/docente', controles.rol);
-
-    const actualizarDestino = () => {
-      const sub = estructura.find((item) => String(item.id_subdirectiva) === controles.subdirectiva.value);
-      const sedes = (sub?.instituciones || []).flatMap((institucion) => (institucion.sedes || []).map((sede) => ({
-        id: sede.id_sede, nombre: `${institucion.nombre} · ${sede.nombre}`,
-      })));
-      const sedeAnterior = controles.sede.value;
-      controles.sede.replaceChildren(new Option('Sin sede asignada', ''));
-      sedes.forEach((sede) => controles.sede.append(new Option(sede.nombre, String(sede.id))));
-      if (sedes.some((sede) => String(sede.id) === sedeAnterior)) controles.sede.value = sedeAnterior;
-      const cargos = cargosDisponibles.filter((cargo) => sub?.es_principal
-        ? cargo.es_departamental || cargo.nombre === 'Afiliado'
-        : !cargo.es_departamental && cargo.nombre !== 'Afiliado');
-      controles.cargo.replaceChildren(new Option(sub?.es_principal ? 'Selecciona un cargo…' : 'Sin cargo en esta subdirectiva', ''));
-      cargos.forEach((cargo) => controles.cargo.append(new Option(cargo.nombre, String(cargo.id_cargo_sindical))));
-      const cargoSolicitado = cargos.find((cargo) => normalizarEtiqueta(cargo.nombre) === normalizarEtiqueta(accion.cargo_sindical));
-      if (cargoSolicitado) controles.cargo.value = String(cargoSolicitado.id_cargo_sindical);
-      controles.cargo.required = Boolean(sub?.es_principal);
-    };
-    controles.subdirectiva.addEventListener('change', actualizarDestino);
-    if (!controles.subdirectiva.value && estructura.length === 1) controles.subdirectiva.value = String(estructura[0].id_subdirectiva);
-    actualizarDestino();
-  }
-
-  const resultadoLista = document.createElement('div');
-  resultadoLista.className = 'chatbot-gestion-resultados';
-  const estado = document.createElement('p');
-  estado.className = 'chatbot-cuenta-estado';
-  estado.setAttribute('role', 'status');
-  estado.setAttribute('aria-live', 'polite');
-  const revisar = document.createElement('button');
-  revisar.type = 'button';
-  revisar.className = 'btn btn-secundario';
-  revisar.textContent = 'Consultar y revisar';
-  const confirmar = document.createElement('button');
-  confirmar.type = 'button';
-  confirmar.className = 'btn btn-primario';
-  confirmar.textContent = 'Confirmar cambios';
-  confirmar.hidden = true;
-  form.append(tituloGestion, ayuda, revisar, resultadoLista, estado, confirmar);
-  mensajes.append(form);
-  let afiliadosRevisados = [];
-  const invalidarVistaPrevia = () => {
-    if (!afiliadosRevisados.length) return;
-    afiliadosRevisados = [];
-    confirmar.hidden = true;
-    estado.textContent = 'Cambiaste la lista o el destino. Vuelve a consultar y revisar antes de confirmar.';
-  };
-  form.addEventListener('input', invalidarVistaPrevia);
-  form.addEventListener('change', invalidarVistaPrevia);
-
-  revisar.addEventListener('click', async () => {
-    const lista = cedulas.value.split(/[\s,;]+/).map((valor) => valor.replace(/\D/g, '')).filter(Boolean);
-    if (!lista.length || lista.length > 50 || lista.some((cedula) => cedula.length < 5 || cedula.length > 20)) {
-      estado.textContent = 'Indica entre 1 y 50 cédulas válidas (entre 5 y 20 dígitos cada una).';
-      return;
-    }
-    if (new Set(lista).size !== lista.length) {
-      estado.textContent = 'Hay cédulas repetidas. Elimínalas antes de continuar.';
-      return;
-    }
-    revisar.disabled = true;
-    confirmar.hidden = true;
-    estado.textContent = 'Consultando en SUTENS…';
-    const camposFormulario = [cedulas, ...Object.values(controles).filter(Boolean)];
-    camposFormulario.forEach((control) => { control.disabled = true; });
-    try {
-      const preview = await apiFetch('/api/chatbot/afiliados/previsualizar', {
-        method: 'POST', body: JSON.stringify({ cedulas: lista }),
-      });
-      afiliadosRevisados = preview.afiliados || [];
-      resultadoLista.replaceChildren();
-      afiliadosRevisados.forEach((afiliado) => {
-        const fila = document.createElement('p');
-        fila.textContent = `${afiliado.nombre || 'No encontrado'} · ${afiliado.cedula_mascarada} · ${afiliado.estado || 'No registrado'}${afiliado.subdirectiva ? ` · ${afiliado.subdirectiva}` : ''}`;
-        resultadoLista.append(fila);
-      });
-      const sub = estructura.find((item) => String(item.id_subdirectiva) === controles.subdirectiva?.value);
-      const destinoValido = !requiereAsignacion || (sub && (!sub.es_principal || Boolean(controles.cargo.value)) &&
-        Boolean(controles.sede.value) === Boolean(controles.rol.value));
-      const elegibles = afiliadosRevisados.filter((afiliado) => {
-        if (!afiliado.id_afiliado) return false;
-        if (tipoAccion === 'aprobar') return afiliado.estado === 'pendiente';
-        if (tipoAccion === 'asignar') return afiliado.estado === 'aprobado';
-        return ['pendiente', 'aprobado'].includes(afiliado.estado);
-      });
-      estado.textContent = destinoValido
-        ? `${elegibles.length} de ${afiliadosRevisados.length} afiliado(s) podría(n) procesarse. Revisa los estados y el destino antes de confirmar.`
-        : 'Completa un destino válido. Para asignar un rol laboral debes elegir también una sede, y viceversa.';
-      confirmar.hidden = !destinoValido || elegibles.length === 0;
-    } catch (error) {
-      estado.textContent = error.message || 'No se pudo preparar la vista previa.';
-    } finally {
-      camposFormulario.forEach((control) => { control.disabled = false; });
-      revisar.disabled = false;
-    }
-    contenido.scrollTop = contenido.scrollHeight;
-  });
-
-  confirmar.addEventListener('click', async () => {
-    const sub = estructura.find((item) => String(item.id_subdirectiva) === controles.subdirectiva?.value);
-    if (requiereAsignacion && (!sub || (sub.es_principal && !controles.cargo.value) ||
-        Boolean(controles.sede.value) !== Boolean(controles.rol.value))) {
-      estado.textContent = 'Revisa subdirectiva, cargo y pareja sede/rol laboral antes de confirmar.';
-      return;
-    }
-    const total = afiliadosRevisados.filter((afiliado) => afiliado.id_afiliado && (
-      tipoAccion === 'aprobar' ? afiliado.estado === 'pendiente' :
-        tipoAccion === 'asignar' ? afiliado.estado === 'aprobado' : ['pendiente', 'aprobado'].includes(afiliado.estado)
-    )).length;
-    const accionTexto = tipoAccion === 'aprobar' ? 'aprobar' : tipoAccion === 'asignar' ? 'asignar o mover' : 'aprobar y asignar';
-    if (!window.confirm(`¿Confirmas ${accionTexto} ${total} afiliado(s)${sub ? ` a ${sub.nombre}` : ''}?`)) return;
-    const asignacionConfirmada = requiereAsignacion ? {
-      id_subdirectiva: controles.subdirectiva.value,
-      id_sede: controles.sede.value,
-      id_rol_laboral: controles.rol.value,
-      id_cargo_sindical: controles.cargo.value,
-    } : null;
-    revisar.disabled = true;
-    confirmar.disabled = true;
-    [cedulas, ...Object.values(controles).filter(Boolean)].forEach((control) => { control.disabled = true; });
-    estado.textContent = 'Aplicando los cambios autorizados…';
-    const resultados = [];
-    for (const afiliado of afiliadosRevisados) {
-      if (!afiliado.id_afiliado) {
-        resultados.push(`${afiliado.cedula_mascarada}: no encontrado`);
-        continue;
-      }
-      try {
-        let estadoAfiliacion = afiliado.estado;
-        if (['aprobar', 'aprobar_y_asignar'].includes(tipoAccion) && estadoAfiliacion === 'pendiente') {
-          await apiFetch(`/api/afiliados/${afiliado.id_afiliado}/estado`, {
-            method: 'PATCH', body: JSON.stringify({ estado: 'aprobado' }),
-          });
-          estadoAfiliacion = 'aprobado';
-        } else if (tipoAccion === 'aprobar' && estadoAfiliacion !== 'pendiente') {
-          resultados.push(`${afiliado.nombre}: omitido (${estadoAfiliacion})`);
-          continue;
-        }
-        if (requiereAsignacion) {
-          if (estadoAfiliacion !== 'aprobado') {
-            resultados.push(`${afiliado.nombre}: requiere solicitud aprobada`);
-            continue;
-          }
-          await apiFetch(`/api/afiliados/${afiliado.id_afiliado}/asignacion`, {
-            method: 'PATCH',
-            body: JSON.stringify(asignacionConfirmada),
-          });
-        }
-        resultados.push(`${afiliado.nombre}: completado`);
-      } catch (error) {
-        resultados.push(`${afiliado.nombre || afiliado.cedula_mascarada}: ${error.message || 'no se pudo completar'}`);
-      }
-    }
-    const listaResultados = document.createElement('ul');
-    resultados.forEach((resultado) => {
-      const item = document.createElement('li');
-      item.textContent = resultado;
-      listaResultados.append(item);
-    });
-    resultadoLista.replaceChildren(listaResultados);
-    estado.textContent = 'Proceso terminado. Revisa cada resultado; puede haber operaciones parciales.';
-    document.dispatchEvent(new CustomEvent('sutens:afiliados-actualizados'));
-    confirmar.hidden = true;
-    confirmar.disabled = false;
-    revisar.disabled = false;
-    [cedulas, ...Object.values(controles).filter(Boolean)].forEach((control) => { control.disabled = false; });
-    contenido.scrollTop = contenido.scrollHeight;
-  });
   contenido.scrollTop = contenido.scrollHeight;
 }
 
@@ -867,7 +535,9 @@ function actualizarSedes() {
 
 async function cargarFiltrosEstructurales() {
   if (estructuraInformes.length) return;
-  const subdirectivas = await apiFetch('/api/subdirectivas');
+  const { signal } = conversacion;
+  const subdirectivas = await apiFetch('/api/subdirectivas', { signal });
+  if (signal.aborted) return;
   estructuraInformes = subdirectivas.filter((item) => !item.es_principal);
   asignarOpciones(subdirectivaSelect, estructuraInformes.map((item) => ({
     value: item.id_subdirectiva,
@@ -979,47 +649,38 @@ function mostrarOpcionesDescarga(solicitud) {
   opciones.setAttribute('role', 'group');
   opciones.setAttribute('aria-label', 'Opciones para descargar el informe');
   const pregunta = document.createElement('p');
-  pregunta.textContent = 'Descarga el informe y, si lo necesitas, sus datos asociados.';
-  const nota = document.createElement('p');
-  nota.className = 'chatbot-informes-ayuda';
-  nota.textContent = 'La descarga vuelve a consultar los datos; los resultados pueden cambiar. Datos personales de uso restringido (Ley 1581 de 2012).';
+  pregunta.textContent = 'El archivo incluye los totales de cada grupo. La descarga actualiza las cifras.';
   const estado = document.createElement('p');
   estado.className = 'chatbot-informes-mensaje';
   estado.setAttribute('role', 'status');
-  opciones.append(pregunta, nota);
+  opciones.append(pregunta);
 
-  for (const [formato, etiqueta] of [
-    ['pdf', 'PDF · Informe y afiliados'],
-    ['excel', 'Excel · Informe y afiliados'],
-    ['correos', 'Excel · Solo correos'],
-  ]) {
-    const descargar = document.createElement('button');
-    descargar.type = 'button';
-    descargar.className = 'chatbot-accion';
-    descargar.textContent = etiqueta;
-    descargar.addEventListener('click', async () => {
-      descargar.disabled = true;
-      estado.textContent = 'Preparando descarga…';
-      try {
-        const archivo = await apiFetchArchivo('/api/chatbot/informes/exportar', {
-          method: 'POST',
-          body: JSON.stringify({ ...solicitud, formato }),
-        });
-        const url = URL.createObjectURL(archivo);
-        const enlace = document.createElement('a');
-        enlace.href = url;
-        enlace.download = `sutens-${formato}.${formato === 'pdf' ? 'pdf' : 'xlsx'}`;
-        enlace.click();
-        URL.revokeObjectURL(url);
-        estado.textContent = 'Descarga preparada.';
-      } catch (error) {
-        estado.textContent = error.message || 'No se pudo descargar el archivo.';
-      } finally {
-        descargar.disabled = false;
-      }
-    });
-    opciones.append(descargar);
-  }
+  const descargar = document.createElement('button');
+  descargar.type = 'button';
+  descargar.className = 'chatbot-accion';
+  descargar.textContent = 'Descargar resumen en Excel';
+  descargar.addEventListener('click', async () => {
+    descargar.disabled = true;
+    estado.textContent = 'Preparando descarga…';
+    try {
+      const archivo = await apiFetchArchivo('/api/chatbot/informes/exportar', {
+        method: 'POST',
+        body: JSON.stringify({ ...solicitud, formato: 'resumen' }),
+      });
+      const url = URL.createObjectURL(archivo);
+      const enlace = document.createElement('a');
+      enlace.href = url;
+      enlace.download = 'sutens-resumen.xlsx';
+      enlace.click();
+      URL.revokeObjectURL(url);
+      estado.textContent = 'Descarga preparada.';
+    } catch (error) {
+      estado.textContent = error.message || 'No se pudo descargar el archivo.';
+    } finally {
+      descargar.disabled = false;
+    }
+  });
+  opciones.append(descargar);
   const omitir = document.createElement('button');
   omitir.type = 'button';
   omitir.className = 'chatbot-accion';
@@ -1034,6 +695,7 @@ function mostrarOpcionesDescarga(solicitud) {
 }
 
 async function enviarInforme(evento) {
+  const { signal } = conversacion;
   evento.preventDefault();
   mensajeInforme.textContent = 'Generando informe…';
   ejecutarInforme.disabled = true;
@@ -1058,8 +720,9 @@ async function enviarInforme(evento) {
   try {
     const resultado = await apiFetch('/api/chatbot/informes', {
       method: 'POST',
-      body: JSON.stringify(solicitud),
+      signal, body: JSON.stringify(solicitud),
     });
+    if (signal.aborted) return;
     mensajeInforme.textContent = '';
     ejecutarInforme.textContent = 'Generar informe';
     panelInformes.hidden = true;
@@ -1073,6 +736,7 @@ async function enviarInforme(evento) {
     encabezado.focus({ preventScroll: true });
     contenido.scrollTop += encabezado.getBoundingClientRect().top - contenido.getBoundingClientRect().top;
   } catch (error) {
+    if (signal.aborted) return;
     mensajeInforme.textContent = error.message || 'No se pudo generar el informe.';
     ejecutarInforme.textContent = 'Reintentar informe';
   } finally {
@@ -1080,85 +744,179 @@ async function enviarInforme(evento) {
   }
 }
 
-function responder(texto) {
+function orientar(id) {
+  const entrada = CATALOGO_AYUDA_CHATBOT.find((item) => item.id === id);
+  agregarMensaje(entrada.respuesta, 'bot');
+  agregarAccionDestino(entrada);
+}
+
+async function responder(texto) {
+  if (enviar.disabled) return;
+  const { signal } = conversacion;
+  const pregunta = normalizarPregunta(texto);
+  const capacidades = capacidadesVisibles();
+  if (/\b(?:mi |la )?(?:clave|contrasena|password)\s*(?:es|:|=)\s*\S+/i.test(texto.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))) {
+    agregarMensaje('Escribe tus credenciales únicamente en Mi cuenta. Desde allí puedes cambiar tu contraseña.', 'bot');
+    agregarAccionDestino({ destino: { tipo: 'vista', id: 'mi-cuenta' } });
+    return;
+  }
   agregarMensaje(texto, 'usuario');
+  if (ultimaActividad && /^(y )?(donde( es| sera| queda| se realiza)?|cuando( es| sera| se realiza)?|a que hora( es| empieza| comienza)?|en que lugar|quienes confirmaron( asistencia)?|cuantos confirmaron|ya confirme|confirme mi asistencia)$/.test(pregunta)) {
+    mostrarActividad(ultimaActividad, pregunta);
+    return;
+  }
+  ultimaActividad = null;
+  const busquedaAnterior = ultimaBusqueda;
+  ultimaBusqueda = null;
   if (esSaludo(texto)) {
-    agregarMensaje('¡Hola! Soy el asistente virtual de SUTENS. Puedo ayudarte con documentos, tu perfil, consultas del sistema y preguntas sobre el sindicato. ¿Qué necesitas?', 'bot');
+    agregarMensaje('¡Hola! ¿Quieres buscar un documento, consultar tu próxima actividad o revisar tu perfil?', 'bot');
     return;
   }
-  if (/\b(cambiar|actualizar|modificar)\b.{0,35}\b(contrasena|clave|password)\b|\b(contrasena|clave)\b.{0,35}\b(cambiar|actualizar|modificar)\b/i.test(texto)) {
-    agregarFormularioCuenta('contrasena');
+  if (/\b(clave|contrasena|password)\b/.test(pregunta) && /\b(otro|otra|ajena|tercero)\b/.test(pregunta)) {
+    if (capacidades.resetUserPassword) orientar('restablecer-contrasena-usuario');
+    else agregarMensaje('Solo Administración puede restablecer la contraseña de otra cuenta.', 'bot');
     return;
   }
-  if (/\b(cambiar|actualizar|modificar|subir)\b.{0,35}\b(foto|imagen|avatar)\b|\b(foto|imagen|avatar)\b.{0,35}\b(cambiar|actualizar|modificar)\b/i.test(texto)) {
-    agregarFormularioCuenta('foto');
+  if (/\b(aprobar|aprueba|asignar|asigna|mover|mueve|gestionar|rechazar)\b/.test(pregunta) && /\b(afiliados?|solicitudes|solicitud|subdirectiva|cedulas?|\d{5,})\b/.test(pregunta)) {
+    if (pregunta.includes('rechazar')) {
+      if (capacidades.rejectAffiliates) {
+        agregarMensaje('Abre Administración y elige Rechazar en la fila de la solicitud pendiente.', 'bot');
+        agregarAccionDestino({ destino: { tipo: 'vista', id: 'administracion' } });
+      } else agregarMensaje('Solo Administración y Secretaría General pueden rechazar una solicitud.', 'bot');
+    } else if (capacidades.manageAffiliates) orientar('gestionar-afiliados');
+    else agregarMensaje('La gestión de solicitudes requiere un perfil autorizado. Puedes consultar tu perfil en Mis datos.', 'bot');
     return;
   }
-  if (/\b(documento|documentos|biblioteca|archivo|acta|actas|resumen|grado|materia|gu[ií]a|ingl[eé]s|educativ[oa]s?)\b/i.test(texto)) {
-    const busqueda = texto.replace(/\b(busca|buscar|encuentra|encontrar|documento|documentos|biblioteca|archivo|archivos|resumen|resume|resumir|resumes|de|del|la|el|un|una|sobre|acerca|por favor|mi sindicato|me|puedes|puede|quiero|necesito|dime|muestra|cual|que|hay|en|existe|educativo|educativa)\b/gi, ' ').trim();
-    void buscarDocumentosSindicales(busqueda);
+  if (/\b(clave|contrasena|password|foto|avatar)\b/.test(pregunta) && /\b(cambi\w*|actualiz\w*|modific\w*|subir)\b/.test(pregunta)) {
+    orientar('actualizar-mis-datos');
     return;
   }
-  if (/\b(mi|mis)\s+(datos|información|perfil|estado|correo|nombre|afiliación|subdirectiva)\b/i.test(texto)) {
-    mostrarDatosPropios();
+  if ((/\b(informes?|reportes?)\b/.test(pregunta) || /\b(cuantos|total de|cantidad de) afiliados\b/.test(pregunta)) && !/\b(documento|biblioteca)\b/.test(pregunta)) {
+    if (capacidades.viewReports) {
+      if (/subdirectivas?/.test(pregunta)) informeSelect.value = 'afiliados_por_subdirectiva';
+      else if (/institucion|sede/.test(pregunta)) {
+        informeSelect.value = 'afiliados_por_institucion_sede';
+        agrupacionSelect.value = /sede/.test(pregunta) ? 'sede' : 'institucion';
+      } else if (/aprobaciones.*mes/.test(pregunta)) informeSelect.value = 'aprobaciones_por_mes';
+      else if (/estado|cuantos|cantidad|total/.test(pregunta)) informeSelect.value = 'afiliados_por_estado';
+      actualizarFiltrosInforme();
+      const estadoPedido = pregunta.match(/\b(pendiente|aprobado|rechazado|retirado)s?\b/);
+      if (estadoPedido && !estadoSelect.closest('.chatbot-filtro').hidden) estadoSelect.value = estadoPedido[1];
+      agregarMensaje('Elige el informe y sus filtros para consultar las cifras del padrón.', 'bot');
+      if (panelInformes.hidden) consultarInformes.click();
+    } else agregarMensaje('Los informes del padrón requieren un perfil autorizado.', 'bot');
     return;
   }
-  if (/\b(actividad|actividades|evento|eventos|asistencia|asistentes|confirmaron|confirmada)\b/i.test(texto)) {
-    void responderConsultaActividades(texto);
+  if (/\b(confirmar|confirmo|retirar|retiro|cancelar)\b/.test(pregunta) && /\basistencia\b/.test(pregunta) &&
+      !/\b(ya|quien|quienes|cuantos)\b/.test(pregunta)) {
+    orientar('calendario');
     return;
   }
-  void responderConIA(texto);
+  const ayuda = buscarAyuda(texto, CATALOGO_AYUDA_CHATBOT, capacidades);
+  if (/^(ayuda|que puedes hacer|que puedo preguntar|en que me puedes ayudar)$/.test(pregunta)) {
+    mostrarPreguntasSugeridas();
+    return;
+  }
+  const esGuia = /^(como|donde|pasos|ayuda)\b/.test(pregunta);
+  if (ayuda.estado === 'respuesta' && esGuia) {
+    orientar(ayuda.entrada.id);
+    return;
+  }
+  if (/\b(mi|mis) (datos|informacion|perfil|estado|correo|nombre|afiliacion|subdirectiva)\b/.test(pregunta)) {
+    if (/\b(edit\w*|actualiz\w*|cambi\w*|modific\w*)\b/.test(pregunta)) orientar('actualizar-mis-datos');
+    else mostrarDatosPropios();
+    return;
+  }
+  enviar.disabled = true;
+  try {
+    if (busquedaAnterior !== null && /^(y |solo |filtra |filtrar )?(de |por |para )?(grado|materia|matematicas|ingles|ciencias|espanol)\b/.test(pregunta)) {
+      const temaAnterior = busquedaAnterior.replace(/\bgrado\s+\d{1,2}\b/gi, '');
+      await buscarDocumentosSindicales((temaAnterior + ' ' + texto).trim());
+    } else if (/\b(documentos?|biblioteca|archivos?|actas?|grados?|materias?|guias?|educativ[oa]s?)\b/.test(pregunta)) {
+      await buscarDocumentosSindicales(texto);
+    } else if (/\b(actividad|actividades|eventos?|asistencia|asistentes|confirmaron|asamblea|reunion|capacitacion)\b/.test(pregunta)) {
+      await responderConsultaActividades(texto);
+    } else if (ayuda.estado === 'respuesta') {
+      orientar(ayuda.entrada.id);
+    } else if (ayuda.estado === 'pendiente') {
+      mostrarCanalSoporte('Para esta consulta necesitas ayuda del equipo SUTENS.');
+    } else if (ayuda.estado === 'sugerencias' && pregunta.split(' ').length <= 3) {
+      agregarMensaje('¿Cuál de estas opciones necesitas?', 'bot');
+      mostrarSugerencias(ayuda.entradas);
+    } else if (window.SUTENSChatbotDashboard?.iaDisponible?.() === false) {
+      agregarMensaje('No encontré una respuesta verificada para esa pregunta. ¿Alguna de estas opciones se acerca a lo que necesitas?', 'bot');
+      mostrarSugerencias(ayuda.entradas || obtenerPreguntasSugeridas(CATALOGO_AYUDA_CHATBOT, capacidades));
+    } else {
+      await responderConIA(texto);
+    }
+  } finally {
+    if (!signal.aborted) enviar.disabled = false;
+  }
+}
+
+function mostrarActividad(evento, texto) {
+  const fecha = new Date(evento.fecha_inicio);
+  const fechaTexto = Number.isNaN(fecha.getTime()) ? 'Fecha por confirmar' : fecha.toLocaleString('es-CO', {
+    dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Bogota',
+  });
+  let detalle = `${evento.titulo} · ${fechaTexto} · ${evento.estado}${evento.lugar ? ' · ' + evento.lugar : ''}.`;
+  if (/asistencia|asistentes|confirm/i.test(texto)) {
+    detalle += ` Asistencias confirmadas: ${Number(evento.asistentes_confirmados) || 0}. Tu asistencia: ${evento.mi_asistencia ? 'confirmada' : 'sin confirmar'}.`;
+    if (/quien|quién|nombres/i.test(texto) && evento.asistentes?.length) {
+      detalle += ' Confirmaron: ' + evento.asistentes.map((persona) => persona.nombre).join(', ') + '.';
+    }
+  }
+  agregarMensaje(detalle, 'bot');
 }
 
 async function responderConsultaActividades(texto) {
+  const { signal } = conversacion;
   const pensando = document.createElement('p');
   pensando.className = 'chatbot-escribiendo';
   pensando.textContent = 'Revisando el calendario…';
   mensajes.append(pensando);
   contenido.scrollTop = contenido.scrollHeight;
   try {
-    const eventos = await apiFetch('/api/calendario/eventos');
+    const eventos = await apiFetch('/api/calendario/eventos', { signal });
+    if (signal.aborted) return;
     const ahora = Date.now();
+    const consulta = normalizarPregunta(texto);
+    const diaColombia = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota', dateStyle: 'short' });
+    const diaPedido = /\\bmanana\\b/.test(consulta) ? diaColombia.format(ahora + 86400000)
+      : /\\bhoy\\b/.test(consulta) ? diaColombia.format(ahora) : null;
+    const tipoPedido = consulta.match(/\\b(asamblea|reunion|capacitacion)\\b/)?.[1];
     const preguntaPasado = /\b(realizad[ao]s?|pasad[ao]s?|anteriores|ya se hicieron|ya se realizaron)\b/i.test(texto);
-    const preguntaProxima = /\b(próxim[ao]s?|siguiente|por realizar|se aproxima|pronto)\b/i.test(texto);
+    const preguntaProxima = /\b(proxim[ao]s?|siguiente|por realizar|se aproxima|pronto)\b/i.test(normalizarPregunta(texto));
     let visibles = (Array.isArray(eventos) ? eventos : []).filter((evento) => {
       const fecha = new Date(evento.fecha_inicio).getTime();
-      if (preguntaPasado) return evento.estado === 'realizado' || fecha < ahora;
+      if (diaPedido && (!Number.isFinite(fecha) || diaColombia.format(fecha) !== diaPedido)) return false;
+      if (tipoPedido && !normalizarPregunta([evento.tipo, evento.titulo].join(' ')).includes(tipoPedido)) return false;
+      if (preguntaPasado) return /realizad/i.test(texto) ? evento.estado === 'realizado' : fecha < ahora;
       if (preguntaProxima) return evento.estado === 'programado' && fecha >= ahora;
       return true;
     });
-    if (preguntaProxima) visibles = visibles.slice(0, 1);
+    if (preguntaProxima && !/proxim[oa]s/.test(normalizarPregunta(texto))) visibles = visibles.slice(0, 1);
     else visibles = visibles.slice(0, 5);
     pensando.remove();
     if (!visibles.length) {
       agregarMensaje(preguntaProxima
         ? 'No encontré actividades próximas disponibles para tu perfil en el calendario.'
-        : 'No encontré actividades disponibles para tu perfil en el calendario.', 'bot');
+        : 'No encontré actividades que coincidan en el calendario disponible para tu perfil.', 'bot');
       return;
     }
     agregarMensaje(`Encontré ${visibles.length} actividad${visibles.length === 1 ? '' : 'es'} en el calendario:`, 'bot');
-    visibles.forEach((evento) => {
-      const fecha = new Date(evento.fecha_inicio);
-      const fechaTexto = Number.isNaN(fecha.getTime()) ? 'Fecha por confirmar' : fecha.toLocaleString('es-CO', {
-        dateStyle: 'medium', timeStyle: 'short',
-      });
-      const asistentes = Array.isArray(evento.asistentes) ? evento.asistentes.map((persona) => persona.nombre).filter(Boolean) : [];
-      let detalle = `${evento.titulo} · ${fechaTexto}${evento.lugar ? ` · ${evento.lugar}` : ''}.`;
-      if (/\b(quién(?:es)?|quienes|asistencia|asistentes|confirmaron|confirmada)\b/i.test(texto)) {
-        detalle += asistentes.length
-          ? ` Confirmaron asistencia: ${asistentes.join(', ')}.`
-          : ' Aún no hay asistentes confirmados.';
-      }
-      agregarMensaje(detalle, 'bot');
-    });
+    if (visibles.length === 1) ultimaActividad = visibles[0];
+    visibles.forEach((evento) => mostrarActividad(evento, texto));
   } catch (error) {
     pensando.remove();
+    if (signal.aborted) return;
     agregarMensaje(error.message || 'No pude consultar el calendario en este momento.', 'bot');
   }
   contenido.scrollTop = contenido.scrollHeight;
 }
 
 async function responderConIA(texto) {
+  const { signal } = conversacion;
   const pensando = document.createElement('p');
   pensando.className = 'chatbot-escribiendo';
   pensando.textContent = 'Asistente SUTENS está pensando…';
@@ -1167,32 +925,19 @@ async function responderConIA(texto) {
   try {
     const resultado = await apiFetch('/api/chatbot/conversar', {
       method: 'POST',
-      body: JSON.stringify({ mensaje: texto, historial: historialModelo }),
+      signal, body: JSON.stringify({ mensaje: texto, historial: historialModelo }),
     });
     pensando.remove();
-    if (resultado.respuesta) agregarMensaje(resultado.respuesta, 'bot');
+    if (signal.aborted) return;
+    if (!resultado.respuesta?.trim()) throw new Error('Respuesta vacía');
+    agregarMensaje(resultado.respuesta, 'bot');
     historialModelo.push({ role: 'user', content: texto }, { role: 'assistant', content: resultado.respuesta || '' });
     historialModelo = historialModelo.slice(-6);
-    if (resultado.accion && capacidadesVisibles().manageAffiliates) {
-      await mostrarGestionAfiliados(resultado.accion, texto);
-    } else if (resultado.accion) {
-      agregarMensaje('Para proteger los datos de afiliados, esa operación solo está disponible para Administración y Directiva Departamental.', 'bot');
-    }
-  } catch (error) {
+  } catch {
     pensando.remove();
-    if (/todavía no está configurada/i.test(error.message)) {
-      const respuestaLocal = buscarAyuda(texto, CATALOGO_AYUDA_CHATBOT, capacidadesVisibles());
-      if (respuestaLocal.estado === 'respuesta') {
-        agregarMensaje(respuestaLocal.entrada.respuesta, 'bot');
-        agregarAccionDestino(respuestaLocal.entrada);
-      } else if (capacidadesVisibles().manageAffiliates && /\b(aprueba|aprobar|asigna|asignar|mueve|mover|cambia|cambiar)\b/i.test(texto)) {
-        agregarMensaje('La conexión inteligente aún no está configurada. Puedes preparar la acción desde Gestionar afiliados.', 'bot');
-      } else {
-        agregarMensaje('La conexión inteligente aún no está configurada. Puedes usar las acciones disponibles en la barra del asistente.', 'bot');
-      }
-    } else {
-      agregarMensaje(error.message || 'No pude responder en este momento. Inténtalo de nuevo.', 'bot');
-    }
+    if (signal.aborted) return;
+    agregarMensaje('No pude completar esa consulta. Puedes volver a intentarlo o elegir una de estas preguntas.', 'bot');
+    mostrarSugerencias(obtenerPreguntasSugeridas(CATALOGO_AYUDA_CHATBOT, capacidadesVisibles()));
   }
   contenido.scrollTop = contenido.scrollHeight;
 }
@@ -1211,8 +956,14 @@ function alternar(abrir) {
 }
 
 function limpiarConversacion() {
+  conversacion.abort();
+  conversacion = new AbortController();
+  enviar.disabled = false;
   mensajes.replaceChildren();
   historialModelo = [];
+  ultimaActividad = null;
+  ultimaBusqueda = null;
+  mensajeInforme.textContent = '';
   panelInformes.hidden = true;
   consultarInformes.setAttribute('aria-expanded', 'false');
   agregarMensaje('Hola, soy el asistente virtual de SUTENS. Puedo orientarte sobre el sistema y la organización sindical. Escribe una pregunta o elige una opción.', 'bot');
@@ -1220,15 +971,13 @@ function limpiarConversacion() {
 
 boton.addEventListener('click', () => alternar(panel.hidden));
 cerrar.addEventListener('click', () => alternar(false));
-accionBuscar.addEventListener('click', () => campo.focus());
 verSugerencias.addEventListener('click', mostrarPreguntasSugeridas);
 consultarDatosPropios.addEventListener('click', mostrarDatosPropios);
-gestionarAfiliados.addEventListener('click', () => mostrarGestionAfiliados({ tipo: 'aprobar' }));
+gestionarAfiliados.addEventListener('click', () => orientar('gestionar-afiliados'));
 buscarDocumentos.addEventListener('click', () => buscarDocumentosSindicales());
-cambiarContrasena.addEventListener('click', () => agregarFormularioCuenta('contrasena'));
-cambiarFoto.addEventListener('click', () => agregarFormularioCuenta('foto'));
 limpiar.addEventListener('click', limpiarConversacion);
 consultarInformes.addEventListener('click', async () => {
+  const { signal } = conversacion;
   if (!capacidadesVisibles().viewReports) return;
   panelInformes.hidden = !panelInformes.hidden;
   consultarInformes.setAttribute('aria-expanded', String(!panelInformes.hidden));
@@ -1239,9 +988,10 @@ consultarInformes.addEventListener('click', async () => {
   try {
     await cargarFiltrosEstructurales();
   } catch (error) {
+    if (signal.aborted) return;
     mensajeInforme.textContent = error.message || 'No se pudieron cargar los filtros organizacionales.';
   }
-  informeSelect.focus();
+  if (!signal.aborted && !panelInformes.hidden) informeSelect.focus();
 });
 informeSelect.addEventListener('change', actualizarFiltrosInforme);
 agrupacionSelect.addEventListener('change', actualizarFiltrosInforme);
@@ -1266,6 +1016,7 @@ document.addEventListener('sutens:perfil-cargado', actualizarVisibilidadInformes
 document.addEventListener('sutens:perfil-cargado', actualizarDisponibilidadChatbot);
 formulario.addEventListener('submit', (evento) => {
   evento.preventDefault();
+  if (enviar.disabled) return;
   const texto = campo.value.trim();
   if (!texto) {
     agregarMensaje('Escribe una pregunta para buscar ayuda.', 'bot');

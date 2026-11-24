@@ -1,3 +1,5 @@
+import { chatbotIaConfigurado } from '../services/chatbot-ai.service.js';
+import { cargosDirectivaPrincipal } from '../middleware/rbac.js';
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'node:crypto';
 import { pool, query } from '../config/db.js';
@@ -296,9 +298,19 @@ export async function me(req, res) {
   if (rows.length === 0) {
     return res.status(404).json({ error: 'Usuario no encontrado' });
   }
+  const perfil = rows[0];
+  const esAdmin = perfil.roles.includes('Administrador SUTENS');
+  const esDirectivo = perfil.estado === 'aprobado' && perfil.estado_sindical === 'activo' && cargosDirectivaPrincipal.includes(perfil.cargo_departamental);
+  perfil.chatbot_ia_disponible = chatbotIaConfigurado();
+  perfil.chatbot_capacidades = {
+    manageAffiliates: esAdmin || esDirectivo,
+    viewReports: esAdmin || esDirectivo,
+    resetUserPassword: esAdmin,
+    rejectAffiliates: esAdmin || (esDirectivo && perfil.cargo_departamental === 'Secretario General'),
+  };
   try {
     return res.json({
-      ...rows[0],
+      ...perfil,
       chatbot_habilitado: chatbotHabilitado,
       foto_perfil_url: urlFotoPerfil(rows[0].foto_perfil_url),
     });

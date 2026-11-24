@@ -1,3 +1,4 @@
+import { cargosDirectivaPrincipal } from '../middleware/rbac.js';
 import { responderConChatbotIa } from '../services/chatbot-ai.service.js';
 import { query } from '../config/db.js';
 
@@ -7,15 +8,11 @@ const roles = {
   afiliado: 'afiliado con acceso limitado a su perfil y a información general',
 };
 
-const cargosDirectiva = [
-  'Presidente General', 'Vicepresidente General', 'Secretario General', 'Fiscal General', 'Tesorero General',
-];
-
 export async function conversarConChatbot(req, res) {
   const mensaje = typeof req.body?.mensaje === 'string' ? req.body.mensaje.trim() : '';
   const historial = Array.isArray(req.body?.historial) ? req.body.historial : [];
   if (!mensaje || mensaje.length > 500 || historial.length > 6 || historial.some((item) =>
-    !item || !['user', 'assistant'].includes(item.role) || typeof item.content !== 'string' || item.content.length > 500
+    !item || !['user', 'assistant'].includes(item.role) || typeof item.content !== 'string' || item.content.length > (item.role === 'assistant' ? 1200 : 500)
   )) {
     return res.status(400).json({ error: 'El mensaje o el contexto de conversación no es válido.' });
   }
@@ -33,7 +30,7 @@ export async function conversarConChatbot(req, res) {
          WHERE a.id_afiliado = $1 AND a.estado = 'aprobado' AND a.estado_sindical = 'activo'
            AND cs.nombre = ANY($2::text[])
          LIMIT 1`,
-        [req.user.id_afiliado, cargosDirectiva]
+        [req.user.id_afiliado, cargosDirectivaPrincipal]
       );
       esDirectivo = rows.length > 0;
     }
@@ -47,6 +44,6 @@ export async function conversarConChatbot(req, res) {
     if (!error.statusProveedor) console.warn('No se pudo consultar el modelo o determinar el perfil del chatbot.');
     if (error.statusProveedor) console.warn(`El proveedor IA respondió con estado ${error.statusProveedor}.`);
     else console.warn(`No se pudo completar una consulta conversacional: ${error.code || error.name || 'error'}.`);
-    return res.status(503).json({ error: error.message || 'No se pudo consultar al asistente. Inténtalo más tarde.' });
+    return res.status(503).json({ error: 'No se pudo consultar al asistente. Inténtalo más tarde.' });
   }
 }

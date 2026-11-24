@@ -186,7 +186,7 @@ Al abrir `http://localhost:3000` verás el sitio público de SUTENS:
 | POST | `/api/subdirectivas/roles-laborales` | Administrador | Agrega una opción de rol docente |
 | POST | `/api/subdirectivas` | Administrador o Directiva Principal | Crear subdirectiva (`{"nombre":"..."}`) |
 | POST | `/api/chatbot/informes` | Administrador SUTENS o Directiva Departamental activa | Genera informes agregados predefinidos; no devuelve datos personales |
-| POST | `/api/chatbot/informes/exportar` | Administrador SUTENS o Directiva Departamental activa | Descarga afiliados de grupos visibles en PDF/Excel o solo sus correos en Excel, si está habilitada |
+| POST | `/api/chatbot/informes/exportar` | Administrador SUTENS o Directiva Departamental activa | Descarga el resumen agregado en Excel y admite los formatos nominales autorizados |
 
 Los informes del asistente solo aceptan códigos y filtros estructurados del catálogo. La
 autorización se valida en el servidor; los resultados son de alcance global para Administración
@@ -205,6 +205,8 @@ cada una mantiene su propia ventana: el mismo usuario puede acumular solicitudes
 instancias y la alerta puede no detectar el volumen conjunto. Para aplicar límites y alertas
 globales haría falta un almacenamiento compartido con operaciones atómicas y expiración de
 ventanas, además de definir su disponibilidad y tratamiento de fallos; no está implementado.
+El asistente resuelve la ayuda verificada en el panel. Biblioteca, perfil y calendario usan los datos disponibles para la cuenta. Los cambios de contraseña y foto se completan en Mi cuenta. Las aprobaciones y asignaciones se confirman en Administración.
+
 La conversación libre usa Cloudflare Workers AI desde el backend. Para habilitarla configura
 `CLOUDFLARE_ACCOUNT_ID` y `CLOUDFLARE_API_TOKEN` como secretos, más `CLOUDFLARE_AI_MODEL` si
 quieres elegir otro modelo. El token solo requiere `Account > Workers AI > Read`; no lo incluyas
@@ -213,8 +215,8 @@ Antes de procesar datos personales con un proveedor externo, revisa la política
 tratamiento de datos. El chatbot redacta correos, teléfonos y secuencias numéricas en el backend,
 y no envía cédulas en el flujo de gestión de afiliados.
 La exportación vuelve a consultar los datos en una transacción de lectura con una instantánea
-consistente, por lo que puede diferir del informe mostrado si los datos cambiaron. Los PDF y
-Excel incluyen datos individuales con el formato del padrón; la alternativa de correos incluye
+consistente, por lo que puede diferir del informe mostrado si los datos cambiaron. El formato `resumen` que ofrece el chat incluye los grupos visibles, cantidades, filtros y avisos. Los formatos `pdf` y
+`excel` de la API incluyen datos individuales con el formato del padrón; la alternativa de correos incluye
 únicamente direcciones. Solo se incluyen personas de grupos visibles, nunca de grupos
 suprimidos exclusivamente; una persona presente en varios grupos puede aparecer si al menos
 uno de ellos es visible. Se incluye una fila por persona: para informes por estructura se

@@ -470,6 +470,7 @@ window.SUTENSChatbotDashboard = {
       'mi-cuenta': 'vista-cuenta',
       estructura: 'vista-directorio',
       biblioteca: 'vista-biblioteca',
+      'biblioteca-educativa': 'vista-biblioteca-educativa',
       afiliados: 'vista-afiliados',
       administracion: 'vista-administracion',
     };
@@ -479,12 +480,7 @@ window.SUTENSChatbotDashboard = {
     void mostrarVista(vistas[destino]);
     return true;
   },
-  obtenerCapacidades: () => ({
-    // Esto filtra opciones de interfaz; las API mantienen su autorización RBAC en el servidor.
-    manageAffiliates: puedeGestionarAfiliados,
-    resetUserPassword: esAdmin,
-    viewReports: esAdmin || esDirectivaPrincipal,
-  }),
+  obtenerCapacidades: () => perfilActual?.chatbot_capacidades || {},
   obtenerDatosPropios: () => {
     if (!perfilActual) return null;
     return {
@@ -503,6 +499,7 @@ window.SUTENSChatbotDashboard = {
       cargo: perfilActual.cargo_departamental || perfilActual.cargo_sindical,
     };
   },
+  iaDisponible: () => perfilActual?.chatbot_ia_disponible,
   chatbotHabilitado: () => perfilActual?.chatbot_habilitado === true,
 };
 
@@ -621,12 +618,12 @@ function pintarEventos() {
                     </div>
                   </details>` : ''}
               </div>
-              <details class="evento-asistentes">
+              ${Array.isArray(evento.asistentes) ? `<details class="evento-asistentes">
                 <summary>Ver quiénes confirmaron (${Number(evento.asistentes_confirmados) || 0})</summary>
                 ${evento.asistentes?.length
                   ? `<ul>${evento.asistentes.map((asistente) => `<li>${escapeHTML(asistente.nombre)}</li>`).join('')}</ul>`
                   : '<p>Aún no hay confirmaciones.</p>'}
-              </details>
+              </details>` : ''}
             </div>
           </div>
         </article>

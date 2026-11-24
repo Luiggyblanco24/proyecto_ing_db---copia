@@ -47,14 +47,12 @@ function autorizarCargoPrincipal(cargosPermitidos) {
   };
 }
 
+export const cargosDirectivaPrincipal = [
+  'Presidente General', 'Vicepresidente General', 'Secretario General', 'Fiscal General', 'Tesorero General',
+];
+
 export function autorizarDirectivaPrincipal() {
-  return autorizarCargoPrincipal([
-    'Presidente General',
-    'Vicepresidente General',
-    'Secretario General',
-    'Fiscal General',
-    'Tesorero General',
-  ]);
+  return autorizarCargoPrincipal(cargosDirectivaPrincipal);
 }
 
 export function autorizarMiembroDirectivaPrincipal() {

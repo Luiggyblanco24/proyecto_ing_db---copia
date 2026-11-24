@@ -6,6 +6,7 @@ const VISTAS_PERMITIDAS = new Set([
   'mi-cuenta',
   'estructura',
   'biblioteca',
+  'biblioteca-educativa',
   'afiliados',
   'administracion',
 ]);
@@ -136,8 +137,13 @@ export function buscarAyuda(texto, catalogo, capacidades = {}) {
 }
 
 export function obtenerPreguntasSugeridas(catalogo, capacidades = {}, limite = 3) {
-  return catalogo
-    .filter((entrada) => entrada.contentVerified === true && tieneCapacidadesRequeridas(entrada, capacidades))
+  const prioridades = [
+    'actualizar-mis-datos', 'calendario', capacidades.manageAffiliates ? 'gestionar-afiliados' : 'biblioteca',
+  ];
+  const visibles = catalogo.filter((entrada) => entrada.contentVerified &&
+    tieneCapacidadesRequeridas(entrada, capacidades) && !['iniciar-sesion', 'recuperar-contrasena'].includes(entrada.id));
+  const preferidas = prioridades.map((id) => visibles.find((entrada) => entrada.id === id)).filter(Boolean);
+  return [...preferidas, ...visibles.filter((entrada) => !preferidas.includes(entrada))]
     .slice(0, limite)
     .map(prepararEntrada);
 }

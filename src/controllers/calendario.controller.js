@@ -79,7 +79,12 @@ export async function listarEventos(req, res) {
     [esAdministrador || esDirectivaPrincipal, subdirectivasVisibles, req.user.id_afiliado]
   );
 
-  return res.json(rows);
+  const acceso = { esAdministrador, esDirectivaPrincipal, asignaciones };
+  return res.json(rows.map((evento) => {
+    if (puedeGestionarEvento(req, acceso, evento)) return evento;
+    const { asistentes, ...resumen } = evento;
+    return resumen;
+  }));
 }
 
 export async function crearEvento(req, res) {

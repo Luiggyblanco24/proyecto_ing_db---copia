@@ -43,7 +43,8 @@ test('el widget muestra las descargas solo cuando el servidor las habilita', {
       assert.equal(await page.locator('.chatbot-tabla tbody th').textContent(), '<script>prueba</script>');
       assert.equal(await page.locator('.chatbot-tabla script').count(), 0);
       if (habilitadas) {
-        assert.match(await page.locator('.chatbot-descargas').textContent(), /Datos personales de uso restringido \(Ley 1581 de 2012\)/);
+        assert.equal(await page.getByRole('button', { name: 'Descargar resumen en Excel' }).count(), 1);
+        assert.doesNotMatch(await page.locator('.chatbot-descargas').textContent(), /afiliados|correos/i);
       }
       await page.keyboard.press('Escape');
       assert.equal(await page.locator('.chatbot-panel').isVisible(), false);

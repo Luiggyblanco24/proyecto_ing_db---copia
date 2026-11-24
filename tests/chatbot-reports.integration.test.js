@@ -748,7 +748,7 @@ test('integración PostgreSQL aislada: informes, privacidad, READ ONLY, timeout 
         estado: 'aprobado',
         estado_sindical: 'activo',
       };
-      for (const formato of ['pdf', 'excel', 'correos']) {
+      for (const formato of ['pdf', 'excel', 'correos', 'resumen']) {
         const res = respuestaFalsa();
         await exportar({
           user: { id_usuario: 1 },
@@ -761,7 +761,12 @@ test('integración PostgreSQL aislada: informes, privacidad, READ ONLY, timeout 
         } else {
           const libro = new ExcelJS.Workbook();
           await libro.xlsx.load(res.body);
-          const hoja = libro.getWorksheet('Detalles del informe');
+          const hoja = libro.getWorksheet(formato === 'resumen' ? 'Resumen' : 'Detalles del informe');
+          if (formato === 'resumen') {
+            assert.equal(libro.worksheets.length, 1);
+            assert.ok(hoja.getColumn(1).values.includes('Grupo'));
+            assert.ok(hoja.getColumn(2).values.some((valor) => typeof valor === 'number'));
+          }
           texto = hoja.getColumn(1).values.filter(Boolean).join('\n');
         }
         assert.match(texto, /Subdirectiva: Subdirectiva A/);

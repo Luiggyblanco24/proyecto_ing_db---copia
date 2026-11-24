@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import jwt from 'jsonwebtoken';
 import express from 'express';
+import ExcelJS from 'exceljs';
 import test from 'node:test';
 import { crearControladorInformesChatbot } from '../src/controllers/chatbot-report.controller.js';
 import { crearControladorExportacionChatbot } from '../src/controllers/chatbot-export.controller.js';
@@ -87,6 +88,27 @@ test('las consultas usan parámetros y solo devuelven conteos agregados', async 
   assert.equal(JSON.stringify(resultado).includes('cedula'), false);
   assert.equal(JSON.stringify(resultado).includes('correo'), false);
   assert.equal(JSON.stringify(resultado).includes('celular'), false);
+});
+
+test('el Excel de resumen contiene cantidades sin consultar registros personales', async () => {
+  const dbPool = { async connect() {
+    return {
+      async query(sql) {
+        assert.doesNotMatch(sql, /JOIN persona|p\.cedula|p\.correo/i);
+        return { rows: [{ grupo: 'aprobado', grupo_id: 'aprobado', cantidad: 25 }] };
+      },
+      release() {},
+    };
+  } };
+  const exportar = crearControladorExportacionChatbot({ dbPool, logger: { info() {}, error() {} } });
+  const res = respuestaFalsa();
+  res.send = (archivo) => { res.body = archivo; };
+  await exportar({ user: { id_usuario: 1 }, body: { informe: 'afiliados_por_estado', formato: 'resumen' } }, res);
+  assert.equal(res.statusCode, 200);
+  const libro = new ExcelJS.Workbook();
+  await libro.xlsx.load(res.body);
+  assert.deepEqual(libro.worksheets.map((hoja) => hoja.name), ['Resumen']);
+  assert.deepEqual(libro.worksheets[0].lastRow.values.slice(1), ['aprobado', 25]);
 });
 
 test('rechaza filtros estructurales incoherentes con la jerarquía', async () => {

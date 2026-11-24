@@ -55,7 +55,7 @@ export function registrarAuditoriaDescarga(req, resultado, cantidad = null, logg
     evento: 'chatbot_exportacion',
     ocurrido_at: new Date().toISOString(),
     informe: informes.has(body.informe) ? body.informe : 'invalido',
-    formato: ['pdf', 'excel', 'correos'].includes(body.formato) ? body.formato : 'invalido',
+    formato: ['resumen', 'pdf', 'excel', 'correos'].includes(body.formato) ? body.formato : 'invalido',
     filtros: nombresFiltros,
     cantidad,
     resultado: String(resultado),

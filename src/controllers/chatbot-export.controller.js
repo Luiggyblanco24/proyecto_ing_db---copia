@@ -60,6 +60,17 @@ function lineasInforme(resultado, filtros) {
   ];
 }
 
+async function crearExcelResumen(metadatos, filas) {
+  const libro = new ExcelJS.Workbook();
+  const hoja = libro.addWorksheet('Resumen');
+  hoja.columns = [{ width: 75 }, { width: 16 }];
+  for (const linea of metadatos) hoja.addRow([protegerTextoExcel(linea)]);
+  hoja.addRow([]);
+  hoja.addRow(['Grupo', 'Cantidad']);
+  for (const fila of filas) hoja.addRow([protegerTextoExcel(fila.grupo), fila.cantidad]);
+  return Buffer.from(await libro.xlsx.writeBuffer());
+}
+
 async function crearExcelCorreos(metadatos, correos) {
   const libro = new ExcelJS.Workbook();
   const hoja = libro.addWorksheet('Correos');
@@ -83,7 +94,7 @@ export function crearControladorExportacionChatbot({ dbPool = pool, logger = con
       ? body : {};
     const solicitud = validarSolicitudInforme(solicitudBody);
     const auditar = (codigo, cantidad = null) => registrarAuditoriaDescarga(req, codigo, cantidad, logger);
-    if (solicitud.error || !['pdf', 'excel', 'correos'].includes(formato)) {
+    if (solicitud.error || !['resumen', 'pdf', 'excel', 'correos'].includes(formato)) {
       auditar('400');
       return res.status(400).json({ error: 'La solicitud de exportación no es válida.' });
     }
@@ -102,7 +113,7 @@ export function crearControladorExportacionChatbot({ dbPool = pool, logger = con
         auditar(String(resultado.status));
         return res.status(resultado.status).json({ error: resultado.error });
       }
-      const datos = await consultarDatosGruposVisibles(client, solicitud, resultado.gruposInternos,
+      const datos = formato === 'resumen' ? resultado.filas : await consultarDatosGruposVisibles(client, solicitud, resultado.gruposInternos,
         formato === 'correos' ? 'correos' : 'afiliados');
       delete resultado.gruposInternos;
       if (datos.error) {
@@ -120,7 +131,9 @@ export function crearControladorExportacionChatbot({ dbPool = pool, logger = con
         metadatos: ['Datos personales de uso restringido (Ley 1581 de 2012)', ...lineasInforme(resultado, filtros)],
         leyendaPortada: formato === 'pdf' ? 'Informe generado con chatbot SUTENS' : '',
       };
-      const archivo = formato === 'correos'
+      const archivo = formato === 'resumen'
+        ? await crearExcelResumen(lineasInforme(resultado, filtros), resultado.filas)
+        : formato === 'correos'
         ? await crearExcelCorreos(opciones.metadatos, datos)
         : formato === 'pdf'
           ? await crearPdfAfiliados(datosExportacion(datos), opciones)
@@ -131,7 +144,7 @@ export function crearControladorExportacionChatbot({ dbPool = pool, logger = con
         : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       res.set('Content-Disposition', `attachment; filename="sutens-${formato}.${formato === 'pdf' ? 'pdf' : 'xlsx'}"`);
       auditar('200', datos.length);
-      registrarVolumenDescarga(req, datos.length, logger);
+      if (formato !== 'resumen') registrarVolumenDescarga(req, datos.length, logger);
       return res.send(archivo);
     } catch (error) {
       if (transaccionAbierta) {
