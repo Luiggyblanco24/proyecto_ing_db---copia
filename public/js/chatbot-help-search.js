@@ -18,7 +18,7 @@ const RUTAS_PERMITIDAS = new Set([
 
 const PALABRAS_COMUNES = new Set([
   'a', 'al', 'como', 'con', 'de', 'del', 'el', 'en', 'la', 'las', 'los',
-  'mi', 'mis', 'o', 'para', 'por', 'que', 'se', 'un', 'una', 'y',
+  'mi', 'mis', 'o', 'para', 'por', 'que', 'se', 'un', 'una', 'y', 'explicame',
 ]);
 
 const UMBRAL_RESPUESTA = 0.6;

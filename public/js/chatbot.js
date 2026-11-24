@@ -847,7 +847,7 @@ async function responder(texto) {
       agregarMensaje('No encontré una respuesta verificada para esa pregunta. ¿Alguna de estas opciones se acerca a lo que necesitas?', 'bot');
       mostrarSugerencias(ayuda.entradas || obtenerPreguntasSugeridas(CATALOGO_AYUDA_CHATBOT, capacidades));
     } else {
-      await responderConIA(texto);
+      await responderConIA(texto, ayuda.entradas);
     }
   } finally {
     if (!signal.aborted) enviar.disabled = false;
@@ -915,7 +915,7 @@ async function responderConsultaActividades(texto) {
   contenido.scrollTop = contenido.scrollHeight;
 }
 
-async function responderConIA(texto) {
+async function responderConIA(texto, sugerencias = []) {
   const { signal } = conversacion;
   const pensando = document.createElement('p');
   pensando.className = 'chatbot-escribiendo';
@@ -936,8 +936,8 @@ async function responderConIA(texto) {
   } catch {
     pensando.remove();
     if (signal.aborted) return;
-    agregarMensaje('No pude completar esa consulta. Puedes volver a intentarlo o elegir una de estas preguntas.', 'bot');
-    mostrarSugerencias(obtenerPreguntasSugeridas(CATALOGO_AYUDA_CHATBOT, capacidadesVisibles()));
+    agregarMensaje('No pude completar esa consulta. Puedes volver a intentarlo en un momento.', 'bot');
+    if (sugerencias.length) mostrarSugerencias(sugerencias);
   }
   contenido.scrollTop = contenido.scrollHeight;
 }

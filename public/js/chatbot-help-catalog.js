@@ -91,6 +91,15 @@ export const CATALOGO_AYUDA_CHATBOT = [
     contentVerified: true,
   },
   {
+    id: 'negociacion-colectiva',
+    titulo: 'Negociación colectiva',
+    preguntas: ['¿Qué es la negociación colectiva?', '¿Qué es negociación colectiva?', '¿Qué significa negociación colectiva?'],
+    sinonimos: ['ejemplo de negociación colectiva', 'explícame la negociación colectiva'],
+    palabrasClave: ['negociación colectiva', 'negociar colectivamente'],
+    respuesta: 'La negociación colectiva es el proceso en el que un sindicato y un empleador, o sus representantes, buscan acuerdos sobre las condiciones de trabajo. Por ejemplo, un grupo de docentes puede proponer, a través de su sindicato, que las capacitaciones se programen dentro de la jornada laboral. Las partes discuten la propuesta para intentar llegar a un acuerdo.',
+    contentVerified: true,
+  },
+  {
     id: 'beneficios-sutens',
     titulo: 'Beneficios de afiliación',
     preguntas: ['¿Qué beneficios ofrece SUTENS?', '¿Cuáles son los beneficios de estar afiliado?'],

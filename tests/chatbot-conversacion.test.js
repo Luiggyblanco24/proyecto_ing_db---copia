@@ -73,6 +73,7 @@ test('el chat orienta por rol, conserva el contexto y descarta turnos borrados',
       ['¿Cómo confirmo asistencia?', 'Calendario'],
       ['Aprobar solicitudes', 'perfil autorizado'],
       ['¿Qué es SUTENS?', 'El Tarra'],
+      ['que es negociacion colectiva?', 'Las partes discuten la propuesta'],
       ['¿Cuál es mi próxima actividad?', 'Asamblea de prueba'],
       ['¿Y cuántos confirmaron?', 'Asistencias confirmadas: 7'],
     ]) {
