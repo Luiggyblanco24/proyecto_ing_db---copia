@@ -63,9 +63,8 @@ export const informacionAfiliacion = {
   whatsappUrl: 'https://wa.me/573185218787',
   whatsappTelefono: '+57 318 521 8787',
   sedeFisica: 'Calle 10 Nro. 13 - 37, Oficina 201, Centro de Ocaña, Norte de Santander',
-  // Cuota sindical en [CONFIRMAR]: permanece desactivada y no se muestra en la interfaz
+  // Autorización de descuento en Formatodeafiliacionsutens.pdf, página 1.
   cuotaSindical: {
-    valor: null, // [CONFIRMAR]
-    visible: false,
+    porcentajeSalarioBasico: 1,
   },
 };

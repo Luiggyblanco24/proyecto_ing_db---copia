@@ -936,7 +936,7 @@ async function responderConIA(texto, sugerencias = []) {
   } catch {
     pensando.remove();
     if (signal.aborted) return;
-    agregarMensaje('No pude completar esa consulta. Puedes volver a intentarlo en un momento.', 'bot');
+    agregarMensaje('No tengo una respuesta verificada en la ayuda de SUTENS y ahora no puedo consultar la IA. Puedes reformular la pregunta o volver a intentarlo más tarde.', 'bot');
     if (sugerencias.length) mostrarSugerencias(sugerencias);
   }
   contenido.scrollTop = contenido.scrollHeight;

@@ -6,7 +6,8 @@ import { chromium } from 'playwright';
 import { conversarConChatbot } from '../src/controllers/chatbot-conversation.controller.js';
 
 test('un segundo turno acepta una respuesta anterior de 1200 caracteres', async (t) => {
-  t.mock.method(globalThis, 'fetch', async () => Response.json({ choices: [{ message: { content: 'Respuesta de prueba' } }] }));
+  let respuesta = () => Response.json({ choices: [{ message: { content: 'Respuesta de prueba' } }] });
+  t.mock.method(globalThis, 'fetch', (...args) => respuesta(...args));
   const anteriores = [process.env.CLOUDFLARE_ACCOUNT_ID, process.env.CLOUDFLARE_API_TOKEN];
   process.env.CLOUDFLARE_ACCOUNT_ID = 'prueba';
   process.env.CLOUDFLARE_API_TOKEN = 'prueba';
@@ -14,6 +15,23 @@ test('un segundo turno acepta una respuesta anterior de 1200 caracteres', async 
     const req = { user: { roles: ['Administrador SUTENS'] }, body: { mensaje: 'Continúa', historial: [{ role: 'assistant', content: 'a'.repeat(1200) }] } };
     const res = { json: (dato) => dato };
     assert.equal((await conversarConChatbot(req, res)).respuesta, 'Respuesta de prueba');
+    respuesta = () => Response.json({ success: true, result: { response: 'Respuesta nativa' } });
+    assert.equal((await conversarConChatbot(req, res)).respuesta, 'Respuesta nativa');
+    const avisos = [];
+    t.mock.method(console, 'warn', (linea) => avisos.push(JSON.parse(linea)));
+    res.status = (codigo) => { assert.equal(codigo, 503); return res; };
+    for (const [cuerpo, estado, codigo] of [
+      [{ result: { choices: [{ message: { content: '', reasoning_content: 'interno' }, finish_reason: 'length' }] } }, 200, 'CHATBOT_AI_TOKEN_LIMIT'],
+      [{ choices: [] }, 200, 'CHATBOT_AI_EMPTY'],
+      [{ errors: [{ code: 123, message: 'detalle privado' }] }, 410, 'CHATBOT_AI_PROVIDER'],
+    ]) {
+      respuesta = () => Response.json(cuerpo, { status: estado });
+      await conversarConChatbot(req, res);
+      assert.equal(avisos.at(-1).codigo, codigo);
+      assert.equal(avisos.at(-1).etapa, 'conversacion');
+    }
+    assert.equal(avisos.at(-1).estado_http, 410);
+    assert.doesNotMatch(JSON.stringify(avisos), /interno|detalle privado/);
   } finally {
     ['CLOUDFLARE_ACCOUNT_ID', 'CLOUDFLARE_API_TOKEN'].forEach((k, i) => {
       if (anteriores[i] === undefined) delete process.env[k];
@@ -92,7 +110,7 @@ test('el chat orienta por rol, conserva el contexto y descarta turnos borrados',
     await page.getByLabel('Abrir asistente').click();
     assert.equal(await page.evaluate(() => window.llamadasIA), 0);
     await preguntar('Explícame el acompañamiento colectivo');
-    await page.getByText('No pude completar esa consulta.', { exact: false }).waitFor();
+    await page.getByText('ahora no puedo consultar la IA', { exact: false }).waitFor();
     await preguntar('Explícame la representación colectiva');
     await page.waitForFunction(() => Boolean(window.terminar));
     await page.getByText('Borrar conversación', { exact: true }).click();

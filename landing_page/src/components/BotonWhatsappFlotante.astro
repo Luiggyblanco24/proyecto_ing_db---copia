@@ -1,24 +1,93 @@
----
-import Icono from './ComponentesIndex/Icono.astro';
-import { datosContacto } from '../data/contacto.js';
----
-
-<!-- Botón flotante accesible de WhatsApp -->
-<aside class="fixed bottom-5 right-5 z-40 sm:bottom-6 sm:right-6" aria-label="Contacto rápido por WhatsApp">
-  <a
-    href={datosContacto.canales.whatsapp.url}
-    target="_blank"
-    rel="noopener noreferrer"
-    aria-label="Contactar a SUTENS por WhatsApp (abre en nueva pestaña)"
-    title="Escríbenos por WhatsApp"
-    class="group relative flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-2xl ring-4 ring-white/60 transition duration-300 hover:scale-110 hover:bg-[#20ba59] hover:shadow-[0_12px_24px_rgba(37,211,102,0.4)] focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-700"
-  >
-    <span class="sr-only">Contactar a SUTENS por WhatsApp</span>
-    <Icono name="whatsapp" class="h-7 w-7 text-white" />
-
-    <!-- Tooltip emergente al pasar el cursor (solo en pantallas medianas hacia arriba) -->
-    <span class="pointer-events-none absolute right-full mr-3 hidden whitespace-nowrap rounded-xl bg-ink px-3 py-1.5 text-xs font-bold text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 sm:inline-block">
-      ¿Dudas sobre afiliación? Escríbenos
-    </span>
-  </a>
+<aside class="ayuda" aria-label="Ayuda para visitantes">
+  <section id="chat-visitante" aria-labelledby="titulo-chat-visitante" hidden>
+    <header>
+      <h2 id="titulo-chat-visitante">Asistente SUTENS</h2>
+      <button type="button" data-cerrar aria-label="Cerrar asistente">×</button>
+    </header>
+    <div data-mensajes role="log" aria-live="polite" aria-label="Conversación">
+      <p>¡Hola! Puedo orientarte sobre cómo afiliarte, cuánto se descuenta por nómina y qué hace el sindicato.</p>
+      <div class="opciones">
+        {['¿Cómo me afilio?', '¿Cuánto cuesta?', '¿Qué hace SUTENS?'].map((texto) => <button type="button" data-pregunta>{texto}</button>)}
+      </div>
+    </div>
+    <form>
+      <input aria-label="Tu pregunta" placeholder="Escribe tu pregunta…" maxlength="500" required autocomplete="off" />
+      <button type="submit">Enviar</button>
+    </form>
+  </section>
+  <div class="accesos">
+    <button hidden type="button" data-abrir aria-controls="chat-visitante" aria-expanded="false">Pregunta a SUTENS</button>
+  </div>
 </aside>
+
+<script>
+  import { responderVisitante } from '../data/asistente-visitante.js';
+  const panel = document.querySelector<HTMLElement>('#chat-visitante')!;
+  const abrir = document.querySelector<HTMLButtonElement>('[data-abrir]')!;
+  const historial = panel.querySelector<HTMLElement>('[data-mensajes]')!;
+  const campo = panel.querySelector('input')!;
+  abrir.hidden = false;
+  function alternar(visible: boolean) {
+    panel.hidden = !visible;
+    abrir.setAttribute('aria-expanded', String(visible));
+    (visible ? campo : abrir).focus();
+  }
+  function preguntar(texto: string) {
+    if (!texto.trim()) return;
+    const pregunta = document.createElement('p');
+    pregunta.className = 'visitante';
+    pregunta.textContent = texto;
+    const respuesta = responderVisitante(texto);
+    const mensaje = document.createElement('p');
+    mensaje.textContent = respuesta.texto;
+    historial.append(pregunta, mensaje);
+    const enlaces = document.createElement('div');
+    enlaces.className = 'opciones';
+    for (const enlace of respuesta.enlaces) {
+      const a = document.createElement('a');
+      a.textContent = enlace.texto;
+      a.href = enlace.url;
+      if (enlace.url.startsWith('https://wa.me/')) {
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+      }
+      enlaces.append(a);
+    }
+    historial.append(enlaces);
+    historial.scrollTop = historial.scrollHeight;
+    campo.value = '';
+    campo.focus();
+  }
+  abrir.addEventListener('click', () => alternar(panel.hidden));
+  panel.querySelector('[data-cerrar]')!.addEventListener('click', () => alternar(false));
+  panel.addEventListener('keydown', (evento) => {
+    if (evento.key === 'Escape') alternar(false);
+  });
+  panel.querySelectorAll<HTMLButtonElement>('[data-pregunta]').forEach((opcion) =>
+    opcion.addEventListener('click', () => preguntar(opcion.textContent || '')));
+  panel.querySelector('form')!.addEventListener('submit', (evento) => {
+    evento.preventDefault();
+    preguntar(campo.value.trim());
+  });
+</script>
+
+<style>
+  .ayuda { position: fixed; z-index: 40; right: max(1rem, env(safe-area-inset-right)); bottom: max(1rem, env(safe-area-inset-bottom)); color: #173a28; }
+  .accesos, form, header { display: flex; align-items: center; gap: .6rem; }
+  .accesos { justify-content: flex-end; }
+  .ayuda button { cursor: pointer; }
+  .accesos button, form button { background: #125936; color: white; font-weight: 700; border-radius: 2rem; padding: .7rem 1rem; }
+  .accesos > * { box-shadow: 0 3px 15px #102d2240; border: 2px solid white; }
+  section { width: min(25rem, calc(100vw - 2rem)); max-height: min(35rem, calc(100dvh - 6rem)); margin-bottom: .65rem; display: flex; flex-direction: column; background: white; border: 1px solid #ccdcd2; border-radius: 1.15rem; overflow: hidden; box-shadow: 0 10px 45px #163d2c38; }
+  [hidden] { display: none !important; }
+  header { justify-content: space-between; padding: .55rem 1rem; color: white; background: #125936; }
+  h2 { font-weight: 750; font-size: 1.08rem; }
+  header button { width: 2.75rem; height: 2.75rem; font-size: 1.65rem; }
+  [data-mensajes] { background: #f4f8f4; padding: 1rem; overflow-y: auto; overscroll-behavior: contain; }
+  [data-mensajes] :global(p) { background: white; border-radius: .8rem; padding: .75rem; margin-bottom: .55rem; white-space: pre-line; overflow-wrap: anywhere; line-height: 1.5; font-size: .94rem; }
+  [data-mensajes] :global(.visitante) { margin-left: 2rem; background: #d9efde; }
+  [data-mensajes] :global(.opciones) { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .5rem; }
+  [data-mensajes] :global(.opciones > *) { color: #125936; background: white; border: 1px solid #a8c8b5; border-radius: 1rem; padding: .45rem .75rem; font-weight: 650; font-size: .85rem; }
+  form { padding: .65rem; }
+  input { min-width: 0; flex: 1; border: 1px solid #b5c8bb; border-radius: .7rem; padding: .65rem; font-size: 1rem; }
+</style>

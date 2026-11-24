@@ -19,6 +19,7 @@ export async function conversarConChatbot(req, res) {
 
   const esAdmin = req.user?.roles?.includes('Administrador SUTENS');
   let esDirectivo = false;
+  let etapa = 'perfil';
   try {
     if (!esAdmin) {
       const { rows } = await query(
@@ -35,15 +36,17 @@ export async function conversarConChatbot(req, res) {
       esDirectivo = rows.length > 0;
     }
     const perfil = esAdmin ? roles.administrador : (esDirectivo ? roles.directivo : roles.afiliado);
+    etapa = 'conversacion';
     const resultado = await responderConChatbotIa({ mensaje, historial, rol: perfil });
     return res.json(resultado);
   } catch (error) {
     if (error.code === 'CHATBOT_AI_NOT_CONFIGURED') {
       return res.status(503).json({ error: error.message, ia_no_configurada: true });
     }
-    if (!error.statusProveedor) console.warn('No se pudo consultar el modelo o determinar el perfil del chatbot.');
-    if (error.statusProveedor) console.warn(`El proveedor IA respondió con estado ${error.statusProveedor}.`);
-    else console.warn(`No se pudo completar una consulta conversacional: ${error.code || error.name || 'error'}.`);
+    console.warn(JSON.stringify({
+      evento: 'chatbot_error', etapa, codigo: error.code || error.name,
+      estado_http: error.statusProveedor, codigo_proveedor: error.codigoProveedor,
+    }));
     return res.status(503).json({ error: 'No se pudo consultar al asistente. Inténtalo más tarde.' });
   }
 }

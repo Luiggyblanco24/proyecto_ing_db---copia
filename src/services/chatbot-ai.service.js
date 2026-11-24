@@ -40,8 +40,10 @@ export async function responderConChatbotIa({ mensaje, historial = [], rol = 'af
     throw error;
   }
 
-  const cuenta = encodeURIComponent(process.env.CLOUDFLARE_ACCOUNT_ID);
-  const modelo = process.env.CLOUDFLARE_AI_MODEL || modeloPredeterminado;
+  const cuenta = encodeURIComponent(process.env.CLOUDFLARE_ACCOUNT_ID.trim());
+  const modelo = process.env.CLOUDFLARE_AI_MODEL?.trim() || modeloPredeterminado;
+  const apiNativa = modelo === '@cf/google/gemma-4-26b-a4b-it';
+  const ruta = apiNativa ? 'run/' + modelo : 'v1/chat/completions';
   const mensajes = [
     { role: 'system', content: construirInstrucciones(rol) },
     ...historial.slice(-6).map((item) => ({
@@ -54,27 +56,37 @@ export async function responderConChatbotIa({ mensaje, historial = [], rol = 'af
   const timeout = setTimeout(() => controlador.abort(), timeoutMs);
   try {
     const respuesta = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${cuenta}/ai/v1/chat/completions`,
+      `https://api.cloudflare.com/client/v4/accounts/${cuenta}/ai/${ruta}`,
       {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+          Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN.trim()}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ model: modelo, messages: mensajes, temperature: 0.25, max_tokens: 450 }),
+        body: JSON.stringify({ ...(apiNativa ? {} : { model: modelo }), messages: mensajes, temperature: 0.25, max_tokens: 1024 }),
         signal: controlador.signal,
       }
     );
-    if (!respuesta.ok) {
-      const errorProveedor = await respuesta.json().catch(() => ({}));
+    const resultado = await respuesta.json().catch((error) => {
+      if (error.name === 'AbortError') throw error;
+      return null;
+    });
+    if (!respuesta.ok || resultado?.success === false) {
       const error = new Error('El asistente no está disponible temporalmente. Inténtalo de nuevo más tarde.');
       error.statusProveedor = respuesta.status;
-      error.detalleProveedor = errorProveedor.errors?.[0]?.message || '';
+      error.code = 'CHATBOT_AI_PROVIDER';
+      error.codigoProveedor = Number.isInteger(resultado?.errors?.[0]?.code) ? resultado.errors[0].code : undefined;
       throw error;
     }
-    const resultado = await respuesta.json();
-    const contenido = resultado.choices?.[0]?.message?.content;
-    if (typeof contenido !== 'string' || !contenido.trim()) throw new Error('Respuesta vacía del asistente');
+    const salida = resultado?.result ?? resultado;
+    const alternativa = salida?.choices?.[0];
+    const contenido = alternativa?.message?.content ?? salida?.response;
+    if (typeof contenido !== 'string' || !contenido.trim()) {
+      const error = new Error('El proveedor no devolvió texto para el usuario.');
+      error.code = alternativa?.finish_reason === 'length' ? 'CHATBOT_AI_TOKEN_LIMIT'
+        : resultado ? 'CHATBOT_AI_EMPTY' : 'CHATBOT_AI_INVALID_JSON';
+      throw error;
+    }
     return { respuesta: contenido.trim().slice(0, 1200), accion: null };
   } catch (error) {
     if (error.name === 'AbortError') {
