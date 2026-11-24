@@ -1,6 +1,8 @@
 import { Router } from 'express';
+import { manejarAsync } from '../middleware/errores.js';
 import multer from 'multer';
 import {
+  contarSubdirectivas,
   agregarImagenGaleria,
   actualizarImagenGaleria,
   eliminarImagenGaleria,
@@ -45,20 +47,21 @@ function manejarImagen(req, res, next) {
   });
 }
 
-router.get('/directivas/departamental', listarDirectivaDepartamental);
-router.get('/directivas/subdirectivas', listarDirectivasSubdirectivas);
-router.get('/galeria', listarGaleriaPublica);
-router.get('/galeria/:id/imagen', servirImagenGaleria);
-router.get('/documentos', listarDocumentosPublicos);
-router.get('/documentos/:id/descargar', descargarDocumentoPublico);
-router.post('/galeria', autenticar, autorizarDirectivaPrincipal(), manejarImagen, agregarImagenGaleria);
-router.patch('/galeria/:id', autenticar, autorizarDirectivaPrincipal(), manejarImagen, actualizarImagenGaleria);
-router.delete('/galeria/:id', autenticar, autorizarDirectivaPrincipal(), eliminarImagenGaleria);
+router.get('/subdirectivas/total', manejarAsync(contarSubdirectivas));
+router.get('/directivas/departamental', manejarAsync(listarDirectivaDepartamental));
+router.get('/directivas/subdirectivas', manejarAsync(listarDirectivasSubdirectivas));
+router.get('/galeria', manejarAsync(listarGaleriaPublica));
+router.get('/galeria/:id/imagen', manejarAsync(servirImagenGaleria));
+router.get('/documentos', manejarAsync(listarDocumentosPublicos));
+router.get('/documentos/:id/descargar', manejarAsync(descargarDocumentoPublico));
+router.post('/galeria', autenticar, autorizarDirectivaPrincipal(), manejarImagen, manejarAsync(agregarImagenGaleria));
+router.patch('/galeria/:id', autenticar, autorizarDirectivaPrincipal(), manejarImagen, manejarAsync(actualizarImagenGaleria));
+router.delete('/galeria/:id', autenticar, autorizarDirectivaPrincipal(), manejarAsync(eliminarImagenGaleria));
 
-router.get('/portada', listarImagenesPortada);
-router.get('/portada/espacios', ...gestionarPortada, listarEspaciosPortada);
-router.get('/portada/:clave/imagen', servirImagenPortada);
-router.put('/portada/:clave', ...gestionarPortada, manejarImagen, publicarImagenPortada);
-router.delete('/portada/:clave', ...gestionarPortada, restaurarImagenPortada);
+router.get('/portada', manejarAsync(listarImagenesPortada));
+router.get('/portada/espacios', ...gestionarPortada, manejarAsync(listarEspaciosPortada));
+router.get('/portada/:clave/imagen', manejarAsync(servirImagenPortada));
+router.put('/portada/:clave', ...gestionarPortada, manejarImagen, manejarAsync(publicarImagenPortada));
+router.delete('/portada/:clave', ...gestionarPortada, manejarAsync(restaurarImagenPortada));
 
 export default router;

@@ -1,4 +1,5 @@
 ---
+const isHome = Astro.url.pathname === '/';
 const navLinks = [
   { href: '/#quienes-somos', label: 'Quiénes somos', section: 'quienes-somos' },
   { href: '/#estructura', label: 'Estructura', section: 'estructura' },
@@ -8,8 +9,8 @@ const navLinks = [
 ];
 ---
 
-<header id="site-header" class="site-header sticky top-0 z-50">
-  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:h-[4.5rem] sm:px-6">
+<header id="site-header" class:list={['site-header sticky top-0 z-50', { 'home-header': isHome }]}>
+  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-3 sm:gap-3 sm:h-[4.5rem] sm:px-6">
 
     <!-- Logo -->
     <a href="/" class="shrink-0 flex items-center gap-3 rounded-lg" aria-label="SUTENS, inicio">
@@ -18,7 +19,7 @@ const navLinks = [
         alt="SUTENS"
         width="329"
         height="72"
-        class="h-8 w-auto sm:h-10"
+        class="h-6 w-auto min-[380px]:h-8 sm:h-10"
         loading="eager"
       />
     </a>
@@ -37,7 +38,7 @@ const navLinks = [
     <div class="hidden items-center gap-2 xl:flex">
       <div id="acciones-publicas" class="flex items-center gap-2">
         <a href="/login.html" class="btn btn-outline text-sm">Iniciar sesión</a>
-        <a href="/Afiliate/" class="btn btn-accent text-sm">Afíliate</a>
+        <a href="/Afiliate/" class="btn btn-accent text-sm btn-shimmer">Afíliate</a>
       </div>
       <div id="acciones-sesion" class="flex items-center gap-2" hidden>
         <span id="nombre-sesion" class="max-w-24 truncate 2xl:max-w-36 text-sm font-bold text-ink" aria-live="polite"></span>
@@ -46,22 +47,30 @@ const navLinks = [
       </div>
     </div>
 
-    <!-- Botón hamburguesa móvil -->
-    <button
-      id="menu-btn"
-      class="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-line bg-white/80 text-brand-900 shadow-sm transition hover:bg-verde-suave xl:hidden"
-      type="button"
-      aria-expanded="false"
-      aria-controls="menu"
-      aria-label="Abrir menú"
-    >
-      <svg class="menu-icon-open h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-        <path d="M4 7h16M4 12h10M4 17h16"/>
-      </svg>
-      <svg class="menu-icon-close hidden h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-        <path d="M6 6l12 12M18 6L6 18"/>
-      </svg>
-    </button>
+    <div class="flex shrink-0 items-center gap-2 xl:hidden">
+      <a id="acceso-publico-movil" class="mobile-access" href="/login.html">Iniciar sesión</a>
+      <a id="acceso-sesion-movil" class="mobile-access" href="/dashboard.html" hidden>Ir al panel</a>
+
+      <button
+        id="menu-btn"
+        class:list={[
+          'flex h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-line bg-white/80 text-brand-900 transition hover:bg-verde-suave xl:hidden',
+          isHome ? 'w-11 min-[420px]:w-auto min-[420px]:px-3 text-sm font-bold' : 'w-11 shadow-sm',
+        ]}
+        type="button"
+        aria-expanded="false"
+        aria-controls="menu"
+        aria-label="Abrir menú"
+      >
+        {isHome && <span class="hidden min-[420px]:inline">Menú</span>}
+        <svg class="menu-icon-open h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M4 7h16M4 12h10M4 17h16"/>
+        </svg>
+        <svg class="menu-icon-close hidden h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18"/>
+        </svg>
+      </button>
+    </div>
   </div>
 
   <!-- Menú móvil -->
@@ -80,12 +89,10 @@ const navLinks = [
 
       <div class="mt-4 grid gap-2 border-t border-line pt-4">
         <div id="acciones-publicas-movil" class="grid gap-2">
-          <a href="/login.html" class="btn btn-primary w-full">Iniciar sesión</a>
           <a href="/Afiliate/" class="btn btn-accent w-full">Afíliate a SUTENS</a>
         </div>
         <div id="acciones-sesion-movil" class="grid gap-2" hidden>
           <span id="nombre-sesion-movil" class="px-1 py-1 text-sm font-bold text-ink" aria-live="polite"></span>
-          <a href="/dashboard.html" class="btn btn-outline w-full">Ir al panel</a>
           <button id="cerrar-sesion-movil" class="btn btn-primary w-full" type="button">Cerrar sesión</button>
         </div>
       </div>
@@ -98,10 +105,53 @@ const navLinks = [
   #menu-btn.is-open .menu-icon-open { display: none; }
   #menu-btn.is-open .menu-icon-close { display: block; }
 
+  .mobile-access {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 0.8rem;
+    border-radius: 999px;
+    background: var(--ui-verde-900);
+    color: white;
+    font-size: 0.8125rem;
+    font-weight: 800;
+    white-space: nowrap;
+    transition: background var(--ui-t);
+  }
+
+  .mobile-access:hover {
+    background: var(--ui-verde-700);
+  }
+
   .mobile-menu {
     max-height: calc(100dvh - 4rem - 1px);
     overflow-y: auto;
     overscroll-behavior: contain;
+  }
+
+  .site-header.home-header {
+    background: #0a291d;
+    border-bottom-color: #396346;
+    color: #eef8ed;
+  }
+
+  .home-header .nav-link, .home-header #nombre-sesion { color: #edf7ec; }
+  .home-header .nav-link:is(:hover, .is-active) { background: #214d35; color: white; }
+  .home-header a[aria-label="SUTENS, inicio"] { background: #f4f8ed; padding: .3rem .6rem; }
+  .home-header :focus-visible { outline: 3px solid #ffc762; outline-offset: 2px; }
+  .home-header .mobile-menu { color: #183c29; }
+
+  .home-header .mobile-menu {
+    position: absolute;
+    inset-inline: 0;
+    top: 100%;
+    box-shadow: var(--ui-sombra-2);
+  }
+
+  .home-header .menu-link.is-active {
+    background: var(--verde-suave);
+    color: var(--ui-verde-900);
   }
 
   @media (min-width: 640px) {
@@ -143,10 +193,17 @@ const navLinks = [
     if (!menu || menu.hidden || !(event.target instanceof Element)) return;
     if (!event.target.closest('#menu') && !event.target.closest('#menu-btn')) setMenu(false);
   });
+  header?.addEventListener('focusout', (event) => {
+    if (header.classList.contains('home-header') && menu && !menu.hidden &&
+        event.relatedTarget instanceof Node && !header.contains(event.relatedTarget)) {
+      setMenu(false);
+    }
+  });
   desktopQuery.addEventListener('change', (event) => { if (event.matches) setMenu(false); });
 
   function updateHeader() {
     header?.classList.toggle('is-scrolled', window.scrollY > 8);
+
   }
 
   updateHeader();
@@ -154,6 +211,9 @@ const navLinks = [
 
   // ── Indicador de sección activa ──
   const navLinks = document.querySelectorAll<HTMLElement>('.nav-link[data-nav-section]');
+  const activeLinks = header?.classList.contains('home-header')
+    ? document.querySelectorAll<HTMLElement>('#site-header [data-nav-section]')
+    : navLinks;
 
   function updateActiveLink() {
     const sections = Array.from(navLinks)
@@ -166,8 +226,11 @@ const navLinks = [
       if (section.offsetTop <= scrollMid) activeId = section.id;
     }
 
-    navLinks.forEach(link => {
-      link.classList.toggle('is-active', link.dataset.navSection === activeId);
+    activeLinks.forEach(link => {
+      const isActive = link.dataset.navSection === activeId;
+      link.classList.toggle('is-active', isActive);
+      if (isActive) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
     });
   }
 
@@ -180,6 +243,8 @@ const navLinks = [
   const accionesSesion = document.getElementById('acciones-sesion');
   const accionesPublicasMovil = document.getElementById('acciones-publicas-movil');
   const accionesSesionMovil = document.getElementById('acciones-sesion-movil');
+  const accesoPublicoMovil = document.getElementById('acceso-publico-movil');
+  const accesoSesionMovil = document.getElementById('acceso-sesion-movil');
 
   function mostrarSesion(nombre: string) {
     const nombreEscritorio = document.getElementById('nombre-sesion');
@@ -190,6 +255,8 @@ const navLinks = [
     if (accionesSesion) accionesSesion.hidden = false;
     if (accionesPublicasMovil) accionesPublicasMovil.hidden = true;
     if (accionesSesionMovil) accionesSesionMovil.hidden = false;
+    if (accesoPublicoMovil) accesoPublicoMovil.hidden = true;
+    if (accesoSesionMovil) accesoSesionMovil.hidden = false;
   }
 
   async function cargarSesion() {

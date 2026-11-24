@@ -5,7 +5,7 @@ import { normalizarNombre } from '../utils/nombre.js';
 import { textoAvisoDatos, versionAvisoDatos } from '../services/consentimiento.service.js';
 
 // Lista de afiliados (con filtro opcional por estado). Solo Administrador.
-export async function consultarAfiliados(req, idSubdirectiva = null, idsAfiliados = null) {
+export async function consultarAfiliados(req, subdirectivasPermitidas = null, idsAfiliados = null) {
   const params = [];
   const condiciones = [];
   const condicionesAsignacion = [];
@@ -14,12 +14,13 @@ export async function consultarAfiliados(req, idSubdirectiva = null, idsAfiliado
     params.push(idsAfiliados);
     condiciones.push(`a.id_afiliado = ANY($${params.length}::bigint[])`);
   }
-  if (idSubdirectiva) {
-    params.push(idSubdirectiva);
-    condicionesAsignacion.push(`sa0.id_subdirectiva = $${params.length}`);
+  if (subdirectivasPermitidas) {
+    params.push(subdirectivasPermitidas);
+    condicionesAsignacion.push(`sa0.id_subdirectiva = ANY($${params.length}::bigint[])`);
     filtraAsignacion = true;
     condiciones.push("a.estado = 'aprobado'");
-  } else if (req.query.id_subdirectiva) {
+  }
+  if (req.query.id_subdirectiva) {
     params.push(req.query.id_subdirectiva);
     condicionesAsignacion.push(`sa0.id_subdirectiva = $${params.length}`);
     filtraAsignacion = true;
@@ -267,7 +268,7 @@ export async function eliminarAfiliado(req, res) {
     await client.query('SELECT pg_advisory_xact_lock(781204)');
 
     const { rows: afiliados } = await client.query(
-      `SELECT u.id_usuario
+      `SELECT u.id_usuario, a.id_persona
        FROM afiliado a
        LEFT JOIN usuario u ON u.id_afiliado = a.id_afiliado
        WHERE a.id_afiliado = $1
@@ -302,12 +303,12 @@ export async function eliminarAfiliado(req, res) {
       }
     }
 
-    await client.query('DELETE FROM afiliado WHERE id_afiliado = $1', [id]);
+    await client.query('DELETE FROM persona WHERE id_persona = $1', [afiliados[0].id_persona]);
     await client.query('COMMIT');
     return res.json({ mensaje: 'Afiliado eliminado permanentemente' });
   } catch (err) {
     await client.query('ROLLBACK').catch(() => {});
-    if (err.code === '23503') {
+    if (['23001', '23503'].includes(err.code)) {
       return res.status(409).json({
         error: 'No se puede eliminar el afiliado porque existen registros asociados que deben conservarse',
       });

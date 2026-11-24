@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { manejarAsync } from '../middleware/errores.js';
 import multer from 'multer';
 import path from 'node:path';
 import {
@@ -48,17 +49,17 @@ function manejarArchivo(req, res, next) {
 
 const router = Router();
 router.use(autenticar);
-router.get('/educativa/materias', listarMateriasEducativas);
-router.get('/educativa', listarBibliotecaEducativa);
-router.get('/educativa/:id/archivo', descargarDocumentoEducativo);
-router.post('/educativa', manejarArchivo, cargarDocumentoEducativo);
-router.delete('/educativa/:id', eliminarDocumentoEducativo);
-router.get('/', listarDocumentos);
-router.get('/categorias', listarCategorias);
-router.get('/:id/archivo', descargarDocumento);
-router.patch('/:id', manejarArchivo, editarDocumento);
-router.patch('/:id/publicacion', actualizarPublicacionDocumento);
-router.delete('/:id', eliminarDocumento);
-router.post('/', manejarArchivo, cargarDocumento);
+router.get('/educativa/materias', manejarAsync(listarMateriasEducativas));
+router.get('/educativa', manejarAsync(listarBibliotecaEducativa));
+router.get('/educativa/:id/archivo', manejarAsync(descargarDocumentoEducativo));
+router.post('/educativa', manejarArchivo, manejarAsync(cargarDocumentoEducativo));
+router.delete('/educativa/:id', manejarAsync(eliminarDocumentoEducativo));
+router.get('/', manejarAsync(listarDocumentos));
+router.get('/categorias', manejarAsync(listarCategorias));
+router.get('/:id/archivo', manejarAsync(descargarDocumento));
+router.patch('/:id', manejarArchivo, manejarAsync(editarDocumento));
+router.patch('/:id/publicacion', manejarAsync(actualizarPublicacionDocumento));
+router.delete('/:id', manejarAsync(eliminarDocumento));
+router.post('/', manejarArchivo, manejarAsync(cargarDocumento));
 
 export default router;

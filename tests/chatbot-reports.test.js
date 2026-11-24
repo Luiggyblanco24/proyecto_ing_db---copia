@@ -16,8 +16,8 @@ import {
 } from '../src/services/chatbot-report.service.js';
 import { autenticar } from '../src/middleware/auth.js';
 import {
-  exigirDescargasHabilitadas, limitarDescargasChatbot, limpiarLimitesDescargasParaPruebas,
-  politicaDescargas, registrarAuditoriaDescarga, registrarVolumenDescarga,
+  limpiarLimitesDescargasParaPruebas,
+  registrarAuditoriaDescarga, registrarVolumenDescarga,
 } from '../src/middleware/chatbot-download-policy.js';
 
 function respuestaFalsa() {
@@ -329,21 +329,28 @@ test('el widget renderiza resultados con textContent y no inserta HTML', async (
   assert.match(fuente, /resultado\.descargas_habilitadas === true/);
 });
 
-test('descargas están deshabilitadas por defecto y tienen límites independientes', () => {
-  assert.equal(politicaDescargas.habilitadas, false);
-  assert.equal(politicaDescargas.maxRegistros, 1000);
+test('descargas están deshabilitadas por defecto y tienen límites independientes', async () => {
+  const configuracion = Object.entries(process.env).filter(([nombre]) => nombre.startsWith('CHATBOT_DOWNLOAD'));
+  let modulo;
+  try {
+    for (const [nombre] of configuracion) delete process.env[nombre];
+    modulo = await import('../src/middleware/chatbot-download-policy.js?valores-predeterminados');
+  } finally {
+    for (const [nombre, valor] of configuracion) process.env[nombre] = valor;
+  }
+  assert.equal(modulo.politicaDescargas.habilitadas, false);
+  assert.equal(modulo.politicaDescargas.maxRegistros, 1000);
   const res = respuestaFalsa();
-  exigirDescargasHabilitadas({}, res, () => assert.fail('No debe habilitarse por defecto'));
+  modulo.exigirDescargasHabilitadas({}, res, () => assert.fail('Las descargas requieren habilitación'));
   assert.equal(res.statusCode, 404);
-  limpiarLimitesDescargasParaPruebas();
   let permitidos = 0;
   for (let i = 0; i < 6; i += 1) {
     const respuesta = respuestaFalsa();
-    limitarDescargasChatbot({ user: { id_usuario: 77 } }, respuesta, () => { permitidos += 1; });
+    modulo.limitarDescargasChatbot({ user: { id_usuario: 77 } }, respuesta, () => { permitidos += 1; });
     if (i === 5) assert.equal(respuesta.statusCode, 429);
   }
   assert.equal(permitidos, 5);
-  limpiarLimitesDescargasParaPruebas();
+  modulo.limpiarLimitesDescargasParaPruebas();
 });
 
 test('auditoría y alerta de volumen no incluyen valores de filtros ni datos personales', () => {

@@ -78,7 +78,8 @@ export async function autenticar(req, res, next) {
     const rutaActual = req.originalUrl.split('?')[0];
     const endpointCambioTemporal = rutaActual.endsWith('/api/auth/cambiar-contrasena-temporal');
     const consultaPerfil = req.method === 'GET' && rutaActual.endsWith('/api/auth/me');
-    if (req.user.requiere_cambio_contrasena && !endpointCambioTemporal && !consultaPerfil) {
+    const cierreSesion = req.method === 'POST' && rutaActual.toLowerCase().replace(/\/$/, '') === '/api/auth/logout';
+    if (req.user.requiere_cambio_contrasena && !endpointCambioTemporal && !consultaPerfil && !cierreSesion) {
       return res.status(403).json({
         error: 'Debes cambiar tu contraseña temporal para continuar',
         requiere_cambio_contrasena: true,

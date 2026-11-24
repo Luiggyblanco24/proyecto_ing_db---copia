@@ -1,5 +1,5 @@
 -- ============================================================================
--- SUTENS - Datos semilla (catálogos base + ejemplos)
+-- SUTENS - Datos semilla (catálogos base y galería)
 -- Ejecutar DESPUÉS de schema.sql
 -- ============================================================================
 
@@ -65,47 +65,6 @@ FROM (VALUES
 JOIN subdirectiva sd ON sd.nombre = sedes.subdirectiva
 JOIN institucion i ON i.id_subdirectiva = sd.id_subdirectiva
                  AND i.nombre = sedes.institucion;
-
--- ----------------------------------------------------------------------------
--- Ejemplo: un administrador (persona -> afiliado -> usuario -> rol)
--- ----------------------------------------------------------------------------
-
-INSERT INTO persona (nombre1, nombre2, apellido1, apellido2, cedula, fecha_nacimiento, correo, celular)
-VALUES ('Ana', 'María', 'Pérez', 'López', '1090123456', '1985-04-12', 'ana.perez@sutens.org', '3001234567');
-
-INSERT INTO afiliado (id_persona, estado, fecha_aprobacion, estado_sindical)
-VALUES (1, 'aprobado', now(), 'activo');
-
--- Contraseña: "admin123" (hash bcrypt generado; cámbialo con tu propio bcrypt)
-INSERT INTO usuario (id_afiliado, usuario, password_hash)
-VALUES (1, 'admin', '$2a$10$mj.5ACt7xJMOMXma4Nc3F.W6fUL6eU9B3TviE4sajCahkUCRAhRdC');
-
-INSERT INTO usuario_rol (id_usuario, id_rol_sistema)
-VALUES (1, 1);  -- Administrador SUTENS
-
--- ----------------------------------------------------------------------------
--- Ejemplo: un documento sindical y uno educativo
--- ----------------------------------------------------------------------------
-
-INSERT INTO documento (titulo, descripcion, id_tipo_documento, id_afiliado, id_subdirectiva)
-VALUES ('Acta de asamblea general 2026', 'Acta de la asamblea ordinaria de docentes.', 1, 1, 1);
-
-INSERT INTO documento_sindical (id_documento, id_categoria)
-VALUES (1, 1);  -- Acta
-
-INSERT INTO documento (titulo, descripcion, id_tipo_documento, id_afiliado, id_subdirectiva)
-VALUES ('Guía de matemáticas grado 10', 'Material de apoyo para docentes.', 2, 1, 2);
-
-INSERT INTO documento_educativo (id_documento, id_materia, grado)
-VALUES (2, 3, '10');
-
--- ----------------------------------------------------------------------------
--- Ejemplo: un evento
--- ----------------------------------------------------------------------------
-
-INSERT INTO evento (titulo, descripcion, fecha_inicio, fecha_fin, lugar, id_subdirectiva, id_usuario)
-VALUES ('Asamblea de docentes', 'Asamblea ordinaria del sindicato.',
-        '2026-10-15 09:00:00-05', '2026-10-15 12:00:00-05', 'Auditorio Central', 1, 1);
 
 INSERT INTO galeria_sutens (descripcion, imagen_url, orden) VALUES
     ('Actividad sindical SUTENS 1', '/Actividades/1.jpg', 1),

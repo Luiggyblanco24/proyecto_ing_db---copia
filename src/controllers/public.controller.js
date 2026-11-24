@@ -26,6 +26,11 @@ function responderConFotos(res, rows) {
   }
 }
 
+export async function contarSubdirectivas(req, res) {
+  const { rows: [resultado] } = await query('SELECT count(*)::int AS total FROM subdirectiva WHERE NOT es_principal');
+  return res.json(resultado);
+}
+
 export async function listarDirectivaDepartamental(req, res) {
   const { rows } = await query(
     `SELECT concat_ws(' ', p.nombre1, p.nombre2, p.apellido1, p.apellido2) AS nombre,

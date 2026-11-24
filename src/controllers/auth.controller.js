@@ -324,8 +324,8 @@ export async function actualizarPerfil(req, res) {
   if (!nombrePrincipal || !apellidoPrincipal || !correoNormalizado || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoNormalizado)) {
     return res.status(400).json({ error: 'Nombre, apellido y un correo válido son obligatorios' });
   }
-  if (nuevaContrasena && (typeof nuevaContrasena !== 'string' || nuevaContrasena.length < 8)) {
-    return res.status(400).json({ error: 'La nueva contraseña debe tener al menos 8 caracteres' });
+  if (nuevaContrasena && (typeof nuevaContrasena !== 'string' || nuevaContrasena.length < 8 || Buffer.byteLength(nuevaContrasena, 'utf8') > 72)) {
+    return res.status(400).json({ error: 'La nueva contraseña debe tener al menos 8 caracteres y máximo 72 bytes' });
   }
   if (nuevaContrasena && !contrasenaActual) {
     return res.status(400).json({ error: 'Escribe tu contraseña actual para cambiarla' });
@@ -394,11 +394,14 @@ export async function actualizarPerfil(req, res) {
     if (personas.length === 0) throw new Error('No se encontró el perfil de la cuenta');
     fotoAnterior = cuentas[0].foto_perfil_url;
 
+    let token;
     if (nuevaContrasena) {
-      await client.query(
-        'UPDATE usuario SET password_hash = $1, updated_at = now() WHERE id_usuario = $2',
+      const { rows: [cuenta] } = await client.query(
+        `UPDATE usuario SET password_hash = $1, auth_version = auth_version + 1, updated_at = now()
+         WHERE id_usuario = $2 RETURNING auth_version`,
         [await bcrypt.hash(nuevaContrasena, 10), req.user.id_usuario]
       );
+      token = await emitirTokenSesion({ ...req.user, auth_version: cuenta.auth_version }, client.query.bind(client));
     }
 
     await client.query('COMMIT');
@@ -414,6 +417,7 @@ export async function actualizarPerfil(req, res) {
     }
     return res.json({
       mensaje: 'Tu perfil se actualizó correctamente',
+      ...(token ? { token } : {}),
       ...(advertencia ? { advertencia } : {}),
     });
   } catch (err) {

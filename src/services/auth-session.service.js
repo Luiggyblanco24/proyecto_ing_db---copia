@@ -15,14 +15,14 @@ function segundosDeExpiracion(valor) {
   throw new Error('JWT_EXPIRES_IN debe usar segundos o un sufijo s, m, h o d');
 }
 
-export async function emitirTokenSesion(usuario) {
+export async function emitirTokenSesion(usuario, ejecutarConsulta = query) {
   const duracionSegundos = segundosDeExpiracion(expiracionJwt);
   if (!Number.isSafeInteger(duracionSegundos) || duracionSegundos < 1) {
     throw new Error('JWT_EXPIRES_IN debe ser una duración positiva válida');
   }
 
   const idSesion = randomUUID();
-  await query(
+  await ejecutarConsulta(
     `INSERT INTO sesion_usuario (id_sesion, id_usuario, auth_version, expira_at)
      VALUES ($1, $2, $3, now() + ($4 * INTERVAL '1 second'))`,
     [idSesion, usuario.id_usuario, usuario.auth_version, duracionSegundos]

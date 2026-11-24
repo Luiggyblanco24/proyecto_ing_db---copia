@@ -391,18 +391,20 @@ div[id] {
 }
 
 /* ---------- Revelado al hacer scroll ---------- */
+/* El contenido sigue visible si JavaScript no inicializa el observador. */
 @media (prefers-reduced-motion: no-preference) {
-  .js .reveal {
+  .reveal-pending:not(:focus-within) {
     opacity: 0;
-    transform: translateY(16px);
-    transition: opacity 0.55s var(--ui-t), transform 0.55s var(--ui-t);
-    transition-delay: var(--reveal-delay, 0ms);
   }
-}
 
-.js .reveal.is-visible {
-  opacity: 1;
-  transform: none;
+  .reveal.is-visible:not(:focus-within) {
+    animation: entrada-portada 800ms cubic-bezier(.2,.7,.2,1) var(--reveal-delay, 0ms) backwards;
+  }
+
+  @keyframes entrada-portada {
+    from { opacity: 0; transform: translateY(32px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 }
 
 /* ---------- Movimiento reducido ---------- */
@@ -428,4 +430,129 @@ div[id] {
   .card-hover:hover {
     transform: none;
   }
+}
+
+/* ══════════════════════════════════════
+   ANIMACIONES VIVAS — Etapa 7+
+   ══════════════════════════════════════ */
+
+/* ── Partículas flotantes hero ── */
+@keyframes float-1 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33%     { transform: translate(8px,-12px) scale(1.08); }
+  66%     { transform: translate(-6px,8px) scale(0.94); }
+}
+@keyframes float-2 {
+  0%,100% { transform: translate(0,0); }
+  50%     { transform: translate(-10px,-16px); }
+}
+@keyframes float-3 {
+  0%,100% { transform: translate(0,0) rotate(0deg); }
+  50%     { transform: translate(12px,10px) rotate(180deg); }
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: transform;
+}
+.particle-1 { animation: float-1 7s ease-in-out infinite; }
+.particle-2 { animation: float-2 9s ease-in-out infinite 1s; }
+.particle-3 { animation: float-3 6s ease-in-out infinite 2s; }
+.particle-4 { animation: float-1 8s ease-in-out infinite 0.5s; }
+.particle-5 { animation: float-2 10s ease-in-out infinite 3s; }
+
+/* ── Hero stagger ── */
+@keyframes slide-up-fade {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hero-animate { animation: slide-up-fade 700ms cubic-bezier(.2,.7,.2,1) both; }
+.hero-animate-1 { animation-delay: 0ms; }
+.hero-animate-2 { animation-delay: 120ms; }
+.hero-animate-3 { animation-delay: 240ms; }
+.hero-animate-4 { animation-delay: 360ms; }
+.hero-animate-5 { animation-delay: 480ms; }
+
+/* ── Shimmer botones ── */
+@keyframes btn-shimmer {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
+  transform: translateX(-120%);
+  animation: btn-shimmer 2.8s ease-in-out 1.5s infinite;
+  pointer-events: none;
+}
+.btn-accent {
+  position: relative;
+  overflow: hidden;
+}
+.btn-accent::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+  transform: translateX(-120%);
+  animation: btn-shimmer 3s ease-in-out 2s infinite;
+  pointer-events: none;
+}
+
+/* ── Reveal zoom variante ── */
+@keyframes entrada-zoom {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .reveal.zoom.is-visible:not(:focus-within) {
+    animation: entrada-zoom 600ms cubic-bezier(.2,.7,.2,1) var(--reveal-delay, 0ms) backwards;
+  }
+}
+
+/* ── Cifras dark strip ── */
+.cifras-dark-strip {
+  background: linear-gradient(135deg, #071a0e 0%, #0a2715 40%, #14532d 60%, #0a2715 80%, #071a0e 100%);
+  border-radius: 2rem;
+  overflow: hidden;
+}
+.cifras-dark-strip::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    135deg,
+    rgba(255,255,255,0.025) 0 1px,
+    transparent 1px 28px
+  );
+  pointer-events: none;
+}
+
+/* ── Beneficios hover mejorado ── */
+.beneficio-card {
+  transition: transform 300ms cubic-bezier(.2,.7,.2,1), box-shadow 300ms cubic-bezier(.2,.7,.2,1), border-color 200ms ease;
+}
+.beneficio-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(21,128,61,0.15), 0 4px 12px rgba(21,128,61,0.08);
+  border-color: #86efac;
+}
+
+/* ── Principios cards hover ── */
+.principio-card {
+  transition: transform 300ms cubic-bezier(.2,.7,.2,1), box-shadow 300ms ease, border-left-color 200ms ease;
+  border-left: 4px solid transparent;
+}
+.principio-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 32px rgba(21,128,61,0.12);
+  border-left-color: #15803d;
 }

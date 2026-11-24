@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { manejarAsync } from '../middleware/errores.js';
 import {
 	actualizarAsistencia,
 	crearEvento,
@@ -15,14 +16,14 @@ import { autenticar } from '../middleware/auth.js';
 const router = Router();
 
 router.use(autenticar);
-router.get('/eventos', listarEventos);
-router.get('/eventos/:id/asistentes/exportar', exportarAsistentes);
-router.get('/notificaciones', listarNotificaciones);
-router.patch('/notificaciones/leer', marcarNotificacionesLeidas);
-router.post('/eventos', crearEvento);
-router.patch('/eventos/:id/asistencia', actualizarAsistencia);
-router.patch('/eventos/:id/realizado', marcarEventoRealizado);
-router.patch('/eventos/:id/cancelar', cancelarEvento);
-router.delete('/eventos/:id', eliminarEvento);
+router.get('/eventos', manejarAsync(listarEventos));
+router.get('/eventos/:id/asistentes/exportar', manejarAsync(exportarAsistentes));
+router.get('/notificaciones', manejarAsync(listarNotificaciones));
+router.patch('/notificaciones/leer', manejarAsync(marcarNotificacionesLeidas));
+router.post('/eventos', manejarAsync(crearEvento));
+router.patch('/eventos/:id/asistencia', manejarAsync(actualizarAsistencia));
+router.patch('/eventos/:id/realizado', manejarAsync(marcarEventoRealizado));
+router.patch('/eventos/:id/cancelar', manejarAsync(cancelarEvento));
+router.delete('/eventos/:id', manejarAsync(eliminarEvento));
 
 export default router;

@@ -12,16 +12,20 @@ const principios = [
 ];
 ---
 
-<section id="quienes-somos" class="relative overflow-hidden bg-[#f6faf7] px-4 pt-24 pb-32 sm:px-6 sm:pb-40">
+<section id="quienes-somos" class="relative overflow-hidden landing-mint px-4 py-16 sm:px-6 sm:py-24">
   <div class="absolute inset-0 overflow-hidden pointer-events-none">
-    <div class="absolute -right-40 top-40 h-80 w-80 rounded-full bg-brand-700/[0.08] blur-[100px]" aria-hidden="true"></div>
-    <div class="absolute -left-40 bottom-40 h-72 w-72 rounded-full bg-brand-900/[0.06] blur-[80px]" aria-hidden="true"></div>
+    <div class="absolute -right-40 top-40 h-96 w-96 rounded-full bg-brand-700/[0.10] blur-[120px]" aria-hidden="true"></div>
+    <div class="absolute -left-40 bottom-40 h-80 w-80 rounded-full bg-brand-900/[0.08] blur-[90px]" aria-hidden="true"></div>
+    <div class="absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400/[0.04] blur-[100px]" aria-hidden="true"></div>
   </div>
 
   <div class="relative mx-auto max-w-6xl">
-    <header class="max-w-3xl mx-auto text-center reveal mb-20">
+    <header class="max-w-3xl mx-auto text-center reveal mb-10 sm:mb-14">
       <p class="eyebrow inline-flex items-center gap-2 text-brand-700 mb-3">
-        <span class="h-1 w-1 rounded-full bg-brand-700"></span>
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-700 opacity-60"></span>
+          <span class="relative inline-flex h-2 w-2 rounded-full bg-brand-700"></span>
+        </span>
         Quiénes somos
       </p>
       <h2 class="display mb-6 text-3xl tracking-tight text-ink sm:text-5xl lg:text-6xl">
@@ -32,12 +36,12 @@ const principios = [
       </p>
     </header>
 
-    <div class="mt-16 grid gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-      <div class="reveal">
+    <div class="grid gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+      <div class="relative reveal">
         <div class="relative group">
-          <div class="absolute -inset-3 rounded-[2.5rem] bg-brand-700/[0.08] sm:-inset-5" aria-hidden="true"></div>
-          <div class="relative aspect-[4/3] overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
-            <div class="h-full overflow-hidden rounded-1.5xl">
+          <div class="absolute -inset-3 rounded-[2.5rem] bg-brand-700/[0.08] sm:-inset-5 transition-all duration-500 group-hover:bg-brand-700/[0.14]" aria-hidden="true"></div>
+          <div class="relative aspect-[4/3] overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-xl transition-shadow duration-500 group-hover:shadow-2xl">
+            <div class="h-full overflow-hidden rounded-xl">
               <Picture
                 data-imagen-portada="quienes-somos"
                 src={aboutPhoto}
@@ -49,13 +53,13 @@ const principios = [
                 loading="lazy"
                 decoding="async"
                 quality={82}
-                class="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+                class="w-full h-full object-cover transition duration-700 group-hover:scale-105"
               />
             </div>
           </div>
         </div>
 
-        <div class="absolute -bottom-8 left-0 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/95 px-5 py-4 shadow-xl backdrop-blur-sm sm:left-8">
+        <div class="absolute -bottom-8 left-0 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/95 px-5 py-4 shadow-xl backdrop-blur-sm sm:left-8 transition-transform duration-300 hover:scale-[1.03]">
           <span class="grid h-11 w-11 place-items-center rounded-xl bg-brand-900 text-white">
             <Icono name="book" class="h-5 w-5" />
           </span>
@@ -87,26 +91,26 @@ const principios = [
           </p>
 
           <div class="mt-10 flex flex-wrap gap-3">
-            <a href="/Nosotros/" class="group flex items-center gap-3 px-5 py-3 rounded-2xl border border-brand-900 bg-brand-900 text-white shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
+            <a href="/Nosotros/" class="group flex items-center gap-3 px-5 py-3 rounded-2xl border border-brand-900 bg-brand-900 text-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_rgba(21,128,61,0.3)] active:scale-[0.98]">
               Conoce la directiva
-              <Icono name="arrow-right" class="h-4 w-4 text-[#fbbf24]" />
+              <Icono name="arrow-right" class="h-4 w-4 text-[#fbbf24] transition-transform duration-300 group-hover:translate-x-1" />
             </a>
-            <a href="/Secretarias/" class="group flex items-center gap-3 px-5 py-3 rounded-2xl border border-brand-900 bg-white text-brand-900 shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
+            <a href="/Secretarias/" class="group flex items-center gap-3 px-5 py-3 rounded-2xl border border-brand-900 bg-white text-brand-900 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_16px_rgba(21,128,61,0.15)] active:scale-[0.98]">
               Ver subdirectivas
-              <Icono name="arrow-right" class="h-4 w-4 text-brand-900" />
+              <Icono name="arrow-right" class="h-4 w-4 text-brand-900 transition-transform duration-300 group-hover:translate-x-1" />
             </a>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="mt-24 grid gap-6 lg:grid-cols-3">
+    <div class="mt-24 grid gap-6 lg:grid-cols-3 xl:grid-cols-5">
       {principios.map((principio, index) => (
-        <article class="group p-8 rounded-2xl border border-slate-200 bg-white shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] reveal" style={`--reveal-delay: ${index * 60}ms`}>
-          <span class="grid h-14 w-14 place-items-center rounded-3xl bg-verde-suave text-brand-700 shadow-sm">
+        <article class="principio-card group p-7 rounded-2xl border border-slate-200 bg-white shadow-md reveal" style={`--reveal-delay: ${index * 70}ms`}>
+          <span class="grid h-13 w-13 place-items-center rounded-2xl bg-verde-suave text-brand-700 shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:bg-brand-700 group-hover:text-white">
             <Icono name="check" class="h-7 w-7" />
           </span>
-          <h4 class="mt-6 text-lg font-extrabold text-ink">{principio}</h4>
+          <h4 class="mt-5 text-base font-extrabold text-ink leading-snug">{principio}</h4>
         </article>
       ))}
     </div>
@@ -121,4 +125,7 @@ const principios = [
     height: 100%;
     object-fit: cover;
   }
+
+  .h-13 { height: 3.25rem; }
+  .w-13 { width: 3.25rem; }
 </style>

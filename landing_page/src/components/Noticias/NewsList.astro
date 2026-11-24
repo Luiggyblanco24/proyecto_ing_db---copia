@@ -8,6 +8,7 @@ const formattedNews = news.map((item) => ({
     day: 'numeric',
     month: 'short',
     year: 'numeric',
+    timeZone: 'UTC',
   }),
 }));
 ---
@@ -35,7 +36,7 @@ const formattedNews = news.map((item) => ({
         <h3 class="mt-2 text-lg font-extrabold leading-snug text-ink transition-colors group-hover:text-primary">{item.title}</h3>
         <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">{item.description}</p>
         <a
-          href={`/news/${item.id}`}
+          href={`/News/${item.id}/`}
           class="mt-4 inline-flex items-center gap-2 text-sm font-extrabold text-primary transition-colors hover:text-primary/80"
         >
           Leer más

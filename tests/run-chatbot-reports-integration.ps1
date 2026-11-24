@@ -10,6 +10,7 @@ $logFile = Join-Path $testRoot 'postgres.log'
 $pgCtl = Join-Path $PostgresBin 'pg_ctl.exe'
 $initDb = Join-Path $PostgresBin 'initdb.exe'
 $previousTestUrl = $env:CHATBOT_TEST_ADMIN_URL
+$previousPsql = $env:SUTENS_TEST_PSQL
 $serverStarted = $false
 $safeToRemove = $false
 $exitCode = 0
@@ -40,12 +41,14 @@ try {
 
   $env:CHATBOT_TEST_ADMIN_URL = "postgresql://sutens_test@127.0.0.1:$port/postgres"
   Set-Location $repoRoot
-  & node --test tests/chatbot-reports.integration.test.js
+  $env:SUTENS_TEST_PSQL = Join-Path $PostgresBin 'psql.exe'
+  & node --test tests/chatbot-reports.integration.test.js tests/auditoria.integration.test.js
   $exitCode = $LASTEXITCODE
 } catch {
   Write-Error $_
   $exitCode = 1
 } finally {
+  $env:SUTENS_TEST_PSQL = $previousPsql
   if ($serverStarted) {
     & $pgCtl -D $dataDirectory -m fast -w stop
     if ($LASTEXITCODE -eq 0) {

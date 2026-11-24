@@ -13,7 +13,8 @@ const cargosGenerales = [
 async function obtenerCargos(req) {
   if (req.user.roles.includes('Administrador SUTENS')) return [];
   const { rows } = await query(
-    `SELECT DISTINCT sa.id_subdirectiva, sd.es_principal, cs.nombre AS cargo
+    `SELECT DISTINCT sa.id_subdirectiva, sd.es_principal,
+            CASE WHEN a.estado_sindical = 'activo' THEN cs.nombre END AS cargo
      FROM afiliado a
      JOIN subdirectiva_afiliado sa ON sa.id_afiliado = a.id_afiliado
      JOIN subdirectiva sd ON sd.id_subdirectiva = sa.id_subdirectiva
@@ -236,15 +237,6 @@ export async function buscarEventoVisible(req, idEvento) {
   return rows[0] ? { evento: rows[0], asignaciones, esAdministrador, esDirectivaPrincipal } : null;
 }
 
-// La asistencia se puede confirmar mientras la actividad no haya terminado (3 h si no tiene fin).
-function confirmacionAbierta(evento) {
-  if (evento.estado !== 'programado') return false;
-  const fin = evento.fecha_fin
-    ? new Date(evento.fecha_fin)
-    : new Date(new Date(evento.fecha_inicio).getTime() + 3 * 3600 * 1000);
-  return new Date() < fin;
-}
-
 export async function eliminarEvento(req, res) {
   const acceso = await buscarEventoVisible(req, req.params.id);
   if (!acceso) return res.status(404).json({ error: 'Actividad no encontrada' });
@@ -277,18 +269,21 @@ export async function actualizarAsistencia(req, res) {
 
   const acceso = await buscarEventoVisible(req, id);
   if (!acceso) return res.status(404).json({ error: 'Actividad no encontrada' });
-  if (!confirmacionAbierta(acceso.evento)) {
-    return res.status(409).json({ error: 'La actividad ya finalizó; no se puede cambiar la asistencia' });
-  }
-
   const { rows } = await query(
     `INSERT INTO evento_asistencia (id_evento, id_afiliado, confirmada, actualizado_at)
-     VALUES ($1, $2, $3, now())
+     SELECT evento_abierto.id_evento, $2, $3, now()
+     FROM (
+       SELECT id_evento FROM evento
+       WHERE id_evento = $1 AND estado = 'programado' AND eliminado_at IS NULL
+         AND COALESCE(fecha_fin, fecha_inicio + interval '3 hours') > clock_timestamp()
+       FOR SHARE
+     ) evento_abierto
      ON CONFLICT (id_evento, id_afiliado)
      DO UPDATE SET confirmada = EXCLUDED.confirmada, actualizado_at = now()
      RETURNING confirmada`,
     [id, req.user.id_afiliado, confirmada]
   );
+  if (!rows.length) return res.status(409).json({ error: 'La actividad ya no admite cambios de asistencia' });
   return res.json({ mensaje: confirmada ? 'Asistencia confirmada' : 'Confirmación cancelada', confirmada: rows[0].confirmada });
 }
 

@@ -29,6 +29,10 @@ export function getDocumentosPublicos() {
   return cached('documentos-publicos', () => fetchJSON('/api/public/documentos'));
 }
 
+export function getTotalSubdirectivas() {
+  return cached('total-subdirectivas', () => fetchJSON('/api/public/subdirectivas/total'));
+}
+
 export function getGaleriaPublica() {
   return cached('galeria-publica', () => fetchJSON('/api/public/galeria'));
 }

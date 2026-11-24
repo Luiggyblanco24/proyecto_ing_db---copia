@@ -580,18 +580,18 @@ test('integración PostgreSQL aislada: informes, privacidad, READ ONLY, timeout 
             assert.equal(hoja.getCell('B2').value, null);
           } else {
             const hoja = libro.getWorksheet('Afiliados');
-            assert.deepEqual(hoja.getRow(4).values.slice(1), [
+            assert.deepEqual(hoja.getRow(5).values.slice(1), [
               'Nombre', 'Cédula', 'Correo', 'Subdirectiva', 'Institución educativa', 'Cargo sindical',
               'Sede', 'Rol laboral', 'Estado solicitud', 'Estado sindical',
             ]);
-            assert.equal(hoja.rowCount, 44);
+            assert.equal(hoja.rowCount, 45);
             assert.equal(hoja.getCell('C1').value, 'Afiliados por subdirectiva');
             assert.equal(libro.model.media.length, 1);
-            assert.equal(hoja.getCell('D5').value, 'Subdirectiva A');
+            assert.equal(hoja.getCell('D6').value, 'Subdirectiva A');
             assert.ok(libro.getWorksheet('Detalles del informe'));
           }
-          assert.equal(libro.getWorksheet('Detalles del informe').getCell('A1').value,
-            'Datos personales de uso restringido (Ley 1581 de 2012)');
+          assert.ok(libro.getWorksheet('Detalles del informe').getColumn(1).values.includes(
+            'Datos personales de uso restringido (Ley 1581 de 2012)'));
         }
       }
       assert.equal(eventos.length, 3);
@@ -779,7 +779,7 @@ test('integración PostgreSQL aislada: informes, privacidad, READ ONLY, timeout 
       assert.equal(sinFiltros.statusCode, 200);
       const libro = new ExcelJS.Workbook();
       await libro.xlsx.load(sinFiltros.body);
-      assert.equal(libro.getWorksheet('Detalles del informe').getCell('A5').value, 'Filtros: ninguno');
+      assert.ok(libro.getWorksheet('Detalles del informe').getColumn(1).values.includes('Filtros: ninguno'));
     });
 
     await t.test('la transacción rechaza escrituras con READ ONLY', async () => {

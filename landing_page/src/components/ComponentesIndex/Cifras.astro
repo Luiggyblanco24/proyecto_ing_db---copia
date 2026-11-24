@@ -6,53 +6,61 @@ import { cifrasDinamicasConfig, cifrasEstaticas } from '../../data/cifras.js';
 const estaticasVisibles = cifrasEstaticas.filter((c) => c.visible && c.valor !== null && c.valor !== undefined);
 ---
 
-<section class="relative z-10 bg-cream px-4 sm:px-6" aria-label="SUTENS en cifras">
-  <div id="cifras-panel" class="mx-auto -mt-10 max-w-6xl sm:-mt-14" hidden>
-    <div class="relative overflow-hidden rounded-[1.75rem] border border-line bg-white p-4 shadow-[var(--ui-sombra-3)] sm:p-6">
-      <div class="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-700 via-brand-600 to-accent" aria-hidden="true"></div>
-      <div class="grid gap-3 sm:grid-cols-3">
-        <div data-metric="subdirectivas" class="stat-card flex items-center gap-4 rounded-2xl bg-cream p-4" hidden>
-          <span class={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${cifrasDinamicasConfig.subdirectivas.colorFondo} ${cifrasDinamicasConfig.subdirectivas.colorIcono} shadow-[var(--ui-sombra-1)]`}>
+<section class="relative z-10 landing-mint px-4 sm:px-6" aria-label="SUTENS en cifras">
+  <div id="cifras-panel" class="mx-auto max-w-6xl pt-8 sm:pt-10" hidden>
+    <div class="cifras-dark-strip relative overflow-hidden p-6 shadow-[0_24px_64px_rgba(7,26,14,0.5)] sm:p-8">
+      <!-- Barra superior con gradiente -->
+      <div class="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-brand-700 via-emerald-400 to-amber-400" aria-hidden="true"></div>
+
+      <!-- Encabezado strip -->
+      <div class="mb-6 text-center">
+        <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-white/50">SUTENS en cifras</p>
+        <h2 class="mt-1 text-xl font-extrabold text-white sm:text-2xl">Nuestra presencia en Norte de Santander</h2>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-3">
+        <div data-metric="subdirectivas" class="reveal stat-card flex items-center gap-4 rounded-2xl bg-white/[0.06] border border-white/[0.10] p-5 backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.10] hover:border-white/[0.20]" hidden>
+          <span class={`grid h-13 w-13 shrink-0 place-items-center rounded-2xl ${cifrasDinamicasConfig.subdirectivas.colorFondo} ${cifrasDinamicasConfig.subdirectivas.colorIcono}`}>
             <Icono name={cifrasDinamicasConfig.subdirectivas.icono} class="h-6 w-6" />
           </span>
           <div>
-            <p class="text-sm font-bold text-muted">{cifrasDinamicasConfig.subdirectivas.etiqueta}</p>
-            <p class="text-2xl font-extrabold tracking-tight text-ink"><span data-count>0</span></p>
-            <p class="text-xs font-semibold text-muted">{cifrasDinamicasConfig.subdirectivas.descripcion}</p>
+            <p class="text-xs font-bold uppercase tracking-widest text-white/50">{cifrasDinamicasConfig.subdirectivas.etiqueta}</p>
+            <p class="text-4xl font-extrabold tracking-tight text-white leading-none mt-1"><span data-count>0</span></p>
+            <p class="text-xs font-semibold text-white/40 mt-1">{cifrasDinamicasConfig.subdirectivas.descripcion}</p>
           </div>
         </div>
 
-        <div data-metric="cargos" class="stat-card flex items-center gap-4 rounded-2xl bg-cream p-4" hidden>
-          <span class={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${cifrasDinamicasConfig.cargos.colorFondo} ${cifrasDinamicasConfig.cargos.colorIcono}`}>
+        <div data-metric="cargos" class="reveal stat-card flex items-center gap-4 rounded-2xl bg-white/[0.06] border border-white/[0.10] p-5 backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.10] hover:border-white/[0.20]" hidden>
+          <span class={`grid h-13 w-13 shrink-0 place-items-center rounded-2xl ${cifrasDinamicasConfig.cargos.colorFondo} ${cifrasDinamicasConfig.cargos.colorIcono}`}>
             <Icono name={cifrasDinamicasConfig.cargos.icono} class="h-6 w-6" />
           </span>
           <div>
-            <p class="text-sm font-bold text-muted">{cifrasDinamicasConfig.cargos.etiqueta}</p>
-            <p class="text-2xl font-extrabold tracking-tight text-ink"><span data-count>0</span></p>
-            <p class="text-xs font-semibold text-muted">{cifrasDinamicasConfig.cargos.descripcion}</p>
+            <p class="text-xs font-bold uppercase tracking-widest text-white/50">{cifrasDinamicasConfig.cargos.etiqueta}</p>
+            <p class="text-4xl font-extrabold tracking-tight text-white leading-none mt-1"><span data-count>0</span></p>
+            <p class="text-xs font-semibold text-white/40 mt-1">{cifrasDinamicasConfig.cargos.descripcion}</p>
           </div>
         </div>
 
-        <div data-metric="documentos" class="stat-card flex items-center gap-4 rounded-2xl bg-cream p-4" hidden>
-          <span class={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${cifrasDinamicasConfig.documentos.colorFondo} ${cifrasDinamicasConfig.documentos.colorIcono}`}>
+        <div data-metric="documentos" class="reveal stat-card flex items-center gap-4 rounded-2xl bg-white/[0.06] border border-white/[0.10] p-5 backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.10] hover:border-white/[0.20]" hidden>
+          <span class={`grid h-13 w-13 shrink-0 place-items-center rounded-2xl ${cifrasDinamicasConfig.documentos.colorFondo} ${cifrasDinamicasConfig.documentos.colorIcono}`}>
             <Icono name={cifrasDinamicasConfig.documentos.icono} class="h-6 w-6" />
           </span>
           <div>
-            <p class="text-sm font-bold text-muted">{cifrasDinamicasConfig.documentos.etiqueta}</p>
-            <p class="text-2xl font-extrabold tracking-tight text-ink"><span data-count>0</span></p>
-            <p class="text-xs font-semibold text-muted">{cifrasDinamicasConfig.documentos.descripcion}</p>
+            <p class="text-xs font-bold uppercase tracking-widest text-white/50">{cifrasDinamicasConfig.documentos.etiqueta}</p>
+            <p class="text-4xl font-extrabold tracking-tight text-white leading-none mt-1"><span data-count>0</span></p>
+            <p class="text-xs font-semibold text-white/40 mt-1">{cifrasDinamicasConfig.documentos.descripcion}</p>
           </div>
         </div>
 
         {estaticasVisibles.map((stat) => (
-          <div data-metric={stat.id} class="stat-card flex items-center gap-4 rounded-2xl bg-cream p-4">
-            <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white text-brand-700 shadow-[var(--ui-sombra-1)]">
+          <div data-metric={stat.id} class="reveal stat-card flex items-center gap-4 rounded-2xl bg-white/[0.06] border border-white/[0.10] p-5 backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.10] hover:border-white/[0.20]">
+            <span class="grid h-13 w-13 shrink-0 place-items-center rounded-2xl bg-white/10 text-white">
               <Icono name={stat.icono} class="h-6 w-6" />
             </span>
             <div>
-              <p class="text-sm font-bold text-muted">{stat.etiqueta}</p>
-              <p class="text-2xl font-extrabold tracking-tight text-ink"><span data-count data-static-total={stat.valor}>0</span></p>
-              <p class="text-xs font-semibold text-muted">{stat.descripcion}</p>
+              <p class="text-xs font-bold uppercase tracking-widest text-white/50">{stat.etiqueta}</p>
+              <p class="text-4xl font-extrabold tracking-tight text-white leading-none mt-1"><span data-count data-static-total={stat.valor}>0</span></p>
+              <p class="text-xs font-semibold text-white/40 mt-1">{stat.descripcion}</p>
             </div>
           </div>
         ))}
@@ -65,6 +73,7 @@ const estaticasVisibles = cifrasEstaticas.filter((c) => c.visible && c.valor !==
   import {
     getDirectivaDepartamental,
     getDirectivasSubdirectivas,
+    getTotalSubdirectivas,
     getDocumentosPublicos,
   } from '../../lib/public-api.js';
 
@@ -123,10 +132,11 @@ const estaticasVisibles = cifrasEstaticas.filter((c) => c.visible && c.valor !==
   async function cargarCifras() {
     if (!panel) return;
 
-    const [subdirectivas, departamental, documentos] = await Promise.allSettled([
+    const [subdirectivas, departamental, documentos, totalSubdirectivas] = await Promise.allSettled([
       getDirectivasSubdirectivas(),
       getDirectivaDepartamental(),
       getDocumentosPublicos(),
+      getTotalSubdirectivas(),
     ]);
 
     const lista = (resultado) => (resultado.status === 'fulfilled' && Array.isArray(resultado.value) ? resultado.value : []);
@@ -134,15 +144,14 @@ const estaticasVisibles = cifrasEstaticas.filter((c) => c.visible && c.valor !==
     const integrantesDepartamental = lista(departamental);
     const documentosPublicos = lista(documentos);
 
-    const subdirectivasUnicas = new Set(integrantesSubdirectivas.map((item) => item.id_subdirectiva)).size;
     const metricas = {
-      subdirectivas: subdirectivasUnicas,
+      subdirectivas: totalSubdirectivas.status === 'fulfilled' ? totalSubdirectivas.value.total : null,
       cargos: integrantesSubdirectivas.length + integrantesDepartamental.length,
       documentos: documentosPublicos.length,
     };
 
     const disponibles = Object.entries(metricas).filter(([, total]) => Number.isFinite(total) && total > 0);
-    if (disponibles.length < 2) return;
+    if (!disponibles.length) return;
 
     const items = [];
     for (const [clave, total] of disponibles) {
@@ -172,28 +181,6 @@ const estaticasVisibles = cifrasEstaticas.filter((c) => c.visible && c.valor !==
 </script>
 
 <style>
-  @media (prefers-reduced-motion: no-preference) {
-    #cifras-panel:not([hidden]) .stat-card {
-      animation: cifra-entrada 0.5s var(--ui-t) both;
-    }
-
-    #cifras-panel:not([hidden]) .stat-card:nth-child(2) {
-      animation-delay: 80ms;
-    }
-
-    #cifras-panel:not([hidden]) .stat-card:nth-child(3) {
-      animation-delay: 160ms;
-    }
-  }
-
-  @keyframes cifra-entrada {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
+  .h-13 { height: 3.25rem; }
+  .w-13 { width: 3.25rem; }
 </style>

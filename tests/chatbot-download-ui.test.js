@@ -4,8 +4,10 @@ import express from 'express';
 import { chromium } from 'playwright';
 import test from 'node:test';
 
+const navegador = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || chromium.executablePath();
+
 test('el widget muestra las descargas solo cuando el servidor las habilita', {
-  skip: !existsSync(chromium.executablePath()) && 'Chromium de Playwright no está instalado',
+  skip: !existsSync(navegador) && 'Chromium de Playwright no está instalado',
 }, async () => {
   const app = express();
   app.get('/test', (req, res) => res.send(`<!doctype html><html><body>
@@ -27,11 +29,12 @@ test('el widget muestra las descargas solo cuando el servidor las habilita', {
   });
   let browser;
   try {
-    browser = await chromium.launch({ headless: true });
+    browser = await chromium.launch({ headless: true, executablePath: navegador });
     for (const habilitadas of [false, true]) {
       const page = await browser.newPage({ viewport: { width: 375, height: 812 } });
       await page.goto(`http://127.0.0.1:${server.address().port}/test?chatbot=true&descargas=${habilitadas}`);
       await page.getByRole('button', { name: 'Abrir asistente' }).click();
+      await page.getByRole('button', { name: 'Acciones', exact: true }).click();
       await page.getByRole('button', { name: 'Consultar informes' }).click();
       await page.locator('#chatbot-informe').selectOption('afiliados_por_estado');
       await page.getByRole('button', { name: 'Generar informe' }).click();

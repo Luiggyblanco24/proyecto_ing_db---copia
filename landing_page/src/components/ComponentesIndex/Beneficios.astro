@@ -17,8 +17,14 @@ const imagenesPorKey: Record<string, any> = {
 };
 ---
 
-<section id="beneficios" class="relative overflow-hidden bg-[#f6faf7] px-4 pt-20 pb-28 sm:px-6 sm:pb-36" aria-labelledby="beneficios-titulo">
-  <div class="max-w-6xl mx-auto">
+<section id="beneficios" class="relative overflow-hidden landing-warm px-4 py-16 sm:px-6 sm:py-24" aria-labelledby="beneficios-titulo">
+  <!-- Orbs de fondo -->
+  <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+    <div class="absolute -top-20 right-0 h-96 w-96 rounded-full bg-brand-700/[0.06] blur-[120px]"></div>
+    <div class="absolute bottom-0 left-0 h-80 w-80 rounded-full bg-emerald-400/[0.05] blur-[100px]"></div>
+  </div>
+
+  <div class="max-w-6xl mx-auto relative">
     
     <header class="max-w-3xl mb-12 reveal">
       <p class="eyebrow text-brand-700">Respaldo y garantías</p>
@@ -34,7 +40,7 @@ const imagenesPorKey: Record<string, any> = {
       {beneficios.map((beneficio, index) => {
         const imagen = imagenesPorKey[beneficio.imagenKey] ?? imagenDerechos;
         return (
-          <article class="group flex flex-col p-6 rounded-2xl border border-slate-200 bg-white shadow-md transition-all duration-300 hover:scale-[1.01] hover:shadow-xl reveal" style={`--reveal-delay: ${index * 40}ms`}>
+          <article class="beneficio-card group flex flex-col p-6 rounded-2xl border border-slate-200 bg-white shadow-md reveal" style={`--reveal-delay: ${index * 50}ms`}>
             <div class="relative aspect-[16/10] overflow-hidden rounded-xl">
               <Picture
                 data-imagen-portada={`beneficios-${beneficio.imagenKey}`}
@@ -49,8 +55,8 @@ const imagenesPorKey: Record<string, any> = {
                 quality={82}
                 class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
               />
-              <div class="absolute inset-0 bg-gradient-to-t from-brand-900/60 via-transparent to-transparent" aria-hidden="true"></div>
-              <span class="absolute bottom-3 left-3 grid h-9 w-9 place-items-center rounded-xl bg-white/90 text-brand-700 backdrop-blur-sm shadow-sm">
+              <div class="absolute inset-0 bg-gradient-to-t from-brand-900/70 via-transparent to-transparent" aria-hidden="true"></div>
+              <span class="absolute bottom-3 left-3 grid h-9 w-9 place-items-center rounded-xl bg-white/90 text-brand-700 backdrop-blur-sm shadow-sm transition-transform duration-300 group-hover:scale-110">
                 <Icono name={beneficio.icon} class="h-5 w-5" />
               </span>
             </div>
@@ -62,7 +68,7 @@ const imagenesPorKey: Record<string, any> = {
               <div class="mt-auto pt-5">
                 <a
                   href="/Afiliate/"
-                  class="inline-flex items-center gap-1.5 text-sm font-extrabold text-brand-700 transition-colors hover:underline"
+                  class="inline-flex items-center gap-1.5 text-sm font-extrabold text-brand-700 transition-all hover:gap-2.5 hover:underline"
                 >
                   Afíliate para acceder
                   <Icono name="arrow-right" class="h-3.5 w-3.5" />
@@ -75,7 +81,7 @@ const imagenesPorKey: Record<string, any> = {
     </div>
 
     <!-- CTA corto al final de Beneficios -->
-    <div class="mt-12 rounded-2xl border border-line bg-white p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 reveal" style="--reveal-delay: 100ms">
+    <div class="mt-12 rounded-2xl border-l-4 border-l-brand-700 border border-line bg-white p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 reveal" style="--reveal-delay: 100ms">
       <div>
         <h4 class="text-base font-extrabold text-ink sm:text-lg">¿Quieres contar con este respaldo sindical?</h4>
         <p class="mt-0.5 text-xs text-muted sm:text-sm">Únete a SUTENS y fortalece la defensa de tus derechos laborales en Norte de Santander.</p>

@@ -2,7 +2,7 @@
 import Icono from './Icono.astro';
 ---
 
-<section id="comunicaciones" class="bg-cream px-4 py-16 sm:px-6 sm:py-20" aria-labelledby="comunicaciones-titulo">
+<section id="comunicaciones" class="landing-mint px-4 py-16 sm:px-6 sm:py-20" aria-labelledby="comunicaciones-titulo">
   <div class="mx-auto max-w-6xl">
     <div class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
       <header class="max-w-3xl reveal">
@@ -15,7 +15,7 @@ import Icono from './Icono.astro';
         </p>
       </header>
 
-      <a href="/Comunicaciones/" class="btn btn-outline reveal shrink-0 hidden sm:inline-flex items-center gap-2">
+      <a href="/Comunicaciones/" class="btn btn-outline reveal shrink-0 hidden lg:inline-flex items-center gap-2">
         Ver todas las comunicaciones
         <Icono name="arrow-right" class="h-4 w-4" />
       </a>
@@ -38,7 +38,7 @@ import Icono from './Icono.astro';
     <p id="documentos-estado" class="mt-6 hidden rounded-2xl border border-line bg-white p-5 text-sm leading-relaxed text-muted shadow-sm"></p>
 
     <!-- Enlace móvil visible -->
-    <div class="mt-8 flex justify-center sm:hidden">
+    <div class="mt-8 flex justify-center lg:hidden">
       <a href="/Comunicaciones/" class="btn btn-outline w-full justify-center flex items-center gap-2">
         Ver todas las comunicaciones
         <Icono name="arrow-right" class="h-4 w-4" />
@@ -58,7 +58,7 @@ import Icono from './Icono.astro';
   </div>
 
   <template id="tpl-documento">
-    <article class="group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-line bg-white shadow-[var(--ui-sombra-1)] transition duration-300 hover:-translate-y-1 hover:border-brand-600/40 hover:shadow-[var(--ui-sombra-3)] motion-reduce:hover:translate-y-0">
+    <article class="reveal group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-line bg-white shadow-[var(--ui-sombra-1)] transition duration-300 hover:-translate-y-1 hover:border-brand-600/40 hover:shadow-[var(--ui-sombra-3)] motion-reduce:hover:translate-y-0">
       <!-- Encabezado de la tarjeta con tipo y extensión -->
       <div class="flex items-center justify-between gap-3 border-b border-line bg-cream/70 px-6 py-4">
         <span class="inline-flex min-w-0 items-center gap-2 text-xs font-extrabold uppercase tracking-[0.12em] text-brand-700">

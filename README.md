@@ -31,6 +31,8 @@ psql -d sutens -f database/schema.sql
 psql -d sutens -f database/seed.sql
 ```
 
+La semilla instala catálogos y galería. Para crear el primer administrador, registra al titular en `/register.html`, verifica su identidad y el radicado por un canal institucional y ejecuta `psql -d sutens -f database/primer-administrador.sql`. El titular usa la contraseña personal que eligió. En instalaciones anteriores aplica `database/migrations/023_retirar_credencial_demo.sql` en una ventana de mantenimiento. Desactiva la cuenta de muestra si conserva el hash distribuido e invalida sus sesiones. Si era el único administrador activo, usa el procedimiento anterior con el radicado verificado de una cuenta pendiente.
+
 Si la base ya existía antes de la gestión de subdirectivas, aplica la migración una sola vez:
 
 ```bash
@@ -262,7 +264,7 @@ inicia un clúster temporal local, crea una base desechable, carga `database/sch
 10.000 registros sintéticos, ejecuta las pruebas/mediciones y elimina la base y el clúster.
 No se conecta a `DATABASE_URL`, a la base local habitual ni a producción.
 La visibilidad del widget se comprueba con `node --test tests/chatbot-download-ui.test.js`;
-requiere el navegador Chromium de Playwright instalado y simula las respuestas del servidor.
+usa Chromium de Playwright o el ejecutable indicado en `PLAYWRIGHT_CHROMIUM_EXECUTABLE` y simula las respuestas del servidor. El script de PostgreSQL también verifica las correcciones de la auditoría en una segunda base temporal.
 Las pruebas de la bandera global se ejecutan con `node --test tests/chatbot-feature.test.js`.
 El procedimiento de despliegue, monitoreo y rollback está en
 [operación del chatbot](docs/chatbot-operacion.md).
@@ -273,14 +275,14 @@ El procedimiento de despliegue, monitoreo y rollback está en
 # 1. Solicitar el registro de un docente
 curl -X POST http://localhost:3000/api/auth/registrar \
   -H "Content-Type: application/json" \
-  -d '{"nombre1":"Juan","apellido1":"Rojas","cedula":"1090999999","correo":"juan@mail.com","usuario":"juan","password":"clave123"}'
+  -d '{"nombre1":"Juan","apellido1":"Rojas","cedula":"1090999999","correo":"juan@mail.com","usuario":"juan","password":"TU_CONTRASEÑA_PERSONAL","autorizo_tratamiento":true}'
 
 # La solicitud queda pendiente de validación por la Directiva.
 
 # 2. Iniciar sesión como administrador
 curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"usuario":"admin","password":"admin123"}'
+  -d '{"usuario":"TU_USUARIO","password":"TU_CONTRASEÑA"}'
 
 # 3. Listar afiliados pendientes (usa el token del paso 2)
 curl http://localhost:3000/api/afiliados?estado=pendiente \

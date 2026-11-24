@@ -5,108 +5,67 @@ import detailPhoto from '../../assets/landing/3.jpg';
 import placeholderPhoto from '../../assets/landing/2.jpg';
 ---
 
-<section class="hero relative isolate overflow-hidden text-white" style="background: radial-gradient(ellipse 100% 80% at 20% -10%, #1a5c35 0%, #0a2715 55%, #061a0e 100%);">
+<section class="hero landing-green text-white relative overflow-hidden">
+  <!-- Partículas flotantes de fondo -->
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
+    <div class="particle particle-1 h-32 w-32 bg-white/[0.04] top-[12%] left-[8%]"></div>
+    <div class="particle particle-2 h-20 w-20 bg-amber-300/[0.07] top-[30%] left-[18%]"></div>
+    <div class="particle particle-3 h-14 w-14 bg-emerald-400/[0.08] top-[60%] left-[5%]"></div>
+    <div class="particle particle-4 h-24 w-24 bg-white/[0.03] bottom-[10%] right-[12%]"></div>
+    <div class="particle particle-5 h-10 w-10 bg-amber-200/[0.09] top-[20%] right-[25%]"></div>
+  </div>
 
-  <!-- Textura diagonal sutil -->
-  <div class="hero-grid absolute inset-0 pointer-events-none opacity-[0.035]" aria-hidden="true"></div>
-
-  <!-- Orbes de luz ambiental -->
-  <div class="absolute top-[-5%] left-[-15%] w-[55rem] h-[55rem] rounded-full pointer-events-none" style="background: radial-gradient(circle, rgba(22,163,74,0.12) 0%, transparent 70%); filter: blur(60px);" aria-hidden="true"></div>
-
-  <!-- Línea decorativa horizontal luminosa -->
-  <div class="hero-line absolute top-0 left-0 right-0 h-px pointer-events-none" aria-hidden="true"></div>
-
-  <div class="relative z-10 mx-auto grid max-w-7xl items-center gap-8 px-5 pb-20 pt-9 sm:px-6 sm:pt-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-12 lg:pb-24 lg:pt-16">
-
-    <!-- ══ COLUMNA IZQUIERDA ══ -->
-    <div class="flex flex-col justify-center">
-
-      <!-- Badge eyebrow -->
-      <div class="inline-flex items-center gap-2 self-start rounded-full border border-white/20 bg-white/8 px-3 py-1.5 backdrop-blur-sm mb-5 shadow-lg" style="background: rgba(255,255,255,0.08);">
-        <span class="relative flex h-2 w-2 shrink-0" aria-hidden="true">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-          <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-400"></span>
-        </span>
-        <span class="text-[0.78rem] font-extrabold uppercase tracking-[0.14em] text-amber-200">
+  <div class="relative mx-auto grid max-w-6xl items-center gap-8 py-10 sm:gap-10 sm:py-14 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-10 lg:py-20 xl:gap-14">
+    <div>
+      <p class="eyebrow text-amber-200 hero-animate hero-animate-1">
+        <span class="inline-flex items-center gap-2">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-300 opacity-75"></span>
+            <span class="relative inline-flex h-2 w-2 rounded-full bg-amber-300"></span>
+          </span>
           Sindicato de Trabajadores de la Educación · Norte de Santander
         </span>
-      </div>
-
-      <!-- Título principal -->
-      <h1 class="hero-title mb-5 text-balance font-extrabold leading-[1.0] tracking-tight">
-        <span class="block text-white">Defensa de la Educación,</span>
-        <span class="relative mt-1 block">
-          <span class="hero-gradient-text">Unidad de los Trabajadores</span>
-          <!-- Underline decorativa -->
-          <svg class="hero-underline absolute -bottom-2 left-0 w-full overflow-visible" viewBox="0 0 400 12" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M0 8 Q100 2 200 8 Q300 14 400 8" stroke="url(#ul-grad)" stroke-width="3" fill="none" stroke-linecap="round"/>
-            <defs>
-              <linearGradient id="ul-grad" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stop-color="#fbbf24" stop-opacity="0"/>
-                <stop offset="30%" stop-color="#fbbf24"/>
-                <stop offset="70%" stop-color="#f59e0b"/>
-                <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
-              </linearGradient>
-            </defs>
-          </svg>
-        </span>
+      </p>
+      <h1 class="hero-title mt-3 font-extrabold hero-animate hero-animate-2">
+        <span class="block">Defensa de la Educación,</span>
+        <span class="block text-amber-300">Unidad de los Trabajadores</span>
       </h1>
 
-      <p class="mb-6 max-w-lg text-base leading-relaxed text-white/90 sm:text-lg">
+      <p class="mt-4 max-w-lg text-base leading-relaxed text-white/90 sm:mt-5 sm:text-lg hero-animate hero-animate-3">
         Unidos defendemos los derechos laborales, el salario justo y la educación pública de calidad para los docentes de Norte de Santander.
       </p>
 
-      <!-- CTAs -->
-      <div class="grid gap-3 sm:flex sm:flex-wrap">
-        <a href="/Afiliate/" class="btn hero-join group px-8 py-4 text-base font-extrabold tracking-wide shadow-xl">
+      <div class="mt-5 flex flex-col items-start gap-1 min-[480px]:flex-row min-[480px]:flex-wrap min-[480px]:items-center min-[480px]:gap-3 sm:mt-6 hero-animate hero-animate-4">
+        <a href="/Afiliate/" class="btn hero-join w-full min-[480px]:w-auto btn-shimmer">
           Afíliate a SUTENS
-          <svg class="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M5 12h14M13 6l6 6-6 6"/>
-          </svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
-        <a href="#quienes-somos" class="btn btn-outline-light group px-8 py-4 text-base font-extrabold">
+        <a href="#quienes-somos" class="hero-about">
           Conoce la organización
-          <svg class="h-5 w-5 transition-transform duration-200 group-hover:translate-y-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="m6 9 6 6 6-6"/>
-          </svg>
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
         </a>
       </div>
 
-      <!-- Stats rápidas -->
-      <div class="mt-7 grid grid-cols-3 gap-2 max-w-md border-t border-white/15 pt-4 sm:gap-4 sm:pt-6">
-        <div>
-          <p class="text-2xl font-extrabold text-white lg:text-3xl">2016</p>
-          <p class="mt-0.5 text-[0.69rem] font-semibold text-white/85 sm:text-xs">Fundados</p>
+      <dl class="mt-4 grid grid-cols-3 gap-2 border-t border-white/25 pt-4 sm:mt-7 sm:max-w-md sm:gap-4 hero-animate hero-animate-5">
+        <div class="flex flex-col">
+          <dt class="text-xs font-semibold text-white/85">Fundados</dt>
+          <dd class="order-first text-xl font-extrabold text-white sm:text-2xl">2016</dd>
         </div>
-        <div class="border-l border-white/15 pl-2 sm:pl-4">
-          <p class="text-2xl font-extrabold text-amber-300 lg:text-3xl">4</p>
-          <p class="mt-0.5 text-[0.69rem] font-semibold text-white/85 sm:text-xs">Subdirectivas</p>
+        <div class="flex flex-col border-l border-white/25 pl-2 sm:pl-4">
+          <dt class="text-xs font-semibold text-white/85">Subdirectivas</dt>
+          <dd class="order-first text-xl font-extrabold text-white sm:text-2xl">4</dd>
         </div>
-        <div class="border-l border-white/15 pl-2 sm:pl-4">
-          <p class="text-2xl font-extrabold text-emerald-300 lg:text-3xl">NdeS</p>
-          <p class="mt-0.5 text-[0.69rem] font-semibold text-white/85 sm:text-xs">Departamento</p>
+        <div class="flex flex-col border-l border-white/25 pl-2 sm:pl-4">
+          <dt class="text-xs font-semibold text-white/85">Departamento</dt>
+          <dd class="order-first text-xl font-extrabold text-white sm:text-2xl">NdeS</dd>
         </div>
-      </div>
+      </dl>
     </div>
 
-    <!-- ══ COLUMNA DERECHA ══ -->
-    <div class="relative flex flex-col items-center justify-center">
-
-      <!-- Anillo decorativo de fondo -->
-      <div class="hero-ring absolute -inset-8 rounded-[2.5rem] border border-white/5" aria-hidden="true"></div>
-      <div class="hero-ring-2 absolute -inset-4 rounded-[2.5rem]" style="background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(251,191,36,0.03));" aria-hidden="true"></div>
-
-      <!-- Badge flotante izquierdo central -->
-      <div class="hidden absolute -left-4 top-1/2 z-20 items-center gap-2 rounded-2xl border border-white/15 px-4 py-2.5 backdrop-blur-md shadow-2xl xl:flex" style="background: rgba(14,30,20,0.75);">
-        <span class="text-base" aria-hidden="true">🏛️</span>
-        <span class="text-xs font-extrabold text-white">Reg. Min. Trabajo N°001</span>
-      </div>
-
-      <!-- Carrusel de imágenes -->
-      <div id="hero-carousel" class="relative w-full overflow-hidden rounded-[2rem] shadow-2xl" style="box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);">
-
+    <figure id="hero-carousel" class="min-w-0 hero-animate hero-animate-3" style="animation-delay: 180ms">
+      <div class="carousel-frame relative isolate overflow-hidden rounded-2xl bg-white/10 ring-1 ring-white/20 sm:rounded-3xl">
         <!-- Imagen 1 -->
-        <div class="carousel-slide absolute inset-0 opacity-100 scale-100 z-10 transition-all duration-700 ease-in-out" data-index="0" aria-hidden="false">
+        <div class="carousel-slide absolute inset-0 opacity-100 scale-100 z-10 transition-all duration-700 ease-in-out rounded-2xl sm:rounded-3xl overflow-hidden" data-index="0" aria-hidden="false">
           <Picture
             data-imagen-portada="inicio-1"
             src={heroPhoto}
@@ -121,11 +80,10 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
             quality={85}
             class="w-full h-full object-cover"
           />
-          <div class="absolute inset-0 bg-gradient-to-t from-[#061a0e]/70 via-transparent to-transparent" aria-hidden="true"></div>
         </div>
 
         <!-- Imagen 2 -->
-        <div class="carousel-slide absolute inset-0 opacity-0 scale-95 z-0 transition-all duration-700 ease-in-out" data-index="1" aria-hidden="true">
+        <div class="carousel-slide absolute inset-0 opacity-0 scale-95 z-0 transition-all duration-700 ease-in-out rounded-2xl sm:rounded-3xl overflow-hidden" data-index="1" aria-hidden="true">
           <Picture
             data-imagen-portada="inicio-2"
             src={placeholderPhoto}
@@ -139,11 +97,10 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
             quality={85}
             class="w-full h-full object-cover"
           />
-          <div class="absolute inset-0 bg-gradient-to-t from-[#061a0e]/70 via-transparent to-transparent" aria-hidden="true"></div>
         </div>
 
         <!-- Imagen 3 -->
-        <div class="carousel-slide absolute inset-0 opacity-0 scale-95 z-0 transition-all duration-700 ease-in-out" data-index="2" aria-hidden="true">
+        <div class="carousel-slide absolute inset-0 opacity-0 scale-95 z-0 transition-all duration-700 ease-in-out rounded-2xl sm:rounded-3xl overflow-hidden" data-index="2" aria-hidden="true">
           <Picture
             data-imagen-portada="inicio-3"
             src={detailPhoto}
@@ -157,11 +114,11 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
             quality={80}
             class="w-full h-full object-cover"
           />
-          <div class="absolute inset-0 bg-gradient-to-t from-[#061a0e]/70 via-transparent to-transparent" aria-hidden="true"></div>
         </div>
+      </div>
 
-        <!-- Controles del carrusel -->
-        <div class="carousel-controls absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center">
+      <div class="mt-2 flex flex-col items-center gap-1">
+        <div class="carousel-controls flex items-center justify-center" role="group" aria-label="Controles del carrusel">
           <button id="carousel-prev" class="carousel-ctrl" aria-label="Imagen anterior" type="button">
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
@@ -179,18 +136,11 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
           </button>
         </div>
       </div>
-
-      <!-- Etiqueta inferior del carrusel -->
-      <p class="mt-3 text-center text-xs font-semibold uppercase tracking-widest text-white/80">Presencia en todo Norte de Santander</p>
-    </div>
-  </div>
-
-  <!-- Ola inferior más dramática -->
-  <div class="absolute bottom-0 left-0 right-0 h-28 overflow-hidden" aria-hidden="true">
-    <svg viewBox="0 0 1440 112" preserveAspectRatio="none" class="w-full h-full">
-      <path d="M0 56 C240 112 480 0 720 56 C960 112 1200 0 1440 56 L1440 112 L0 112 Z" fill="#f6faf7" opacity="0.08"/>
-      <path d="M0 70 C360 20 720 100 1080 50 C1260 25 1360 65 1440 70 L1440 112 L0 112 Z" fill="#f6faf7"/>
-    </svg>
+      <figcaption class="mt-1 flex flex-wrap justify-center gap-x-4 text-center text-xs leading-relaxed font-semibold text-white/85">
+        <span>Presencia en todo Norte de Santander</span>
+        <span>Reg. Min. Trabajo N°001</span>
+      </figcaption>
+    </figure>
   </div>
 </section>
 
@@ -208,9 +158,9 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
     let currentIndex = 0;
     let intervalId: ReturnType<typeof setInterval> | null = null;
     const SLIDE_DURATION = 5000;
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    let paused = prefersReducedMotion;
+    let paused = prefersReducedMotion.matches;
     pauseBtn?.setAttribute('aria-pressed', String(paused));
 
     function showSlide(index: number) {
@@ -259,6 +209,14 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
       else startAutoPlay();
     });
 
+    prefersReducedMotion.addEventListener('change', ({ matches }) => {
+      if (matches) {
+        paused = true;
+        pauseBtn?.setAttribute('aria-pressed', 'true');
+        stopAutoPlay();
+      }
+    });
+
     carousel.addEventListener('focusin', stopAutoPlay);
     carousel.addEventListener('focusout', () => requestAnimationFrame(startAutoPlay));
     carousel.addEventListener('mouseenter', stopAutoPlay);
@@ -280,89 +238,106 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
 </script>
 
 <style>
-  /* ── Tipografía del hero ── */
   .hero-title {
-    font-size: clamp(2rem, 5vw, 4.5rem);
-    line-height: 1.0;
+    font-size: clamp(2.1rem, 4.2vw, 3.85rem);
+    line-height: 1.08;
+    letter-spacing: -0.047em;
   }
 
-  .hero-gradient-text {
-    background: linear-gradient(110deg, #fbbf24 0%, #fcd34d 40%, #f59e0b 80%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-size: 200% auto;
-  }
-
-  .hero-underline {
-    height: 12px;
-    display: block;
-  }
-
-  /* ── Textura de cuadrícula diagonal ── */
-  .hero-grid {
-    background-image:
-      linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
-    background-size: 48px 48px;
-  }
-
-  /* ── Línea luminosa superior ── */
-  .hero-line {
-    background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(251,191,36,0.6) 30%,
-      rgba(74,222,128,0.4) 60%,
-      transparent 100%
-    );
-    animation: line-shimmer 4s ease-in-out infinite;
-  }
-
-  /* ── Carrusel ── */
-  .carousel-slide {
-    will-change: opacity, transform;
-  }
-
-  .carousel-ctrl {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.12);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.2);
-    backdrop-filter: blur(8px);
-    transition: background 200ms ease, transform 150ms ease;
-  }
-
-  .carousel-ctrl:hover {
-    background: rgba(255,255,255,0.22);
-    transform: scale(1.1);
+  .hero-title span:last-child {
+    margin-top: 0.12em;
+    color: var(--gold);
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+    font-weight: 500;
+    letter-spacing: -0.045em;
+    text-wrap: balance;
   }
 
   #hero-carousel {
-    height: clamp(14rem, 52vw, 23rem);
+    padding: clamp(0.4rem, 1vw, 0.8rem);
+    border: 1px solid rgb(255 255 255 / 24%);
+    border-radius: 1.65rem;
+    background: rgb(255 255 255 / 6%);
+    box-shadow: 0 20px 48px -24px rgb(0 22 13 / 60%);
   }
 
-  @media (min-width: 1024px) {
-    #hero-carousel {
-      height: clamp(23rem, 35vw, 30rem);
-    }
+  #hero-carousel .carousel-frame {
+    border-radius: 1.15rem;
   }
 
   .carousel-controls {
-    padding: 0.125rem;
-    border-radius: 999px;
-    background: #10231a;
+    max-width: 100%;
   }
 
+  .carousel-controls > div {
+    min-width: 0;
+  }
+
+  .hero-join {
+    min-height: 3rem;
+    background: #fbbf24;
+    color: var(--ui-text);
+  }
+
+  .hero-join:hover {
+    background: #f59e0b;
+  }
+
+  .hero-about {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0.375rem;
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 800;
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+    transition: color var(--ui-t);
+  }
+
+  .hero-about:hover {
+    color: #fcd34d;
+  }
+
+  .hero .hero-join:focus-visible,
+  .hero-about:focus-visible {
+    outline-color: #fcd34d;
+  }
+
+  .carousel-frame {
+    aspect-ratio: 16 / 10;
+  }
+
+  @media (min-width: 1024px) {
+    .carousel-frame {
+      aspect-ratio: 4 / 3;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .carousel-controls {
+      align-self: center;
+    }
+  }
+
+  .carousel-ctrl,
   .carousel-dot {
     display: grid;
-    width: 28px;
+    width: 44px;
     height: 44px;
     place-items: center;
-    border-radius: 999px;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    transition: background var(--ui-t);
+  }
+
+  .carousel-ctrl:hover,
+  .carousel-dot:hover {
+    background: rgb(255 255 255 / 0.14);
   }
 
   .carousel-dot::before {
@@ -370,41 +345,21 @@ import placeholderPhoto from '../../assets/landing/2.jpg';
     width: 8px;
     height: 8px;
     border-radius: 999px;
-    background: #a1b8aa;
+    background: rgb(255 255 255 / 0.65);
   }
 
   .carousel-dot.active::before {
-    width: 16px;
-    background: #fbbf24;
+    width: 18px;
+    background: #fcd34d;
   }
 
   .carousel-controls button:focus-visible {
-    outline: 2px solid #fbbf24;
+    outline: 2px solid #fcd34d;
     outline-offset: -3px;
   }
 
   #carousel-pause[aria-pressed='false'] .play-icon,
   #carousel-pause[aria-pressed='true'] .pause-icon {
     display: none;
-  }
-
-  .hero-join {
-    background: #fbbf24;
-    color: #10231a;
-  }
-
-  .hero-join:hover {
-    background: #fcd34d;
-  }
-
-  @keyframes line-shimmer {
-    0%, 100% { opacity: 0.5; }
-    50%       { opacity: 1; }
-  }
-
-  /* ── Movimiento reducido ── */
-  @media (prefers-reduced-motion: reduce) {
-    .carousel-slide,
-    .hero-line { animation: none !important; transition: none !important; }
   }
 </style>

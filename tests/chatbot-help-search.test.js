@@ -50,9 +50,9 @@ test('rechaza preguntas que superan 500 caracteres', () => {
 
 test('las respuestas verificadas se sirven aunque reviewed sea false', () => {
   const entrada = CATALOGO_AYUDA_CHATBOT.find(({ id }) => id === 'iniciar-sesion');
-  assert.equal(entrada.reviewed, false);
+  const catalogo = [{ ...entrada, reviewed: false }];
   assert.equal(entrada.contentVerified, true);
-  assert.equal(buscarAyuda('¿Cómo inicio sesión?', CATALOGO_AYUDA_CHATBOT).estado, 'respuesta');
+  assert.equal(buscarAyuda('¿Cómo inicio sesión?', catalogo).estado, 'respuesta');
 });
 
 test('una entrada pendiente no revela su contenido como procedimiento', () => {

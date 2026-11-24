@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { manejarAsync } from '../middleware/errores.js';
 import {
   listarAfiliados,
   listarRoles,
@@ -31,20 +32,20 @@ function autorizarCambioEstadoSolicitud(req, res, next) {
 router.use(autenticar);
 
 // GET /api/afiliados?estado=pendiente
-router.get('/', autorizarDirectivaPrincipal(), listarAfiliados);
-router.get('/roles', autorizar('Administrador SUTENS'), listarRoles);
-router.get('/exportar', autorizarDirectivaPrincipal(), exportarAfiliados);
-router.post('/exportar', autorizarDirectivaPrincipal(), exportarAfiliados);
+router.get('/', autorizarDirectivaPrincipal(), manejarAsync(listarAfiliados));
+router.get('/roles', autorizar('Administrador SUTENS'), manejarAsync(listarRoles));
+router.get('/exportar', autorizarDirectivaPrincipal(), manejarAsync(exportarAfiliados));
+router.post('/exportar', autorizarDirectivaPrincipal(), manejarAsync(exportarAfiliados));
 
 // POST /api/afiliados  -> registrar usuario (admin)
-router.post('/', autorizar('Administrador SUTENS'), registrarPorAdmin);
+router.post('/', autorizar('Administrador SUTENS'), manejarAsync(registrarPorAdmin));
 
 // PATCH /api/afiliados/:id/estado  { estado: 'aprobado' | 'rechazado' }
-router.patch('/:id/estado', autorizarCambioEstadoSolicitud, cambiarEstado);
-router.patch('/:id/roles', autorizar('Administrador SUTENS'), actualizarRoles);
-router.delete('/:id', autorizar('Administrador SUTENS'), eliminarAfiliado);
-router.post('/:id/contrasena-temporal', autorizar('Administrador SUTENS'), restablecerContrasenaTemporal);
-router.patch('/:id/asignacion', autorizarDirectivaPrincipal(), asignarAfiliado);
-router.patch('/:id/estado-sindical', autorizarDirectivaPrincipal(), cambiarEstadoSindical);
+router.patch('/:id/estado', autorizarCambioEstadoSolicitud, manejarAsync(cambiarEstado));
+router.patch('/:id/roles', autorizar('Administrador SUTENS'), manejarAsync(actualizarRoles));
+router.delete('/:id', autorizar('Administrador SUTENS'), manejarAsync(eliminarAfiliado));
+router.post('/:id/contrasena-temporal', autorizar('Administrador SUTENS'), manejarAsync(restablecerContrasenaTemporal));
+router.patch('/:id/asignacion', autorizarDirectivaPrincipal(), manejarAsync(asignarAfiliado));
+router.patch('/:id/estado-sindical', autorizarDirectivaPrincipal(), manejarAsync(cambiarEstadoSindical));
 
 export default router;

@@ -17,6 +17,7 @@ import Reveal from '../components/ComponentesIndex/Reveal.astro';
 ---
 
 <Layout>
+  <div class="sutens-home">
 	<Bienvenido />
 	<Cifras />
 	<QuienesSomos />
@@ -31,7 +32,315 @@ import Reveal from '../components/ComponentesIndex/Reveal.astro';
 	<Contacto />
 	<CtaBanner />
 	<Reveal />
+  </div>
 </Layout>
+
+<style is:global>
+  .sutens-home {
+    --forest: #104b27;
+    --paper: #0a2118;
+    --gold: #f59e0b;
+    --sage: #234c37;
+    --color-ink: #f1f7ee;
+    --color-muted: #c1d6c8;
+    --color-line: #385c49;
+    --color-brand-700: #1b7a38;
+    --color-brand-600: #2e7d32;
+    --color-brand-900: #14602b;
+    --color-verde-suave: var(--sage);
+    --ui-verde-700: var(--color-brand-700);
+    --ui-verde-900: var(--color-brand-900);
+    --color-cream: var(--paper);
+    --color-accent: var(--gold);
+    --card-shadow: 0 2px 5px rgb(16 59 45 / 4%), 0 12px 32px -16px rgb(16 59 45 / 20%);
+    color: var(--color-ink);
+    background: var(--paper);
+  }
+
+  .sutens-home > section {
+    padding-inline: clamp(1.25rem, 4vw, 4rem);
+  }
+
+  .sutens-home > section[id] {
+    padding-block: clamp(3.5rem, 6.5vw, 6rem);
+  }
+
+  .sutens-home .hero {
+    --hero-blend: clamp(4rem, 8vw, 7.5rem);
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+    padding-bottom: var(--hero-blend);
+    background:
+      radial-gradient(ellipse at 91% 26%, #397a45 0%, #1d5434 16%, transparent 52%),
+      linear-gradient(115deg, #081e14 4%, #103823 46%, #155633 74%, #244f31);
+  }
+
+  .sutens-home .hero::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: -8% -8% 0 43%;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 66% 30%, rgb(168 215 112 / 28%), transparent 44%),
+      radial-gradient(ellipse at 40% 70%, rgb(48 220 146 / 48%), transparent 48%);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .sutens-home .hero::before {
+      animation: luz-portada 8s ease-in-out infinite alternate;
+    }
+
+    .sutens-home .hero:has(#carousel-pause[aria-pressed='true'])::before {
+      animation-play-state: paused;
+    }
+
+    @keyframes luz-portada {
+      from { transform: translate3d(-7%, 6%, 0) scale(.94); opacity: .55; }
+      to { transform: translate3d(6%, -4%, 0) scale(1.08); opacity: 1; }
+    }
+  }
+
+  .sutens-home .hero::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: var(--hero-blend);
+    pointer-events: none;
+    background: linear-gradient(to bottom, transparent, rgb(14 48 31 / 56%) 48%, var(--paper) 99%);
+  }
+
+  /* Igualar ambos bordes también mantiene la continuidad si se oculta una sección. */
+  .sutens-home > section:not(.hero) {
+    --section-wash: #102d22;
+    --blend: min(7rem, 18%);
+    background: linear-gradient(to bottom, var(--paper), var(--section-wash) var(--blend),
+      var(--section-wash) calc(100% - var(--blend)), var(--paper));
+  }
+
+  .sutens-home > section.landing-mint { --section-wash: #123625; }
+  .sutens-home > section.landing-warm { --section-wash: #182f22; }
+
+  .sutens-home > section[aria-labelledby="cta-final-titulo"] {
+    background: linear-gradient(to bottom, var(--paper) 65%, #103323 78%, #123e2a 89%, #164e30 100%);
+  }
+
+  @media (max-width: 63.99rem) {
+    .sutens-home .hero::before {
+      inset: 46% -8% 0;
+    }
+
+    .sutens-home .hero {
+      background:
+        radial-gradient(ellipse at 97% 70%, #296d40, transparent 57%),
+        linear-gradient(155deg, #081f16 0%, #103e28 52%, #195335);
+    }
+  }
+
+  .sutens-home .display {
+    color: #f2f8ed;
+    font-size: clamp(1.9rem, 3.5vw, 3.3rem);
+    letter-spacing: -0.045em;
+    line-height: 1.12;
+    text-wrap: balance;
+  }
+
+  .sutens-home :is(#contacto, #beneficios, #quienes-somos, #estructura, #testimonios) article {
+    border-color: var(--color-line);
+    border-radius: 1.35rem;
+    box-shadow: var(--card-shadow);
+    scale: 1;
+  }
+
+  .sutens-home :is(#beneficios, #quienes-somos, #contacto, #comunicaciones) article {
+    border-inline-start: 4px solid var(--color-brand-700);
+  }
+
+  .sutens-home section :is(.bg-white, .card, .bg-cream, [class~="bg-cream/70"], [class~="bg-white/95"], dialog) {
+    background-color: #193b2a;
+    border-color: var(--color-line);
+    color: var(--color-ink);
+  }
+  .sutens-home section :is(.text-brand-700, .text-brand-900) { color: #a5e3b3; }
+  .sutens-home section .eyebrow { color: #f5cd77; }
+  .sutens-home section :is([class~="bg-white/90"], .bg-accent, [class~="bg-[#fbbf24]"]) { color: #19432c; }
+  .sutens-home .cifras-dark-strip :is([class~="text-white/40"], [class~="text-white/50"]) { color: #c1d6c8; }
+  .sutens-home #cta-final-titulo span { color: #ffd166; }
+  .sutens-home [aria-labelledby="cta-final-titulo"] > div > div {
+    background: linear-gradient(120deg, #143e29, #1c4932 65%, #2b5134);
+  }
+  .sutens-home section .btn-outline {
+    border-color: #679479;
+    color: #e5f6e8;
+    background: #204732;
+  }
+
+  .sutens-home .hero .eyebrow {
+    color: #fef3c7;
+  }
+
+  .sutens-home .hero-title span:last-child {
+    color: #ffd166;
+  }
+
+  .home-footer {
+    background: linear-gradient(180deg, #164e30, #103e24 48%, #0d351a);
+  }
+
+  .home-footer .footer-accent {
+    inset-inline: 0;
+    margin-inline: auto;
+    width: 4rem;
+    border-radius: 1rem;
+  }
+
+  .sutens-home #testimonios article {
+    background: #193b2a;
+  }
+
+  .sutens-home .btn {
+    min-height: 2.875rem;
+    border-radius: 0.85rem;
+  }
+
+  .sutens-home :is(.hero-join, .btn-accent) {
+    background: var(--gold);
+    color: #17251a;
+  }
+
+  .sutens-home #faq summary {
+    min-height: 2.75rem;
+  }
+
+  .sutens-home #faq details[open] {
+    background: #204833;
+    border-radius: 1rem;
+  }
+
+  .sutens-home #cifras-panel {
+    padding-top: 0;
+  }
+
+  @media (hover: hover) {
+    .sutens-home :is(.hero-join, .btn-accent):hover {
+      background: #d97706;
+    }
+  }
+
+  .sutens-home :is(article, .stat-card, #actividades figure, #contacto a.group) {
+    transition: translate 350ms cubic-bezier(.2,.7,.2,1), box-shadow 350ms, border-color 350ms;
+  }
+
+  .sutens-home .btn {
+    position: relative;
+    overflow: hidden;
+    transition: transform 250ms ease-out, box-shadow 250ms, background-color 250ms;
+  }
+
+  .sutens-home .btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(110deg, transparent 32%, rgb(255 255 255 / 36%), transparent 68%);
+    transform: translateX(-125%);
+  }
+
+  .sutens-home :focus-visible {
+    outline: 3px solid #ffc762;
+    outline-offset: 3px;
+  }
+
+  .sutens-home .hero :focus-visible,
+  .home-footer :focus-visible {
+    outline-color: #ffd166;
+  }
+
+  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .sutens-home :is(article, .stat-card, #actividades figure, #contacto a.group):hover {
+      translate: 0 -6px;
+      border-color: #68997a;
+      box-shadow: 0 20px 40px -18px rgb(20 96 43 / 30%);
+    }
+
+    .sutens-home .btn:hover { transform: translateY(-2px); }
+    .sutens-home .btn:active { transform: scale(.97); }
+    .sutens-home .btn:hover::after {
+      transform: translateX(125%);
+      transition: transform 700ms ease-out;
+    }
+
+    .sutens-home .btn svg { transition: transform 250ms ease-out; }
+    .sutens-home .btn:hover svg { transform: translateX(4px); }
+
+    .sutens-home #hero-carousel .carousel-frame {
+      transform: perspective(1100px) rotateY(-3deg);
+      transition: transform 600ms cubic-bezier(.2,.7,.2,1);
+    }
+    .sutens-home #hero-carousel:is(:hover, :focus-within) .carousel-frame { transform: none; }
+
+    .home-footer li a {
+      display: inline-block;
+      transition: transform 250ms ease-out, color 250ms;
+    }
+    .home-footer li a:hover { transform: translateX(4px); color: #ffd166; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .sutens-home .hero-title span:last-child {
+      background: linear-gradient(100deg, #ffd166 20%, #fff4ca 48%, #ffd166 75%);
+      background-size: 240% 100%;
+      background-clip: text;
+      color: transparent;
+      animation: brillo-lema 4s ease-in-out 1;
+    }
+    @keyframes brillo-lema { 50% { background-position: 100% 0; } }
+  }
+
+  @media (forced-colors: active) {
+    .sutens-home .hero-title span:last-child { color: CanvasText; }
+  }
+
+  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .sutens-home article {
+      position: relative;
+    }
+
+    .sutens-home article::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      background: radial-gradient(18rem circle at var(--halo-x, 50%) var(--halo-y, 0%), rgb(245 158 11 / 10%), transparent 65%);
+      opacity: 0;
+      transition: opacity 300ms ease-out;
+    }
+
+    .sutens-home article:hover::before { opacity: 1; }
+  }
+
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .home-header::after {
+        content: '';
+        position: absolute;
+        inset: auto 0 -1px;
+        height: 3px;
+        pointer-events: none;
+        background: linear-gradient(90deg, #1b7a38, #f59e0b);
+        transform-origin: left;
+        animation: progreso-lectura linear both;
+        animation-timeline: scroll(root);
+      }
+      @keyframes progreso-lectura {
+        from { transform: scaleX(0); }
+        to { transform: scaleX(1); }
+      }
+    }
+  }
+</style>
 
 <script>
   async function aplicarImagenesPortada() {

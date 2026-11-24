@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { manejarAsync } from '../middleware/errores.js';
 import {
   listarSubdirectivas,
   listarCargosSindicales,
@@ -22,19 +23,19 @@ const router = Router();
 
 router.use(autenticar);
 
-router.get('/', listarSubdirectivas);
-router.get('/cargos', listarCargosSindicales);
-router.get('/roles-laborales', listarRolesLaborales);
-router.post('/cargos', autorizar('Administrador SUTENS'), crearCargoSindical);
-router.post('/roles-laborales', autorizar('Administrador SUTENS'), crearRolLaboral);
-router.post('/', autorizarDirectivaPrincipal(), crearSubdirectiva);
-router.patch('/:id', autorizarDirectivaPrincipal(), renombrarSubdirectiva);
-router.post('/:id/instituciones', autorizarDirectivaPrincipal(), crearInstitucion);
-router.patch('/instituciones/:id', autorizarDirectivaPrincipal(), renombrarInstitucion);
-router.post('/instituciones/:id/sedes', autorizarDirectivaPrincipal(), crearSede);
-router.patch('/sedes/:id', autorizarDirectivaPrincipal(), renombrarSede);
-router.delete('/sedes/:id', autorizarDirectivaPrincipal(), eliminarSede);
-router.delete('/instituciones/:id', autorizarDirectivaPrincipal(), eliminarInstitucion);
-router.delete('/:id', autorizarDirectivaPrincipal(), eliminarSubdirectiva);
+router.get('/', manejarAsync(listarSubdirectivas));
+router.get('/cargos', manejarAsync(listarCargosSindicales));
+router.get('/roles-laborales', manejarAsync(listarRolesLaborales));
+router.post('/cargos', autorizar('Administrador SUTENS'), manejarAsync(crearCargoSindical));
+router.post('/roles-laborales', autorizar('Administrador SUTENS'), manejarAsync(crearRolLaboral));
+router.post('/', autorizarDirectivaPrincipal(), manejarAsync(crearSubdirectiva));
+router.patch('/:id', autorizarDirectivaPrincipal(), manejarAsync(renombrarSubdirectiva));
+router.post('/:id/instituciones', autorizarDirectivaPrincipal(), manejarAsync(crearInstitucion));
+router.patch('/instituciones/:id', autorizarDirectivaPrincipal(), manejarAsync(renombrarInstitucion));
+router.post('/instituciones/:id/sedes', autorizarDirectivaPrincipal(), manejarAsync(crearSede));
+router.patch('/sedes/:id', autorizarDirectivaPrincipal(), manejarAsync(renombrarSede));
+router.delete('/sedes/:id', autorizarDirectivaPrincipal(), manejarAsync(eliminarSede));
+router.delete('/instituciones/:id', autorizarDirectivaPrincipal(), manejarAsync(eliminarInstitucion));
+router.delete('/:id', autorizarDirectivaPrincipal(), manejarAsync(eliminarSubdirectiva));
 
 export default router;

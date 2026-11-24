@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import routes from './routes/index.js';
+import { responderError } from './middleware/errores.js';
 import { auditarIntentoDescarga, manejarCuerpoInvalidoDescarga } from './middleware/chatbot-download-policy.js';
 import { exigirChatbotHabilitado, manejarCuerpoInvalidoChatbot } from './config/chatbot.js';
 
@@ -47,6 +48,7 @@ app.use(express.static(directorioLanding));
 
 // Rutas de la API
 app.use('/api', routes);
+app.use('/api', responderError);
 
 // Ruta de salud
 app.get('/health', (req, res) => res.json({ status: 'ok' }));

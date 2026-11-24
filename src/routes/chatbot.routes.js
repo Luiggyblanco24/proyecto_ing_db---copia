@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { manejarAsync } from '../middleware/errores.js';
 import { consultarInformeChatbot } from '../controllers/chatbot-report.controller.js';
 import { exportarInformeChatbot } from '../controllers/chatbot-export.controller.js';
 import { autenticar } from '../middleware/auth.js';
@@ -30,9 +31,9 @@ router.use('/informes', (req, res, next) => {
   next();
 });
 router.use(autenticar);
-router.post('/conversar', limitarConversacionChatbot, conversarConChatbot);
-router.post('/afiliados/previsualizar', limitarConversacionChatbot, autorizarDirectivaPrincipal(), previsualizarGestionAfiliados);
-router.post('/informes', limitarInformesChatbot, autorizarInformesChatbot, consultarInformeChatbot);
-router.post('/informes/exportar', exigirDescargasHabilitadas, limitarDescargasChatbot, autorizarInformesChatbot, exportarInformeChatbot);
+router.post('/conversar', limitarConversacionChatbot, manejarAsync(conversarConChatbot));
+router.post('/afiliados/previsualizar', limitarConversacionChatbot, autorizarDirectivaPrincipal(), manejarAsync(previsualizarGestionAfiliados));
+router.post('/informes', limitarInformesChatbot, autorizarInformesChatbot, manejarAsync(consultarInformeChatbot));
+router.post('/informes/exportar', exigirDescargasHabilitadas, limitarDescargasChatbot, autorizarInformesChatbot, manejarAsync(exportarInformeChatbot));
 
 export default router;

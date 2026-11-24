@@ -27,12 +27,13 @@ export async function obtenerAfiliadosVisibles(req, idsAfiliados = null) {
     return null;
   }
 
-  const asignacion = asignaciones[0];
-  if (asignacion.es_principal && asignacion.cargo.endsWith(' General')) {
+  if (asignaciones.some(({ es_principal, cargo }) => es_principal && cargo.endsWith(' General'))) {
     return consultarAfiliados(consultaReq, null, idsAfiliados);
   }
 
-  return consultarAfiliados(consultaReq, asignacion.id_subdirectiva, idsAfiliados);
+  const locales = asignaciones.filter(({ es_principal, cargo }) => !es_principal && !cargo.endsWith(' General'));
+  if (!locales.length) return null;
+  return consultarAfiliados(consultaReq, locales.map(({ id_subdirectiva }) => id_subdirectiva), idsAfiliados);
 }
 
 export async function listarAfiliadosVisibles(req, res) {

@@ -10,7 +10,7 @@ const mostrarSeccion = preguntasConfirmadas.length >= 3;
 ---
 
 {mostrarSeccion && (
-  <section id="faq" class="bg-white px-4 py-16 sm:px-6 sm:py-20" aria-labelledby="faq-titulo">
+  <section id="faq" class="landing-warm px-4 py-16 sm:px-6 sm:py-20" aria-labelledby="faq-titulo">
     <div class="mx-auto max-w-4xl">
       <header class="text-center mb-12 reveal">
         <p class="eyebrow text-brand-700">Resolución de dudas</p>
@@ -22,7 +22,7 @@ const mostrarSeccion = preguntasConfirmadas.length >= 3;
         </p>
       </header>
 
-      <div class="divide-y divide-line rounded-2xl border border-line bg-cream/50 shadow-sm reveal" style="--reveal-delay: 80ms">
+      <div class="divide-y divide-line rounded-2xl border border-line bg-white shadow-sm reveal" style="--reveal-delay: 80ms">
         {preguntasConfirmadas.map((faq, index) => (
           <details class="group p-5 sm:p-6 [&_summary::-webkit-details-marker]:hidden" id={`faq-${faq.id}`}>
             <summary class="flex cursor-pointer items-center justify-between gap-4 text-left font-extrabold text-ink transition hover:text-brand-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-700 focus-visible:ring-offset-2 rounded-lg">
@@ -40,7 +40,7 @@ const mostrarSeccion = preguntasConfirmadas.length >= 3;
         ))}
       </div>
 
-      <div class="mt-10 rounded-2xl border border-line bg-cream p-5 text-center reveal">
+      <div class="mt-10 rounded-2xl border border-line bg-white p-5 text-center reveal">
         <p class="text-sm text-muted">
           ¿Tienes una inquietud específica sobre tu vinculación?{' '}
           <a

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { manejarAsync } from '../middleware/errores.js';
 import multer from 'multer';
 import {
 	registrar,
@@ -33,15 +34,15 @@ function manejarFotoPerfil(req, res, next) {
 }
 
 // POST /api/auth/registrar  -> registro público de afiliación
-router.post('/registrar', limitarAutenticacion('registro'), registrar);
+router.post('/registrar', limitarAutenticacion('registro'), manejarAsync(registrar));
 
 // POST /api/auth/login      -> inicio de sesión (devuelve JWT)
-router.post('/login', limitarAutenticacion('login'), login);
-router.post('/logout', autenticar, cerrarSesion);
-router.post('/cambiar-contrasena-temporal', autenticar, cambiarContrasenaTemporal);
+router.post('/login', limitarAutenticacion('login'), manejarAsync(login));
+router.post('/logout', autenticar, manejarAsync(cerrarSesion));
+router.post('/cambiar-contrasena-temporal', autenticar, manejarAsync(cambiarContrasenaTemporal));
 
 // GET /api/auth/me          -> perfil del usuario autenticado
-router.get('/me', autenticar, me);
-router.patch('/me', autenticar, manejarFotoPerfil, actualizarPerfil);
+router.get('/me', autenticar, manejarAsync(me));
+router.patch('/me', autenticar, manejarFotoPerfil, manejarAsync(actualizarPerfil));
 
 export default router;

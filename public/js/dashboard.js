@@ -220,8 +220,8 @@ async function cargarPerfil() {
     const cargosPrincipales = [
       'Presidente General', 'Vicepresidente General', 'Secretario General', 'Fiscal General', 'Tesorero General',
     ];
-    esDirectivaPrincipal = cargosPrincipales.includes(perfil.cargo_departamental);
-    esSecretarioGeneral = perfil.cargo_departamental === 'Secretario General';
+    esDirectivaPrincipal = perfil.estado_sindical === 'activo' && cargosPrincipales.includes(perfil.cargo_departamental);
+    esSecretarioGeneral = esDirectivaPrincipal && perfil.cargo_departamental === 'Secretario General';
     puedePublicarDocumentos = esAdmin || (
       perfil.estado === 'aprobado' && perfil.estado_sindical === 'activo' && esDirectivaPrincipal
     );
@@ -237,7 +237,7 @@ async function cargarPerfil() {
         .some((cargo) => [perfil.cargo_sindical, perfil.cargo_departamental].includes(cargo))
     );
     puedeVerAfiliados = puedeGestionarAfiliados ||
-      ['Presidente', 'Vicepresidente', 'Secretario', 'Fiscal'].includes(perfil.cargo_sindical);
+      (perfil.estado_sindical === 'activo' && ['Presidente', 'Vicepresidente', 'Secretario', 'Fiscal'].includes(perfil.cargo_sindical));
     document.getElementById('roles-usuario').innerHTML = badgeRoles(perfil.roles);
     document.getElementById('detalle-bienvenida').textContent = [
       perfil.cargo_departamental,
@@ -2558,6 +2558,7 @@ document.getElementById('form-cuenta').addEventListener('submit', async (event) 
       method: 'PATCH',
       body: new FormData(event.currentTarget),
     });
+    if (respuesta.token) setToken(respuesta.token);
     mensaje.textContent = respuesta.mensaje;
     mensaje.className = 'mensaje exito';
     UI.toast.exito(respuesta.mensaje);
