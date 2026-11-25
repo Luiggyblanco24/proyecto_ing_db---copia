@@ -37,7 +37,9 @@ async function apiFetch(url, options = {}) {
       localStorage.removeItem('token');
       window.location.assign('/login.html?sesion=expirada');
     }
-    throw new Error(data.error || 'Error en la petición');
+    const error = new Error(data.error || 'Error en la petición');
+    error.status = res.status;
+    throw error;
   }
   return data;
 }

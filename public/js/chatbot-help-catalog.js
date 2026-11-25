@@ -1,3 +1,5 @@
+import { contenidoSindical } from './chatbot-contenido-sindical.js';
+
 export const CANAL_SOPORTE = '';
 
 export const CATALOGO_AYUDA_CHATBOT = [
@@ -96,7 +98,7 @@ export const CATALOGO_AYUDA_CHATBOT = [
     preguntas: ['¿Qué es la negociación colectiva?', '¿Qué es negociación colectiva?', '¿Qué significa negociación colectiva?'],
     sinonimos: ['ejemplo de negociación colectiva', 'explícame la negociación colectiva'],
     palabrasClave: ['negociación colectiva', 'negociar colectivamente'],
-    respuesta: 'La negociación colectiva es el proceso en el que un sindicato y un empleador, o sus representantes, buscan acuerdos sobre las condiciones de trabajo. Por ejemplo, un grupo de docentes puede proponer, a través de su sindicato, que las capacitaciones se programen dentro de la jornada laboral. Las partes discuten la propuesta para intentar llegar a un acuerdo.',
+    respuesta: contenidoSindical['negociacion-colectiva'],
     contentVerified: true,
   },
   {
@@ -105,7 +107,7 @@ export const CATALOGO_AYUDA_CHATBOT = [
     preguntas: ['¿Qué beneficios ofrece SUTENS?', '¿Cuáles son los beneficios de estar afiliado?'],
     sinonimos: ['beneficios del sindicato', 'beneficios de afiliación'],
     palabrasClave: ['beneficios', 'bienestar', 'representación', 'negociación', 'formación'],
-    respuesta: 'SUTENS ofrece acompañamiento en derechos laborales, orientación jurídica, negociación colectiva, representación gremial y actividades de bienestar y formación sindical.',
+    respuesta: contenidoSindical['beneficios-sutens'],
     contentVerified: true,
   },
   {
@@ -114,7 +116,7 @@ export const CATALOGO_AYUDA_CHATBOT = [
     preguntas: ['¿Dónde puedo entregar el formulario de afiliación?'],
     sinonimos: ['dónde radico mi formulario', 'entregar el formulario'],
     palabrasClave: ['entregar', 'formulario', 'radicar', 'entrega'],
-    respuesta: 'Puedes entregarlo al delegado de tu subdirectiva municipal o en la sede de Ocaña, calle 10 n.º 13-37, oficina 201, Centro. Para orientación sobre la entrega, el WhatsApp institucional es +57 318 521 8787.',
+    respuesta: contenidoSindical['entregar-formulario'],
     contentVerified: true,
   },
   {
@@ -123,7 +125,7 @@ export const CATALOGO_AYUDA_CHATBOT = [
     preguntas: ['¿Cuándo se fundó SUTENS?', '¿Quiénes conformaron SUTENS?', '¿Qué es SUTENS?'],
     sinonimos: ['historia de SUTENS', 'origen del sindicato', 'qué significa SUTENS'],
     palabrasClave: ['historia', 'fundación', 'origen', 'fundó', 'significa'],
-    respuesta: 'SUTENS es el Sindicato Unitario de Trabajadores de la Educación de Norte de Santander. Docentes de El Tarra y Teorama lo conformaron el 29 de junio de 2016 para defender los derechos de los trabajadores de la educación.',
+    respuesta: contenidoSindical['historia-sutens'],
     contentVerified: true,
   },
   {

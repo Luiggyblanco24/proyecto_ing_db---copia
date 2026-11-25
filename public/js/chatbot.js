@@ -1,5 +1,6 @@
 import { CANAL_SOPORTE, CATALOGO_AYUDA_CHATBOT } from './chatbot-help-catalog.js';
-import { calcularCuotaConsultada, documentosRequeridos, informacionAfiliacion } from './datos-afiliacion.js';
+import { buscarConsultaPanel } from './chatbot-guia-panel.js';
+import { calcularCuotaConsultada, guiaTramiteAfiliacion, informacionAfiliacion, solicitaGuiaAfiliacion } from './datos-afiliacion.js';
 import {
   buscarAyuda,
   normalizarPregunta,
@@ -350,11 +351,17 @@ async function buscarDocumentosSindicales(consulta = '') {
     .filter((palabra) => (palabra.length > 1 || /^\d$/.test(palabra)) && !palabrasIgnoradas.has(palabra));
   const educativoSolicitado = /\b(educativ[oa]s?|grado|materia|guia|ingles|matematicas|ciencias|espanol|escolar)\b/i.test(termino);
   const sindicalSolicitado = /\b(sindical|sindicato|acta|asamblea|estatutos|directiva|comunicado)\b/i.test(termino);
+  const buscando = document.createElement('p');
+  buscando.className = 'chatbot-escribiendo';
+  buscando.textContent = 'Buscando en la biblioteca…';
+  mensajes.append(buscando);
+  contenido.scrollTop = contenido.scrollHeight;
   try {
     const respuestas = await Promise.allSettled([
-      apiFetch('/api/biblioteca', { signal }),
-      apiFetch('/api/biblioteca/educativa', { signal }),
+      educativoSolicitado && !sindicalSolicitado ? [] : apiFetch('/api/biblioteca', { signal }),
+      sindicalSolicitado && !educativoSolicitado ? [] : apiFetch('/api/biblioteca/educativa', { signal }),
     ]);
+    buscando.remove();
     if (signal.aborted) return;
     if (educativoSolicitado && !sindicalSolicitado && respuestas[1].status === 'rejected') {
       throw respuestas[1].reason;
@@ -378,6 +385,9 @@ async function buscarDocumentosSindicales(consulta = '') {
       : sindicalSolicitado && !educativoSolicitado
         ? documentos.filter((documento) => documento.tipoBiblioteca === 'Sindical')
         : documentos;
+    const gradoSolicitado = extraerGrado(termino);
+    const materiaSolicitada = termino.match(/\b(ingles|matematicas|espanol|ciencias|biologia|quimica|fisica|sociales)\b/)?.[1];
+    const primaria = /\bprimaria\b/.test(termino);
     const resultados = documentosVisibles.map((documento) => {
       const titulo = normalizarBusqueda(documento.titulo);
       const clasificacion = normalizarBusqueda([
@@ -387,8 +397,12 @@ async function buscarDocumentosSindicales(consulta = '') {
         documento.tipo_recurso,
         documento.grado,
       ].filter(Boolean).join(' '));
-      const gradoSolicitado = termino.match(/\bgrado\s+(\d{1,2})\b/)?.[1];
-      if (gradoSolicitado && !normalizarBusqueda(documento.grado).match(new RegExp(`\\b${gradoSolicitado}\\b`))) {
+      const gradoFicha = normalizarBusqueda(documento.grado);
+      const grados = gradoFicha.match(/\b\d{1,2}\b/g) || [extraerGrado(gradoFicha)];
+      if ((gradoSolicitado && !grados.includes(gradoSolicitado)) ||
+          (materiaSolicitada && ![titulo, clasificacion].some((dato) => dato.includes(materiaSolicitada))) ||
+          (primaria && !clasificacion.includes('primaria') && !titulo.includes('primaria') &&
+            !grados.some((grado) => /^[1-5]$/.test(grado)))) {
         return { documento, puntaje: 0 };
       }
       const puntaje = terminos.reduce((total, palabra) => {
@@ -733,11 +747,7 @@ async function enviarInforme(evento) {
     ejecutarInforme.textContent = 'Generar informe';
     panelInformes.hidden = true;
     consultarInformes.setAttribute('aria-expanded', 'false');
-    const encabezado = agregarMensaje(resultado.titulo, 'bot');
-    crearTablaInforme(resultado);
-    if (resultado.descargas_habilitadas === true && resultado.filas.length > 0) {
-      mostrarOpcionesDescarga(solicitud);
-    }
+    const encabezado = presentarInforme(resultado, solicitud);
     encabezado.tabIndex = -1;
     encabezado.focus({ preventScroll: true });
     contenido.scrollTop += encabezado.getBoundingClientRect().top - contenido.getBoundingClientRect().top;
@@ -748,6 +758,13 @@ async function enviarInforme(evento) {
   } finally {
     ejecutarInforme.disabled = false;
   }
+}
+
+function presentarInforme(resultado, solicitud) {
+  const encabezado = agregarMensaje(resultado.titulo, 'bot');
+  crearTablaInforme(resultado);
+  if (resultado.descargas_habilitadas === true && resultado.filas.length > 0) mostrarOpcionesDescarga(solicitud);
+  return encabezado;
 }
 
 function orientar(id) {
@@ -763,17 +780,17 @@ function recordarTurno(texto, respuesta) {
 
 function responderSobreAfiliacion(texto, pregunta, seguimiento) {
   const temaExplicito = /\b(afiliar\w*|afilio|afiliacion|cuota sindical|estatutos (?:de sutens|del sindicato))\b/.test(pregunta);
-  const calculo = seguimiento ? calcularCuotaConsultada(texto) : null;
+  const calculo = seguimiento || /\b(cuota|descontarian|aportaria)\b/.test(pregunta) ? calcularCuotaConsultada(texto) : null;
   const repregunta = /^(?:y )?(?:(?:el |la |los |las )?(?:costo|costos|cuota|precio|formulario|formato|requisitos|documentos|normas|estatutos|reglamento)|cuanto (?:cuesta|pago|vale)|que (?:normas|requisitos|documentos) (?:aplican|necesito)|donde (?:lo (?:entrego|radico)|se entrega))$/.test(pregunta);
-  if (!temaExplicito && !(seguimiento && (repregunta || calculo))) return false;
-  const tramite = /\b(formularios?|formatos?|requisitos?|documentos?|papeles|que necesito|como (?:me afilio|afiliar\w*))\b/.test(pregunta);
+  if (!temaExplicito && !calculo && !(seguimiento && repregunta)) return false;
+  const tramite = solicitaGuiaAfiliacion(pregunta) ||
+    /\b(formularios?|formatos?|requisitos?|documentos?|papeles|que necesito|como (?:me afilio|afiliar\w*))\b/.test(pregunta);
   const costo = /\b(costo[s]?|cuotas?|precio|cuesta|vale|valdria|pago|paga|pagar|descuent\w*|cobran)\b/.test(pregunta);
   const normas = /\b(normas?|normativa|estatutos?|reglamentos?)\b/.test(pregunta);
   const entrega = /\b(entreg\w*|radic\w*)\b/.test(pregunta);
   const partes = [];
   if (tramite) {
-    partes.push('Para solicitar la afiliación, el docente debe diligenciar y firmar el formulario oficial. Para el trámite en papel, prepara:\n' +
-      documentosRequeridos.map((documento) => '• ' + documento.nombre).join('\n'));
+    partes.push(guiaTramiteAfiliacion);
   }
   if (entrega) partes.push('Puedes entregarlo al delegado de la subdirectiva municipal o en ' + informacionAfiliacion.sedeFisica + '.');
   if (calculo) partes.push(calculo);
@@ -804,6 +821,7 @@ async function responder(texto) {
     return;
   }
   agregarMensaje(texto, 'usuario');
+  const actividadAnterior = ultimaActividad;
   if (ultimaActividad && /^(y )?(donde( es| sera| queda| se realiza)?|cuando( es| sera| se realiza)?|a que hora( es| empieza| comienza)?|en que lugar|quienes confirmaron( asistencia)?|cuantos confirmaron|ya confirme|confirme mi asistencia)$/.test(pregunta)) {
     mostrarActividad(ultimaActividad, pregunta);
     return;
@@ -814,6 +832,20 @@ async function responder(texto) {
   if (esSaludo(texto)) {
     agregarMensaje('¡Hola! ¿Quieres buscar un documento, consultar tu próxima actividad o revisar tu perfil?', 'bot');
     return;
+  }
+  // Las consultas concretas conservan los permisos y datos de la sesión.
+  const tema = buscarConsultaPanel(texto);
+  if (tema && !calcularCuotaConsultada(texto) &&
+      !(/\b(formulario|formato|afiliar\w*)\b/.test(pregunta) && /\b(costo|normas|cuota|precio)\b/.test(pregunta))) {
+    enviar.disabled = true;
+    try {
+      if (await responderTemaPanel(tema, texto, pregunta, capacidades, actividadAnterior, busquedaAnterior, signal)) return;
+    } catch {
+      if (!signal.aborted) agregarMensaje('No pude cargar los datos de la consulta. Intenta de nuevo desde el panel.', 'bot');
+      return;
+    } finally {
+      if (!signal.aborted) enviar.disabled = false;
+    }
   }
   if (/\b(clave|contrasena|password)\b/.test(pregunta) && /\b(otro|otra|ajena|tercero)\b/.test(pregunta)) {
     if (capacidades.resetUserPassword) orientar('restablecer-contrasena-usuario');
@@ -916,6 +948,88 @@ function mostrarActividad(evento, texto) {
   agregarMensaje(detalle, 'bot');
 }
 
+function extraerGrado(pregunta) {
+  const numero = pregunta.match(/\b(?:grado\s+|para\s+)(\d{1,2})\b/)?.[1];
+  if (numero) return numero;
+  const ordinales = ['primero', 'segundo', 'tercero', 'cuarto', 'quinto', 'sexto', 'septimo', 'octavo', 'noveno', 'decimo', 'undecimo'];
+  const indice = ordinales.findIndex((grado) => pregunta.split(' ').includes(grado));
+  return indice < 0 ? '' : String(indice + 1);
+}
+
+async function responderTemaPanel(tema, texto, pregunta, capacidades, actividad, busqueda, signal) {
+  if (tema.capacidad && !capacidades[tema.capacidad]) {
+    agregarMensaje(tema.denegado, 'bot');
+    return true;
+  }
+  if (tema.texto) {
+    agregarMensaje(tema.texto, 'bot');
+    if (tema.vista) agregarAccionDestino({ destino: { tipo: 'vista', id: tema.vista } });
+    if (tema.pdf) {
+      conversandoDeAfiliacion = true;
+      agregarAccionDestino({ titulo: 'formulario oficial de afiliación (PDF)', destino: { tipo: 'ruta', ruta: informacionAfiliacion.formularioPdfUrl } });
+    }
+    recordarTurno(texto, tema.texto);
+    return true;
+  }
+  switch (tema.accion) {
+    case 'estado':
+    case 'subdirectiva': {
+      const datos = window.SUTENSChatbotDashboard?.obtenerDatosPropios?.();
+      const esEstado = tema.accion === 'estado';
+      const valor = esEstado ? datos?.estadoAfiliacion : datos?.subdirectiva;
+      agregarMensaje(valor ? (esEstado ? 'Tu estado de afiliación es ' : 'Tu subdirectiva registrada es ') + valor + '.' :
+        'Ese dato no aparece en tu perfil actual. Consulta Mis datos o solicita su revisión a Administración.', 'bot');
+      break;
+    }
+    case 'permisos': {
+      const funciones = ['consultar tu perfil', 'ver el calendario', 'buscar en las bibliotecas'];
+      if (capacidades.manageAffiliates) funciones.push('gestionar afiliaciones');
+      if (capacidades.viewReports) funciones.push('generar informes');
+      if (capacidades.resetUserPassword) funciones.push('restablecer contraseñas de otras cuentas');
+      agregarMensaje('Con tu perfil puedes ' + funciones.join(', ') + '.', 'bot');
+      break;
+    }
+    case 'agenda':
+      await responderConsultaActividades(texto);
+      break;
+    case 'detalle-evento':
+      if (actividad) {
+        ultimaActividad = actividad;
+        mostrarActividad(actividad, /asistencia|confirm|inscrit|anotad|participa/.test(pregunta) ? 'asistencia' : texto);
+      } else agregarMensaje('¿De qué actividad se trata? Puedes empezar con «¿Cuál es mi próxima actividad?» y luego consultar sus detalles.', 'bot');
+      break;
+    case 'material':
+    case 'otro-grado': {
+      const grado = extraerGrado(pregunta);
+      const materia = pregunta.match(/\b(matematicas|ingles|ciencias|espanol|sociales|fisica|quimica|biologia)\b/)?.[1];
+      if (tema.accion === 'otro-grado' && (!busqueda || !grado)) {
+        agregarMensaje('¿Qué materia y grado quieres buscar?', 'bot');
+        break;
+      }
+      const termino = materia ? 'guías ' + materia : tema.accion === 'otro-grado' ? busqueda.replace(/\b(?:grado\s+\d+|primaria)\b/g, '').trim() : texto;
+      await buscarDocumentosSindicales([termino, grado && 'grado ' + grado, pregunta.includes('primaria') && 'primaria'].filter(Boolean).join(' '));
+      break;
+    }
+    case 'actas':
+    case 'estatutos':
+      await buscarDocumentosSindicales(tema.accion === 'actas' ? 'acta asamblea' : 'estatutos');
+      break;
+    case 'informe-subdirectivas': {
+      if (!capacidades.viewReports) {
+        agregarMensaje('Los informes del padrón requieren un perfil autorizado.', 'bot');
+        break;
+      }
+      if (!/\baprobad[oa]s?\b/.test(pregunta) || /\b(pendientes?|rechazad[oa]s?|retirad[oa]s?)\b/.test(pregunta)) return false;
+      const solicitud = { informe: 'afiliados_por_subdirectiva', filtros: { estado: 'aprobado' } };
+      const resultado = await apiFetch('/api/chatbot/informes', { method: 'POST', body: JSON.stringify(solicitud), signal });
+      if (!signal.aborted) presentarInforme(resultado, solicitud);
+      break;
+    }
+    default: return false;
+  }
+  return true;
+}
+
 async function responderConsultaActividades(texto) {
   const { signal } = conversacion;
   const pensando = document.createElement('p');
@@ -929,19 +1043,23 @@ async function responderConsultaActividades(texto) {
     const ahora = Date.now();
     const consulta = normalizarPregunta(texto);
     const diaColombia = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota', dateStyle: 'short' });
-    const diaPedido = /\\bmanana\\b/.test(consulta) ? diaColombia.format(ahora + 86400000)
-      : /\\bhoy\\b/.test(consulta) ? diaColombia.format(ahora) : null;
-    const tipoPedido = consulta.match(/\\b(asamblea|reunion|capacitacion)\\b/)?.[1];
-    const preguntaPasado = /\b(realizad[ao]s?|pasad[ao]s?|anteriores|ya se hicieron|ya se realizaron)\b/i.test(texto);
+    const diaPedido = /\bmanana\b/.test(consulta) ? diaColombia.format(ahora + 86400000)
+      : /\bhoy\b/.test(consulta) ? diaColombia.format(ahora) : null;
+    const mesPedido = /\beste mes\b/.test(consulta) ? diaColombia.format(ahora).slice(0, 7) : null;
+    const tipoPedido = consulta.match(/\b(asamblea|reunion|capacitacion)(?:es|s)?\b/)?.[1];
+    const preguntaPasado = /\b(realizad[ao]s?|pasad[ao]s?|anteriores|ya se (?:hicieron|realizaron)|ya ocurrieron)\b/.test(consulta);
     const preguntaProxima = /\b(proxim[ao]s?|siguiente|por realizar|se aproxima|pronto)\b/i.test(normalizarPregunta(texto));
     let visibles = (Array.isArray(eventos) ? eventos : []).filter((evento) => {
       const fecha = new Date(evento.fecha_inicio).getTime();
+      if (!Number.isFinite(fecha)) return false;
+      if (mesPedido && !diaColombia.format(fecha).startsWith(mesPedido)) return false;
+      if (/\bprogramad[ao]s?\b/.test(consulta) && evento.estado !== 'programado') return false;
       if (diaPedido && (!Number.isFinite(fecha) || diaColombia.format(fecha) !== diaPedido)) return false;
       if (tipoPedido && !normalizarPregunta([evento.tipo, evento.titulo].join(' ')).includes(tipoPedido)) return false;
       if (preguntaPasado) return /realizad/i.test(texto) ? evento.estado === 'realizado' : fecha < ahora;
       if (preguntaProxima) return evento.estado === 'programado' && fecha >= ahora;
       return true;
-    });
+    }).sort((a, b) => (new Date(a.fecha_inicio) - new Date(b.fecha_inicio)) * (preguntaPasado ? -1 : 1));
     if (preguntaProxima && !/proxim[oa]s/.test(normalizarPregunta(texto))) visibles = visibles.slice(0, 1);
     else visibles = visibles.slice(0, 5);
     pensando.remove();
@@ -979,10 +1097,12 @@ async function responderConIA(texto, sugerencias = []) {
     if (!resultado.respuesta?.trim()) throw new Error('Respuesta vacía');
     agregarMensaje(resultado.respuesta, 'bot');
     recordarTurno(texto, resultado.respuesta);
-  } catch {
+  } catch (error) {
     pensando.remove();
     if (signal.aborted) return;
-    agregarMensaje('No tengo una respuesta verificada en la ayuda de SUTENS y ahora no puedo consultar la IA. Puedes reformular la pregunta o volver a intentarlo más tarde.', 'bot');
+    const detalle = [400, 429, 502, 503, 504].includes(error?.status) && error.message !== 'Error en la petición'
+      ? error.message : 'No pude obtener una respuesta. Puedes volver a enviar tu pregunta.';
+    agregarMensaje(detalle, 'bot');
     if (sugerencias.length) mostrarSugerencias(sugerencias);
   }
   contenido.scrollTop = contenido.scrollHeight;

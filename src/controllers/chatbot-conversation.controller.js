@@ -25,6 +25,15 @@ function errorConversacion(error, etapa, res) {
     evento: 'chatbot_error', etapa, codigo: error.code || error.name,
     estado_http: error.statusProveedor, codigo_proveedor: error.codigoProveedor,
   }));
+  if (error.code === 'CHATBOT_AI_TIMEOUT') {
+    return res.status(504).json({ error: 'La respuesta tardó demasiado. Puedes volver a enviar tu pregunta.' });
+  }
+  if (error.statusProveedor === 429) {
+    return res.status(429).json({ error: 'El servicio de IA alcanzó su límite temporal. Inténtalo más tarde.' });
+  }
+  if (['CHATBOT_AI_TOKEN_LIMIT', 'CHATBOT_AI_EMPTY', 'CHATBOT_AI_INVALID_JSON'].includes(error.code)) {
+    return res.status(502).json({ error: 'El servicio de IA no devolvió una respuesta completa. Puedes volver a intentarlo.' });
+  }
   return res.status(503).json({ error: 'No se pudo consultar al asistente. Inténtalo más tarde.' });
 }
 

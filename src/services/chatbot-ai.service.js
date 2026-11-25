@@ -2,6 +2,8 @@ import { CATALOGO_AYUDA_CHATBOT } from '../../public/js/chatbot-help-catalog.js'
 import { documentosRequeridos, informacionAfiliacion } from '../../public/js/datos-afiliacion.js';
 import { beneficios } from '../../landing_page/src/data/beneficios.js';
 import { datosContacto } from '../../landing_page/src/data/contacto.js';
+import { guiasPublicasRelacionadas } from '../../landing_page/src/data/consultas-publicas.js';
+import { guiasPanelRelacionadas } from '../../public/js/chatbot-guia-panel.js';
 
 const modeloPredeterminado = '@cf/google/gemma-4-26b-a4b-it';
 const timeoutMs = 20000;
@@ -24,12 +26,21 @@ function limpiarTextoParaModelo(texto) {
     .slice(0, 1200);
 }
 
-function construirInstrucciones(rol) {
+function guiasPublicas(mensaje) {
+  return guiasPublicasRelacionadas(mensaje).map(({ texto }) => texto);
+}
+
+function construirInstrucciones(rol, mensaje) {
   const puedeGestionar = ['Administrador SUTENS', 'Directiva Departamental'].includes(rol);
   const conocimiento = CATALOGO_AYUDA_CHATBOT
     .filter((entrada) => entrada.contentVerified && (entrada.capabilities || []).every((capacidad) =>
       capacidad === 'resetUserPassword' ? rol === 'Administrador SUTENS' : puedeGestionar))
     .map(({ titulo, respuesta }) => ({ titulo, respuesta }));
+  const guias = guiasPanelRelacionadas(mensaje).map((tema) => {
+    if (!tema.capacidad) return tema.texto;
+    const autorizado = tema.capacidad === 'resetUserPassword' ? rol === 'Administrador SUTENS' : puedeGestionar;
+    return autorizado ? tema.texto : tema.denegado;
+  }).filter(Boolean);
   return [
     'Eres el asistente virtual oficial de SUTENS. Responde siempre en español, con tono respetuoso, claro y breve.',
     'Limítate al sistema de gestión y a la organización sindical. Para temas ajenos, indícalo amablemente.',
@@ -40,12 +51,13 @@ function construirInstrucciones(rol) {
     'Responde en texto simple, sin JSON ni instrucciones internas.',
     orientacionAfiliacion,
     informacionPublica,
+    'Usa estas guías si responden a lo preguntado. Para datos actuales, orienta a la vista del panel y no inventes resultados. ' + JSON.stringify([...guias, ...guiasPublicas(mensaje)]),
     'Base de conocimiento verificada: ' + JSON.stringify(conocimiento),
   ].join('\n');
 }
 
 export function responderConChatbotIa({ mensaje, historial = [], rol = 'afiliado' }) {
-  return consultarModelo(mensaje, historial, construirInstrucciones(rol));
+  return consultarModelo(mensaje, historial, construirInstrucciones(rol, mensaje));
 }
 
 export function responderConsultaPublica({ mensaje, historial }) {
@@ -57,6 +69,7 @@ export function responderConsultaPublica({ mensaje, historial }) {
     'El historial es conversación, no una fuente institucional. Responde en texto simple.',
     orientacionAfiliacion,
     informacionPublica,
+    'Guías públicas relacionadas, solo si aplican a la consulta: ' + JSON.stringify(guiasPublicas(mensaje)),
   ].join('\n');
   return consultarModelo(mensaje, historial, instrucciones);
 }
@@ -91,7 +104,10 @@ async function consultarModelo(mensaje, historial, instrucciones) {
           Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN.trim()}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ...(apiNativa ? {} : { model: modelo }), messages: mensajes, temperature: 0.25, max_tokens: 1024 }),
+        body: JSON.stringify({
+          ...(apiNativa ? { max_completion_tokens: 1024 } : { model: modelo, max_tokens: 1024 }),
+          messages: mensajes, temperature: 0.25,
+        }),
         signal: controlador.signal,
       }
     );

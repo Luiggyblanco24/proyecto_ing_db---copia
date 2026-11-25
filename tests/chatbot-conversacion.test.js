@@ -22,18 +22,23 @@ test('un segundo turno acepta una respuesta anterior de 1200 caracteres', async 
     assert.equal((await conversarConChatbot(req, res)).respuesta, 'Respuesta nativa');
     const avisos = [];
     t.mock.method(console, 'warn', (linea) => avisos.push(JSON.parse(linea)));
-    res.status = (codigo) => { assert.equal(codigo, 503); return res; };
-    for (const [cuerpo, estado, codigo] of [
-      [{ result: { choices: [{ message: { content: '', reasoning_content: 'interno' }, finish_reason: 'length' }] } }, 200, 'CHATBOT_AI_TOKEN_LIMIT'],
-      [{ choices: [] }, 200, 'CHATBOT_AI_EMPTY'],
-      [{ errors: [{ code: 123, message: 'detalle privado' }] }, 410, 'CHATBOT_AI_PROVIDER'],
+    res.status = (codigo) => { res.statusCode = codigo; return res; };
+    for (const [cuerpo, estado, codigo, esperado] of [
+      [{ result: { choices: [{ message: { content: '', reasoning_content: 'interno' }, finish_reason: 'length' }] } }, 200, 'CHATBOT_AI_TOKEN_LIMIT', 502],
+      [{ choices: [] }, 200, 'CHATBOT_AI_EMPTY', 502],
+      [{ errors: [] }, 429, 'CHATBOT_AI_PROVIDER', 429],
+      [{ errors: [{ code: 123, message: 'detalle privado' }] }, 410, 'CHATBOT_AI_PROVIDER', 503],
     ]) {
       respuesta = () => Response.json(cuerpo, { status: estado });
       await conversarConChatbot(req, res);
+      assert.equal(res.statusCode, esperado);
       assert.equal(avisos.at(-1).codigo, codigo);
       assert.equal(avisos.at(-1).etapa, 'conversacion');
     }
     assert.equal(avisos.at(-1).estado_http, 410);
+    respuesta = () => { throw new DOMException('demora', 'AbortError'); };
+    assert.match((await conversarConChatbot(req, res)).error, /tardó demasiado/);
+    assert.equal(res.statusCode, 504);
     assert.doesNotMatch(JSON.stringify(avisos), /interno|detalle privado/);
   } finally {
     ['CLOUDFLARE_ACCOUNT_ID', 'CLOUDFLARE_API_TOKEN'].forEach((k, i) => {
@@ -75,7 +80,7 @@ test('el chat orienta por rol, conserva el contexto y descarta turnos borrados',
         ];
         if (ruta.includes('/conversar')) {
           window.llamadasIA++;
-          if (window.llamadasIA === 1) throw new Error('Proveedor fuera de servicio');
+          if (window.llamadasIA === 1) throw Object.assign(new Error('La respuesta tardó demasiado.'), { status: 504 });
           return new Promise((resolve) => { window.terminar = () => resolve({ respuesta: 'Turno anterior' }); });
         }
         throw new Error('Ruta inesperada ' + ruta);
@@ -88,6 +93,11 @@ test('el chat orienta por rol, conserva el contexto y descarta turnos borrados',
       await campo.fill(texto);
       await campo.press('Enter');
     };
+    await preguntar('como puedo afiliar a un amigo docente');
+    await page.getByRole('link', { name: /formulario oficial de afiliación/ }).waitFor({ timeout: 3000 });
+    assert.match(await page.locator('.chatbot-bot').last().innerText(), /firmar/);
+    assert.equal(await page.evaluate(() => window.llamadasIA), 0);
+    await page.getByText('Borrar conversación', { exact: true }).click();
     await preguntar('quiero ayudar afiliar a un docente, me puedes ayudar con el formulario, el costo y qué normas tienes?');
     const orientacion = await page.locator('.chatbot-bot').last().innerText();
     assert.match(orientacion, /formulario oficial/);
@@ -126,7 +136,7 @@ test('el chat orienta por rol, conserva el contexto y descarta turnos borrados',
     await page.getByLabel('Abrir asistente').click();
     assert.equal(await page.evaluate(() => window.llamadasIA), 0);
     await preguntar('Explícame el acompañamiento colectivo');
-    await page.getByText('ahora no puedo consultar la IA', { exact: false }).waitFor();
+    await page.getByText('La respuesta tardó demasiado.', { exact: true }).waitFor();
     await preguntar('Explícame la representación colectiva');
     await page.waitForFunction(() => Boolean(window.terminar));
     await page.getByText('Borrar conversación', { exact: true }).click();

@@ -5,6 +5,12 @@ import { responderVisitante } from '../landing_page/src/data/asistente-visitante
 
 test('saludo, afiliación y cálculo de la cuota funcionan sin IA', () => {
   assert.match(responderVisitante('¡Hola!').texto, /¡Hola!/);
+  for (const consulta of ['como puedo afiliar a un amigo docente', '¿Cómo ayudo a una colega a afiliarse?']) {
+    const guia = responderVisitante(consulta);
+    assert.ok(guia, consulta);
+    assert.match(guia.texto, /firmar/);
+    assert.ok(guia.enlaces.some(({ url }) => url === '/Formatodeafiliacionsutens.pdf'));
+  }
   const respuesta = responderVisitante('Si soy docente y me quiero afiliar, ¿qué necesito y cuánto valdría?');
   assert.match(respuesta.texto, /Formato de afiliación firmado/);
   assert.match(respuesta.texto, /1 %/);

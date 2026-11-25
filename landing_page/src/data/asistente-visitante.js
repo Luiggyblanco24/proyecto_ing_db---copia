@@ -1,7 +1,7 @@
-import { calcularCuotaConsultada } from '../../../public/js/datos-afiliacion.js';
-import { documentosRequeridos, informacionAfiliacion } from './afiliacion.js';
+import { calcularCuotaConsultada, guiaTramiteAfiliacion, informacionAfiliacion, solicitaGuiaAfiliacion } from '../../../public/js/datos-afiliacion.js';
 import { beneficios } from './beneficios.js';
 import { datosContacto } from './contacto.js';
+import { buscarConsultaPublica } from './consultas-publicas.js';
 
 const registro = { texto: 'Iniciar solicitud', url: informacionAfiliacion.registroEnLineaUrl };
 const formulario = { texto: 'Ver formulario oficial', url: informacionAfiliacion.formularioPdfUrl };
@@ -13,8 +13,6 @@ function normalizar(texto) {
     .replace(/[¿?¡!.,:;]/g, ' ').trim().replace(/\s+/g, ' ');
 }
 
-const requisitos = 'Puedes iniciar tu solicitud en línea. Si la entregas en papel, prepara estos documentos:\n' +
-  documentosRequeridos.map((doc) => '• ' + doc.nombre).join('\n');
 const cuota = 'El formulario oficial establece una cuota mensual del ' + porcentaje +
   ' % del salario básico, descontada por nómina. Por ejemplo, sobre $3.000.000 COP serían $' +
   (3000000 * porcentaje / 100).toLocaleString('es-CO') + ' COP al mes.';
@@ -38,12 +36,15 @@ export function responderVisitante(texto, historial = []) {
   const consultaAfiliacion = /^(quiero afiliarme|me quiero afiliar)( que necesito)?$/.test(tramite) ||
     /^que (documentos |requisitos )?necesito para afiliarme$/.test(tramite) ||
     /^(como me inscribo|como me afilio|como puedo afiliarme|requisitos( de afiliacion)?|que (documentos|requisitos) necesito)$/.test(tramite);
-  if (consultaAfiliacion) {
-    return { texto: preguntaCuota.test(q) ? requisitos + '\n\n' + cuota : requisitos, enlaces: [registro, formulario] };
+  if (consultaAfiliacion || solicitaGuiaAfiliacion(tramite)) {
+    const textoGuia = guiaTramiteAfiliacion + '\nTambién puedes compartir el enlace para iniciar la solicitud en línea.';
+    return { texto: preguntaCuota.test(q) ? textoGuia + '\n\n' + cuota : textoGuia, enlaces: [registro, formulario] };
   }
-  if (historial.some((turno) => turno.role === 'assistant' && /cuota mensual|salario básico/i.test(turno.content))) {
+  const anterior = historial.at(-1);
+  if (/\b(cuota|descontarian|descuento|aportaria)\b/.test(q) ||
+      (anterior?.role === 'assistant' && /cuota mensual|salario básico|afiliación/i.test(anterior.content))) {
     const calculo = calcularCuotaConsultada(texto);
-    if (calculo) return { texto: calculo, enlaces: [formulario] };
+    if (calculo) return { texto: calculo + (q.includes('horas extras') ? ' La base indicada en el formulario es el salario básico.' : ''), enlaces: [formulario] };
   }
   if (/^(cuanto (cuesta|vale|valdria|pago)( (afiliarme|la afiliacion|la cuota))?|cual es la cuota( mensual)?|cuota( sindical)?)$/.test(q)) {
     return { texto: cuota, enlaces: [formulario] };
@@ -56,8 +57,13 @@ export function responderVisitante(texto, historial = []) {
     return { texto: datosContacto.sindicato + '. Sus funciones y beneficios incluyen:\n' +
       beneficios.map((item) => '• ' + item.title).join('\n'), enlaces: [{ texto: 'Conocer SUTENS', url: '/Nosotros/' }] };
   }
-  const tema = q.replace(/^(que es|que significa|en que consiste) (la |el )?/, '');
-  const beneficio = beneficios.find((item) => normalizar(item.title) === tema);
+  const nombreBeneficio = q.replace(/^(que es|que significa|en que consiste) (la |el )?/, '');
+  const beneficio = beneficios.find((item) => normalizar(item.title) === nombreBeneficio);
   if (beneficio) return { texto: beneficio.description, enlaces: [] };
-  return null;
+  const tema = buscarConsultaPublica(texto);
+  if (!tema) return null;
+  // Una mención al precio o a Ocaña también puede referirse a un servicio ajeno.
+  if (tema.tipo === 'cuota' &&
+      !/\b(afiliar\w*|afiliacion|mensual\w*|meses|nomina|salario|cuota|inscripcion|matricula|pago unico|horas extras)\b/.test(q)) return null;
+  return { texto: tema.texto, enlaces: tema.enlaces };
 }

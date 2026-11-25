@@ -35,9 +35,25 @@ export const informacionAfiliacion = {
   compromisoEstatutario: 'Al firmar el formulario, el docente se compromete a cumplir y respetar los estatutos de SUTENS.',
 };
 
+export function solicitaGuiaAfiliacion(preguntaNormalizada) {
+  const tramite = preguntaNormalizada
+    .replace(/^(?:hola |por favor )+/, '')
+    .replace(/^(?:como|de que manera) /, '')
+    .replace(/^(?:puedo|puede|podria|podemos|quiero|quisiera|necesito|se puede) /, '')
+    .replace(/\s+(?:a sutens|al sindicato|por favor)$/, '')
+    .replace(/\b(?:(?:un|una|mi) )?(?:(?:amig[oa]|colega|companer[oa])(?: docente)?|docente|profesora?|maestr[oa])\b/, 'docente');
+  return /^(?:me afilio|afiliarme|me quiero afiliar|me puedo afiliar)$/.test(tramite) ||
+    /^(?:afiliarse docente|docente (?:quiere|desea) afiliarse)$/.test(tramite) ||
+    /^(?:ayudar a )?afiliar a docente$/.test(tramite) ||
+    /^(?:ayudo|ayudar|acompanar) a docente a afiliarse$/.test(tramite);
+}
+
+export const guiaTramiteAfiliacion = 'Puedes compartir el formulario oficial con la persona interesada. Para solicitar su afiliación, debe diligenciarlo y firmarlo. Para entregarlo en papel, prepara:\n' +
+  documentosRequeridos.map((documento) => '• ' + documento.nombre).join('\n');
+
 export function calcularCuotaConsultada(texto) {
   const porcentaje = informacionAfiliacion.cuotaSindical.porcentajeSalarioBasico;
-  const salario = texto.trim().match(/^[¿\s]*(?:y )?si (?:mi salario b[áa]sico es(?: de)?|gano)\s+\$?\s*(\d{1,3}(?:\.\d{3})+|\d+)(?:[,.](\d{1,2}))?(?:\s+(mill[oó]n|millones))?(?:\s+(?:de pesos|pesos|cop))?\s*[?!.]*$/i);
+  const salario = texto.match(/\b(?:(?:salario|sueldo)(?: b[áa]sico)?|(?:mi|su) b[áa]sico|gan[oa])\s*(?:es\s+)?(?:de\s+)?\$?\s*(\d{1,3}(?:\.\d{3})+|\d+)(?:[,.](\d{1,2}))?(?:\s+(mill[oó]n|millones))?(?![\d.,]\d)/i);
   if (salario) {
     const cantidad = Number(salario[1].replaceAll('.', '') + '.' + (salario[2] || '0')) * (salario[3] ? 1000000 : 1);
     if (Number.isSafeInteger(cantidad) && cantidad > 0) {
